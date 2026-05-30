@@ -56,6 +56,18 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 /* gradient icon tiles => solid black */
 .quiz .icon,.icon{ background:var(--ink)!important; color:var(--paper)!important; border-radius:0!important; }
 
+/* element/id-styled buttons the class selectors miss (Start, prev/next, ctrl) */
+button{ border-radius:0!important; }
+.splash button, nav.bottom button, .bottom button, .ctrl-btn,
+#start,#prev,#next,#resume,#restart,#hint-toggle{
+  background:var(--paper)!important; color:var(--ink)!important;
+  border:2px solid var(--ink)!important; border-radius:0!important;
+  font-family:"Oswald",Arial,sans-serif!important; text-shadow:none!important; }
+/* primary actions = filled black */
+.splash button, nav.bottom button.primary, .bottom button.primary,
+#next, #start, .ctrl-btn.primary{
+  background:var(--ink)!important; color:var(--paper)!important; }
+
 /* sticky headers / arrows */
 header{ border-bottom:2px solid var(--ink)!important; }
 .arrow{ color:var(--ink)!important; }
