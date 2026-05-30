@@ -1,0 +1,48 @@
+/* Tony Physics — NieR:Automata-inspired black & white theme (section pages) */
+:root{
+  --ink:#0d0d0d; --paper:#f3f1ea; --line:#0d0d0d; --soft:#8c887c;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"EB Garamond",Georgia,serif; line-height:1.55;
+  -webkit-tap-highlight-color:transparent;
+}
+/* faint grid texture, NieR terminal feel */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.05;
+  background-image:linear-gradient(var(--ink) 1px,transparent 1px),linear-gradient(90deg,var(--ink) 1px,transparent 1px);
+  background-size:34px 34px;
+}
+.wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:22px 16px 110px}
+.lab{font-family:"Oswald",Arial,sans-serif;text-transform:uppercase;letter-spacing:.34em;font-size:11px;color:var(--soft)}
+
+.page-head{text-align:center;margin:14px 0 26px;position:relative}
+.page-head .crumb{font-family:"Oswald",Arial,sans-serif;text-transform:uppercase;letter-spacing:.28em;
+  font-size:11px;display:inline-block;margin-bottom:12px}
+.page-head .crumb a{color:var(--ink);text-decoration:none;opacity:.6}
+.page-head h1{font-size:2.1rem;letter-spacing:.04em;margin:0;font-weight:600}
+.page-head .sub{font-style:italic;color:#3a382f;margin-top:6px}
+.rule{height:0;border:0;border-top:3px double var(--ink);max-width:240px;margin:14px auto 0}
+
+/* section / item cards */
+.grid{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+.cardlink{display:block;text-decoration:none;color:var(--ink);position:relative;
+  border:2px solid var(--ink);background:var(--paper);padding:20px 18px;
+  box-shadow:6px 6px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s,color .15s}
+.cardlink::after{content:"";position:absolute;inset:6px;border:1px solid rgba(13,13,13,.22);pointer-events:none}
+.cardlink:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--ink)}
+.cardlink:hover{background:var(--ink);color:var(--paper)}
+.cardlink .ic{font-size:24px;display:block;margin-bottom:8px}
+.cardlink h2{margin:0;font-size:1.35rem;letter-spacing:.02em}
+.cardlink p{margin:5px 0 0;font-style:italic;opacity:.8;font-size:.98rem}
+.cardlink .tag{position:absolute;top:14px;right:16px;font-family:"Oswald",Arial,sans-serif;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.55}
+
+.note-empty{text-align:center;font-style:italic;color:#4a4840;border:2px dashed var(--ink);
+  padding:34px 20px;margin-top:10px;position:relative}
+.note-empty .big{font-size:2rem;display:block;margin-bottom:10px;font-style:normal}
+
+footer.tphys-foot{position:relative;z-index:1;text-align:center;color:var(--soft);
+  font-family:"Oswald",Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:8px 0 26px}

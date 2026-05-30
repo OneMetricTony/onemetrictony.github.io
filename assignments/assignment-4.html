@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0d">
+<title>Assignment 4 · Tony Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/tony.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<style>
+  .card{border:2px solid var(--ink);background:var(--paper);margin:14px 0;
+        box-shadow:6px 6px 0 var(--ink);position:relative}
+  .qhead{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;
+         padding:15px;cursor:pointer;text-align:left;color:inherit;font:inherit}
+  .num{flex:0 0 auto;width:34px;height:34px;background:var(--ink);color:var(--paper);
+       font-family:"Oswald",sans-serif;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .qtitle{flex:1;font-size:1.12rem;font-weight:600}
+  .qtitle small{display:block;font-family:"Oswald",sans-serif;color:var(--soft);font-weight:400;
+       font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+  .chev{flex:0 0 auto;font-family:"Oswald",sans-serif;transition:transform .2s}
+  .card.open .chev{transform:rotate(90deg)}
+  .body{display:none;padding:2px 16px 18px;border-top:1px solid rgba(13,13,13,.3)}
+  .card.open .body{display:block}
+  .label{font-family:"Oswald",sans-serif;font-size:.7rem;text-transform:uppercase;letter-spacing:.3em;
+         color:var(--soft);margin:15px 0 6px}
+  .body p{margin:.5em 0}
+  .reveal{width:100%;margin-top:14px;padding:13px;border:2px solid var(--ink);background:var(--ink);
+          color:var(--paper);font-family:"Oswald",sans-serif;font-size:.95rem;letter-spacing:.16em;
+          text-transform:uppercase;cursor:pointer}
+  .reveal:active{transform:scale(.99)}
+  .sol{display:none}
+  .sol.show{display:block}
+  h4.step{font-size:1.02rem;margin:16px 0 4px;border-left:4px solid var(--ink);padding-left:9px}
+  .katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+  .katex{font-size:1.05em;color:var(--ink)}
+  .boxed .katex-display{border:2px solid var(--ink);border-radius:0;padding:10px 8px;background:#fff}
+  .qhelp{display:inline-flex;align-items:center;gap:7px;margin-top:14px;text-decoration:none;
+         color:var(--ink);border:1.5px dashed var(--ink);padding:9px 13px;
+         font-family:"Oswald",sans-serif;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase}
+  .qhelp:active{transform:scale(.98)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-head">
+    <div class="crumb"><a href="/">Tony Physics</a> &nbsp;/&nbsp; <a href="/assignments/">Assignments</a> &nbsp;/&nbsp; A4</div>
+    <h1>Assignment 4</h1>
+    <div class="sub">Momentum · collisions · friction · oscillations</div>
+    <hr class="rule">
+  </div>
+
+<!-- Q1 -->
+<section class="card">
+  <button class="qhead"><span class="num">1</span><span class="qtitle">Two rocks collide &amp; stick<small>Inelastic collision · momentum</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>In outer space two rocks collide and stick together:</p>
+    <p>Rock 1: \(m_1=23\ \mathrm{kg},\ \vec v_1=\langle 11,-23,0\rangle\ \mathrm{m/s}\)</p>
+    <p>Rock 2: \(m_2=43\ \mathrm{kg},\ \vec v_2=\langle 28,6,0\rangle\ \mathrm{m/s}\)</p>
+    <p>Find the velocity of the stuck-together rocks.</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <h4 class="step">Conserve momentum (perfectly inelastic)</h4>
+      <p>\[\vec p_i=m_1\vec v_1+m_2\vec v_2=23\langle 11,-23,0\rangle+43\langle 28,6,0\rangle=\langle 1457,-271,0\rangle\ \mathrm{kg\cdot m/s}\]</p>
+      <h4 class="step">Divide by the combined mass</h4>
+      <p>\[M=m_1+m_2=66\ \mathrm{kg}\]</p>
+      <div class="boxed">\[\boxed{\;\vec v_f=\dfrac{\langle 1457,-271,0\rangle}{66}=\langle 22.08,\,-4.11,\,0\rangle\ \mathrm{m/s}\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q2 -->
+<section class="card">
+  <button class="qhead"><span class="num">2</span><span class="qtitle">Momentum of a 2-object system<small>Total momentum &amp; impulse</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>\(A\) strikes \(B\). Just before the collision:</p>
+    <p>\(m_A=11\ \mathrm{kg},\ \vec p_{A,i}=\langle 23,-8,0\rangle\ \mathrm{kg\cdot m/s}\)</p>
+    <p>\(m_B=14\ \mathrm{kg},\ \vec p_{B,i}=\langle 7,12,0\rangle\ \mathrm{kg\cdot m/s}\)</p>
+    <p>(a) total initial momentum, (b) external impulse, (c) total final momentum, (d) \(\vec p_{B,f}\) if \(\vec p_{A,f}=\langle 21,3,0\rangle\).</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <h4 class="step">(a) Total initial momentum</h4>
+      <p>\[\vec p_{sys,i}=\vec p_{A,i}+\vec p_{B,i}=\langle 23,-8,0\rangle+\langle 7,12,0\rangle=\langle 30,4,0\rangle\ \mathrm{kg\cdot m/s}\]</p>
+      <h4 class="step">(b) External impulse</h4>
+      <p>The \(A\!\leftrightarrow\!B\) forces are <em>internal</em>; external forces are negligible over the brief collision:</p>
+      <p>\[\vec F_{net}\,\Delta t\approx\langle 0,0,0\rangle\ \mathrm{N\cdot s}\]</p>
+      <h4 class="step">(c) Total final momentum</h4>
+      <p>\[\Delta\vec p_{sys}=\vec F_{net}\,\Delta t\approx 0\ \Rightarrow\ \vec p_{sys,f}=\langle 30,4,0\rangle\ \mathrm{kg\cdot m/s}\]</p>
+      <h4 class="step">(d) Final momentum of B</h4>
+      <div class="boxed">\[\boxed{\;\vec p_{B,f}=\vec p_{sys,f}-\vec p_{A,f}=\langle 30,4,0\rangle-\langle 21,3,0\rangle=\langle 9,1,0\rangle\ \mathrm{kg\cdot m/s}\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q3 -->
+<section class="card">
+  <button class="qhead"><span class="num">3</span><span class="qtitle">Bowling balls: system vs surroundings<small>Momentum change per system choice</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>Two identical balls, \(m=7.5\ \mathrm{kg}\). Ball \(A\) at \(\vec v=\langle 6,0,0\rangle\ \mathrm{m/s}\) strikes \(B\) (at rest); then \(A\) stops and \(B\) moves at \(\langle 6,0,0\rangle\). Find \(\Delta\vec p\) of the <em>system</em> and the <em>surroundings</em> for system = A only, B only, both.</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <p>\[\vec p_{A,i}=m\vec v=7.5\langle 6,0,0\rangle=\langle 45,0,0\rangle,\qquad \vec p_{B,f}=\langle 45,0,0\rangle\]</p>
+      <p>System + surroundings = the universe (total momentum conserved), so \(\Delta\vec p_{surr}=-\Delta\vec p_{sys}\).</p>
+      <h4 class="step">System = ball A</h4>
+      <p>\[\Delta\vec p_{sys}=0-\langle 45,0,0\rangle=\langle -45,0,0\rangle,\qquad \Delta\vec p_{surr}=\langle 45,0,0\rangle\]</p>
+      <h4 class="step">System = ball B</h4>
+      <p>\[\Delta\vec p_{sys}=\langle 45,0,0\rangle,\qquad \Delta\vec p_{surr}=\langle -45,0,0\rangle\]</p>
+      <h4 class="step">System = both balls</h4>
+      <div class="boxed">\[\boxed{\;\Delta\vec p_{sys}=\langle 0,0,0\rangle,\qquad \Delta\vec p_{surr}=\langle 0,0,0\rangle\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q4 -->
+<section class="card">
+  <button class="qhead"><span class="num">4</span><span class="qtitle">Clay lumps stick together<small>Inelastic collision · final velocity</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>Two clay lumps, each \(m=0.037\ \mathrm{kg}\), collide and stick. Just before: \(\vec v_1=\langle 8,8,-5\rangle\), \(\vec v_2=\langle -5,0,-8\rangle\ \mathrm{m/s}\). Find (a) total momentum before, (b) momentum after, (c) the final velocity.</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <h4 class="step">(a)/(b) Total momentum (conserved)</h4>
+      <p>\[\vec p_{tot}=m(\vec v_1+\vec v_2)=0.037\langle 3,8,-13\rangle=\langle 0.111,0.296,-0.481\rangle\ \mathrm{kg\cdot m/s}\]</p>
+      <h4 class="step">(c) Final velocity</h4>
+      <div class="boxed">\[\boxed{\;\vec v_f=\dfrac{\vec p_{tot}}{2m}=\dfrac{\langle 3,8,-13\rangle}{2}=\langle 1.5,\,4,\,-6.5\rangle\ \mathrm{m/s}\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q5 -->
+<section class="card">
+  <button class="qhead"><span class="num">5</span><span class="qtitle">Friction on a block<small>Static &amp; kinetic coefficients</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>A \(4.2\ \mathrm{kg}\) block on a table. A push under \(20.6\ \mathrm{N}\) won't move it. Once moving, \(13.6\ \mathrm{N}\) keeps it at constant speed. Find \(\mu_s\) and \(\mu_k\).</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <p>Normal force: \(N=mg=4.2\times 9.8=41.16\ \mathrm{N}\).</p>
+      <h4 class="step">Static</h4>
+      <p>At the verge of slipping, push \(=\mu_s N\):</p>
+      <div class="boxed">\[\boxed{\;\mu_s=\dfrac{20.6}{41.16}\approx 0.500\;}\]</div>
+      <h4 class="step">Kinetic</h4>
+      <p>At constant speed, applied force \(=\mu_k N\):</p>
+      <div class="boxed">\[\boxed{\;\mu_k=\dfrac{13.6}{41.16}\approx 0.330\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q6 -->
+<section class="card">
+  <button class="qhead"><span class="num">6</span><span class="qtitle">Box on a conveyor belt<small>Friction &amp; ball-spring (“jello”) models</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>An \(8.2\ \mathrm{kg}\) box on a belt, \(\mu_s=0.8,\ \mu_k=0.6\). Find max static friction, kinetic friction, and the friction vector (plus the matching ball-spring picture) for constant speed, speeding up \(0\!\to\!0.9\ \mathrm{m/s}\) in \(2\,\mathrm s\), and slowing to a stop in \(2\,\mathrm s\).</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <p><strong>Big idea:</strong> a solid isn't truly rigid — microscopically it's like <em>jello</em>, a lattice of atoms joined by springs. The belt's contact springs supply both the normal force (vertical squeeze) and friction (horizontal shear).</p>
+      <p>Normal force: \(N=mg=8.2\times 9.8=80.36\ \mathrm{N}\).</p>
+      <h4 class="step">Friction magnitudes</h4>
+      <p>\[f_{s,\max}=\mu_s N=0.8(80.36)\approx 64.3\ \mathrm{N},\qquad f_k=\mu_k N=0.6(80.36)\approx 48.2\ \mathrm{N}\]</p>
+      <h4 class="step">Constant speed (no slip)</h4>
+      <p>No acceleration \(\Rightarrow\ \vec f=\langle 0,0,0\rangle\ \mathrm{N}\). Springs only squeezed straight down → the <strong>symmetric</strong> picture.</p>
+      <h4 class="step">Speeding up</h4>
+      <p>\[a=\dfrac{0.9-0}{2}=0.45\ \mathrm{m/s^2}\ \Rightarrow\ \vec f=m\vec a=\langle 3.69,0,0\rangle\ \mathrm{N}\]</p>
+      <p>The box's <strong>inertia drags it backward</strong> relative to the belt, so the springs shear back and push the box forward → the <strong>3rd</strong> ball-spring option.</p>
+      <h4 class="step">Slowing down</h4>
+      <p>\[a=\dfrac{0-0.9}{2}=-0.45\ \mathrm{m/s^2}\ \Rightarrow\ \vec f=\langle -3.69,0,0\rangle\ \mathrm{N}\]</p>
+      <p>Inertia carries the box forward, springs shear the other way, friction points back → the <strong>1st</strong> option.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Q7 -->
+<section class="card">
+  <button class="qhead"><span class="num">7</span><span class="qtitle">Spring period &rarr; unknown mass<small>T &prop; &radic;m</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>A \(0.3\ \mathrm{kg}\) mass on a spring has period \(1.0\ \mathrm s\). With an unknown mass the period is \(1.5\ \mathrm s\). Find the unknown mass.</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <p>\[T=2\pi\sqrt{\dfrac{m}{k}}\ \Rightarrow\ T\propto\sqrt{m}\ \Rightarrow\ \dfrac{T_2}{T_1}=\sqrt{\dfrac{m_2}{m_1}}\]</p>
+      <div class="boxed">\[\boxed{\;m_2=m_1\left(\dfrac{T_2}{T_1}\right)^2=0.3\left(\dfrac{1.5}{1.0}\right)^2=0.675\ \mathrm{kg}\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q8 -->
+<section class="card">
+  <button class="qhead"><span class="num">8</span><span class="qtitle">Simple harmonic motion<small>Position &amp; timing</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>\(m=1.6\ \mathrm{kg},\ k=170\ \mathrm{N/m}\), released from rest at \(x=+0.06\ \mathrm m\) at \(t=0\). Find (a) \(x\) at \(t=0.15\ \mathrm s\), (b) the first time \(x=0.03\ \mathrm m\).</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <p>Released from rest at max displacement \(\Rightarrow\) cosine, amplitude \(A=0.06\ \mathrm m\):</p>
+      <p>\[\omega=\sqrt{\dfrac{k}{m}}=\sqrt{\dfrac{170}{1.6}}=10.31\ \mathrm{rad/s},\qquad x(t)=0.06\cos(\omega t)\]</p>
+      <h4 class="step">(a) Position at \(t=0.15\ \mathrm s\)</h4>
+      <div class="boxed">\[\boxed{\;x=0.06\cos(1.546)\approx 0.00148\ \mathrm m\;}\]</div>
+      <h4 class="step">(b) First time \(x=0.03\ \mathrm m\)</h4>
+      <p>\[\cos(\omega t)=\tfrac12\ \Rightarrow\ \omega t=\dfrac{\pi}{3}\]</p>
+      <div class="boxed">\[\boxed{\;t=\dfrac{\pi/3}{\omega}=\dfrac{1.0472}{10.31}\approx 0.102\ \mathrm s\;}\]</div>
+    </div>
+  </div>
+</section>
+
+<!-- Q9 -->
+<section class="card">
+  <button class="qhead"><span class="num">9</span><span class="qtitle">Period vs amplitude &amp; mass<small>What changes the period</small></span><span class="chev">&#9654;</span></button>
+  <div class="body">
+    <div class="label">Question</div>
+    <p>A spring-mass system stretched \(5\ \mathrm{cm}\) oscillates with period \(2\ \mathrm s\). (a) If stretched \(6\ \mathrm{cm}\) instead, what's the period? (b) If the mass is quadrupled?</p>
+    <button class="reveal">Reveal worked solution</button>
+    <div class="sol">
+      <div class="label">Worked solution</div>
+      <h4 class="step">(a) Change amplitude</h4>
+      <p>\(T=2\pi\sqrt{m/k}\) has <em>no</em> amplitude in it — period is independent of how far you stretch:</p>
+      <div class="boxed">\[\boxed{\;T=2\ \mathrm s\;}\]</div>
+      <h4 class="step">(b) Quadruple the mass</h4>
+      <p>\[T\propto\sqrt{m}\ \Rightarrow\ \dfrac{T_{new}}{T_{old}}=\sqrt{\dfrac{4m}{m}}=2\]</p>
+      <div class="boxed">\[\boxed{\;T_{new}=2\times 2=4\ \mathrm s\;}\]</div>
+    </div>
+  </div>
+</section>
+
+</div>
+<footer class="tphys-foot">Worked solutions · Assignment 4</footer>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script src="/tony.js" defer></script>
+<script>
+  var TONY = "+16476066942";
+  document.querySelectorAll('.card').forEach(function(card){
+    var head = card.querySelector('.qhead');
+    head.addEventListener('click', function(){ card.classList.toggle('open'); });
+    var rev = card.querySelector('.reveal');
+    rev.addEventListener('click', function(){
+      card.querySelector('.sol').classList.add('show'); rev.style.display='none';
+    });
+    // per-question "stuck? text Tony" link
+    var n = card.querySelector('.num').textContent.trim();
+    var body = card.querySelector('.body');
+    var msg = "Hey Tony, I'm stuck on question " + n + " of Assignment 4! Let me know when you can give me a hand ~";
+    var a = document.createElement('a');
+    a.className = 'qhelp';
+    a.href = "sms:" + TONY + "?&body=" + encodeURIComponent(msg);
+    a.innerHTML = "&#9742; Stuck on Q" + n + "? Text Tony";
+    body.appendChild(a);
+  });
+  window.addEventListener('load', function(){
+    renderMathInElement(document.body,{
+      delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],
+      throwOnError:false
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Lucy's Physics — CPCS110</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    background:#0e1116;color:#e6e9ef;line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:24px 14px 40px}
+  .hero{text-align:center;margin:8px 0 24px}
+  .hero h1{margin:0 0 4px;font-size:24px;letter-spacing:-.02em;font-weight:800;background:linear-gradient(90deg,#4ade80,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin:0;color:#9aa4b8;font-size:14px}
+  .hero .course{display:inline-block;margin-top:8px;background:#1a2030;color:#cdd5e2;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.05em}
+  .quiz{
+    display:block;text-decoration:none;color:inherit;
+    background:#161b26;border:1.5px solid #232a36;border-radius:18px;
+    padding:18px;margin-bottom:14px;
+    transition:transform .08s, border-color .15s;
+  }
+  .quiz:active{transform:scale(.985)}
+  .quiz.done{border-color:#22c55e44;background:linear-gradient(180deg,#0f1a14,#161b26)}
+  .quiz.partial{border-color:#3b82f644}
+  .quiz .icon{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:10px;
+  }
+  .quiz.midterm .icon{background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#fff}
+  .quiz.assignments .icon{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+  .quiz .title{font-size:18px;font-weight:700;color:#fff;margin:0 0 3px}
+  .quiz .subtitle{font-size:13px;color:#9aa4b8;margin:0 0 12px}
+  .quiz .progress-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+  .status{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:700;background:#1a2030;color:#9aa4b8}
+  .status.notstarted{background:#1a2030;color:#9aa4b8}
+  .status.inprogress{background:#0f1d2e;color:#60a5fa}
+  .status.done{background:#0f2a1a;color:#4ade80}
+  .arrow{color:#7d8aa3;font-size:18px;font-weight:600}
+  .bar{height:6px;background:#0e1116;border-radius:999px;overflow:hidden;margin-top:10px;border:1px solid #1f2733}
+  .bar > div{height:100%;border-radius:999px;transition:width .3s}
+  .bar.midterm > div{background:linear-gradient(90deg,#3b82f6,#22d3ee)}
+  .bar.assignments > div{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+  .substats{display:flex;gap:6px;margin-top:8px;font-size:11.5px;color:#9aa4b8;flex-wrap:wrap}
+  .substats span{background:#0e1116;padding:3px 8px;border-radius:6px;border:1px solid #1f2733;font-weight:600}
+  .substats span.good{color:#4ade80;border-color:#22c55e33}
+  .substats span.warn{color:#fbbf24;border-color:#fbbf2433}
+  .footer{text-align:center;margin-top:24px}
+  .footer button{
+    background:transparent;border:1px solid #232a36;color:#7d8aa3;
+    padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;
+  }
+  .footer button:hover{color:#e6e9ef;border-color:#3a4452}
+  .footer .last{display:block;margin-top:14px;color:#5a6478;font-size:11px}
+  @media (max-width: 420px){
+    .wrap{padding:18px 12px 30px}
+    .hero h1{font-size:22px}
+    .quiz{padding:16px}
+    .quiz .title{font-size:17px}
+  }
+  .testing-btn{
+    position:fixed;top:calc(10px + env(safe-area-inset-top));right:10px;
+    background:linear-gradient(135deg,#3a2410,#1a1f10);border:1.5px dashed #fbbf24;color:#fbbf24;
+    text-decoration:none;padding:7px 11px;border-radius:10px;font-size:11px;font-weight:700;
+    letter-spacing:.04em;text-align:right;line-height:1.25;z-index:20;max-width:140px;
+    box-shadow:0 4px 16px rgba(0,0,0,.4);
+  }
+  .testing-btn .big{display:block;font-size:13px;color:#fde68a}
+  .testing-btn .small{display:block;font-size:9px;color:#a8a560;text-transform:uppercase}
+  .testing-btn:active{transform:scale(.95)}
+</style>
+</head>
+<body>
+<a class="testing-btn" href="testing.html">
+  <span class="big">🧪 TO TESTING</span>
+  <span class="small">Under construction</span>
+</a>
+<div class="wrap">
+  <div class="hero">
+    <h1>Lucy's Physics</h1>
+    <p>Mock midterm + assignments practice</p>
+    <span class="course">CPCS110 BA0</span>
+  </div>
+
+  <a class="quiz midterm" id="card-midterm" href="midterm.html">
+    <div class="icon">📝</div>
+    <h2 class="title">Mock Midterm</h2>
+    <p class="subtitle">Weeks 1–3 · 20 multiple-choice · 40 marks</p>
+    <div class="progress-row">
+      <span class="status notstarted" id="status-midterm">Not started</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="bar midterm"><div id="bar-midterm" style="width:0%"></div></div>
+    <div class="substats" id="sub-midterm"></div>
+  </a>
+
+  <a class="quiz assignments" id="card-assignments" href="assignments.html">
+    <div class="icon">📚</div>
+    <h2 class="title">Assignments Practice</h2>
+    <p class="subtitle">A1 (✓ done) · A2 (✓ done) · A3 (todo) · 32 flash cards</p>
+    <div class="progress-row">
+      <span class="status notstarted" id="status-assignments">Not started</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="bar assignments"><div id="bar-assignments" style="width:0%"></div></div>
+    <div class="substats" id="sub-assignments"></div>
+  </a>
+
+  <div class="footer">
+    <button id="reset">Reset all progress</button>
+    <span class="last" id="last-visited"></span>
+  </div>
+</div>
+
+<script>
+// Answer key for mock midterm (indices into options, A=0 B=1 C=2 D=3)
+const MIDTERM_KEY = [1,1,2,0,1,1,1,1,1,2,2,0,2,0,1,0,1,2,1,2];
+const MIDTERM_TOTAL = 20;
+const ASGN_TOTAL = 32;
+
+function getMidtermState(){
+  try {
+    const raw = localStorage.getItem("lucy_midterm_v1");
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !Array.isArray(s.answers)) return null;
+    return s;
+  } catch(e){ return null; }
+}
+function getAsgnState(){
+  try {
+    const raw = localStorage.getItem("lucy_assignments_v1");
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || typeof s !== "object") return null;
+    s.marks = s.marks || {};
+    return s;
+  } catch(e){ return null; }
+}
+
+function renderMidterm(){
+  const s = getMidtermState();
+  const card = document.getElementById("card-midterm");
+  const statusEl = document.getElementById("status-midterm");
+  const barEl = document.getElementById("bar-midterm");
+  const subEl = document.getElementById("sub-midterm");
+
+  if (!s){
+    statusEl.textContent = "Not started";
+    statusEl.className = "status notstarted";
+    barEl.style.width = "0%";
+    subEl.innerHTML = "";
+    card.classList.remove("done","partial");
+    return;
+  }
+  const answered = s.answers.filter(a => a !== null).length;
+  const correct = s.answers.filter((a, i) => a !== null && a === MIDTERM_KEY[i]).length;
+  const wrong = answered - correct;
+  const pct = (answered / MIDTERM_TOTAL) * 100;
+  barEl.style.width = pct + "%";
+
+  if (answered === 0){
+    statusEl.textContent = "Not started";
+    statusEl.className = "status notstarted";
+    card.classList.remove("done","partial");
+    subEl.innerHTML = "";
+  } else if (answered < MIDTERM_TOTAL){
+    statusEl.textContent = `In progress · ${answered}/${MIDTERM_TOTAL}`;
+    statusEl.className = "status inprogress";
+    card.classList.add("partial");
+    card.classList.remove("done");
+    subEl.innerHTML = `<span class="good">✓ ${correct} correct</span>${wrong>0?`<span class="warn">✗ ${wrong} wrong</span>`:""}`;
+  } else {
+    const marks = correct * 2;
+    statusEl.textContent = `Done · ${marks}/40`;
+    statusEl.className = "status done";
+    card.classList.add("done");
+    card.classList.remove("partial");
+    subEl.innerHTML = `<span class="good">✓ ${correct} correct</span><span class="warn">✗ ${wrong} wrong</span>`;
+  }
+}
+
+function renderAsgn(){
+  const s = getAsgnState();
+  const card = document.getElementById("card-assignments");
+  const statusEl = document.getElementById("status-assignments");
+  const barEl = document.getElementById("bar-assignments");
+  const subEl = document.getElementById("sub-assignments");
+
+  if (!s){
+    statusEl.textContent = "Not started";
+    statusEl.className = "status notstarted";
+    barEl.style.width = "0%";
+    subEl.innerHTML = "";
+    card.classList.remove("done","partial");
+    return;
+  }
+  const vals = Object.values(s.marks);
+  const got = vals.filter(v => v === "got").length;
+  const review = vals.filter(v => v === "review").length;
+  const total = got + review;
+  const pct = (total / ASGN_TOTAL) * 100;
+  barEl.style.width = pct + "%";
+
+  if (total === 0){
+    statusEl.textContent = "Not started";
+    statusEl.className = "status notstarted";
+    card.classList.remove("done","partial");
+    subEl.innerHTML = "";
+  } else if (total < ASGN_TOTAL){
+    statusEl.textContent = `In progress · ${total}/${ASGN_TOTAL}`;
+    statusEl.className = "status inprogress";
+    card.classList.add("partial");
+    card.classList.remove("done");
+    subEl.innerHTML = `<span class="good">✓ ${got} got it</span>${review>0?`<span class="warn">⚠ ${review} review</span>`:""}`;
+  } else {
+    statusEl.textContent = `Done · ${got}/${ASGN_TOTAL} got it`;
+    statusEl.className = "status done";
+    card.classList.add("done");
+    card.classList.remove("partial");
+    subEl.innerHTML = `<span class="good">✓ ${got} got it</span><span class="warn">⚠ ${review} review</span>`;
+  }
+}
+
+document.getElementById("reset").onclick = () => {
+  if (confirm("Reset ALL progress on both quizzes? This can't be undone.")){
+    try {
+      localStorage.removeItem("lucy_midterm_v1");
+      localStorage.removeItem("lucy_assignments_v1");
+    } catch(e){}
+    renderMidterm();
+    renderAsgn();
+  }
+};
+
+renderMidterm();
+renderAsgn();
+
+// Re-render when returning to the tab (in case progress changed on a sub-page in another tab)
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden){ renderMidterm(); renderAsgn(); }
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/tony.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Lucy's Mock Midterm — CPCS110</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    background:#0e1116;color:#e6e9ef;line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:12px 12px 90px}
+  header{position:sticky;top:0;background:#0e1116ee;backdrop-filter:blur(8px);padding:9px 12px;margin:0 -12px 12px;border-bottom:1px solid #232a36;z-index:10}
+  header .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pill{background:#1a2030;padding:4px 9px;border-radius:999px;font-size:12px;color:#9aa4b8;font-weight:600;white-space:nowrap}
+  .pill strong{color:#e6e9ef}
+  .progress{height:4px;background:#1a2030;border-radius:2px;overflow:hidden;margin-top:6px}
+  .progress > div{height:100%;background:linear-gradient(90deg,#4ade80,#22d3ee);transition:width .3s}
+  h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em;flex:1}
+  .back-link{color:#9aa4b8;text-decoration:none;font-weight:700;font-size:16px;padding:5px 10px;background:#1a2030;border-radius:8px;border:1px solid #232a36}
+  .qmeta{color:#7d8aa3;font-size:12px;margin:0 0 4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .tags{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
+  .tag{background:#1a2030;border:1px solid #232a36;color:#8aa1c4;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;font-family:inherit}
+  .qtitle{font-size:17px;font-weight:700;margin:0 0 8px;color:#fff}
+  .qbody{font-size:15.5px;color:#cdd5e2;margin:0 0 12px}
+  .hint-btn{
+    width:100%;padding:11px;background:#1a1f10;color:#fbbf24;border:1.5px solid #3a4410;border-radius:10px;
+    font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;margin:0 0 12px;
+  }
+  .hint-btn.open{background:#2a2410;border-color:#fbbf24}
+  .hint-box{
+    display:none;margin-bottom:14px;background:#1a1f10;border:1px solid #3a4410;border-radius:10px;
+    padding:11px 13px;font-size:13.5px;color:#facc15;overflow-x:auto;
+  }
+  .hint-box.show{display:block}
+  .hint-box .lbl{display:block;color:#a8a560;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .hint-box .formula-line{margin:6px 0}
+  .hint-box .formula-line .nm{color:#a8a560;font-size:11px;display:block;margin-bottom:2px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{
+    display:flex;align-items:flex-start;gap:12px;
+    background:#161b26;border:1.5px solid #232a36;color:#e6e9ef;
+    padding:13px 13px;border-radius:14px;font-size:15.5px;line-height:1.4;
+    cursor:pointer;text-align:left;width:100%;
+    transition:transform .08s, background .15s, border-color .15s;
+    font-family:inherit;
+  }
+  .opt:active{transform:scale(.98)}
+  .opt .letter{
+    flex:0 0 28px;height:28px;border-radius:50%;background:#232a36;color:#e6e9ef;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+  }
+  .opt .text{flex:1;min-width:0}
+  .opt.correct{background:#0f2a1a;border-color:#22c55e;color:#bbf7d0}
+  .opt.correct .letter{background:#22c55e;color:#052e16}
+  .opt.wrong{background:#2a1010;border-color:#ef4444;color:#fecaca}
+  .opt.wrong .letter{background:#ef4444;color:#450a0a}
+  .opt.dim{opacity:.55}
+  .opt[disabled]{cursor:default}
+  .verdict{margin:14px 0 0;padding:11px 13px;border-radius:12px;font-weight:600;font-size:14.5px;display:none}
+  .verdict.show{display:block}
+  .verdict.ok{background:#0f2a1a;color:#bbf7d0;border:1px solid #22c55e44}
+  .verdict.bad{background:#2a1010;color:#fecaca;border:1px solid #ef444444}
+  .solution{
+    margin-top:12px;background:#11161f;border:1px solid #232a36;border-radius:14px;
+    padding:13px 14px;display:none;
+  }
+  .solution.show{display:block}
+  .solution h3{margin:0 0 8px;font-size:13px;color:#9aa4b8;text-transform:uppercase;letter-spacing:.06em}
+  .solution .step{
+    margin:9px 0;padding:9px 11px;background:#0e1116;border:1px solid #1f2733;border-radius:10px;
+    font-size:14.5px;overflow-x:auto;
+  }
+  .solution .step .label{display:block;color:#9aa4b8;font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  nav.bottom{
+    position:fixed;bottom:0;left:0;right:0;background:#0e1116ee;backdrop-filter:blur(8px);
+    border-top:1px solid #232a36;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    display:flex;gap:10px;justify-content:space-between;align-items:center;z-index:10;
+  }
+  nav.bottom button{
+    flex:1;padding:12px 14px;background:#1a2030;color:#e6e9ef;border:1.5px solid #232a36;
+    border-radius:12px;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;
+  }
+  nav.bottom button.primary{background:linear-gradient(180deg,#3b82f6,#2563eb);border-color:#2563eb;color:#fff}
+  nav.bottom button:disabled{opacity:.4;cursor:default}
+  .splash{text-align:center;padding:40px 8px 30px}
+  .splash h1{font-size:26px;margin:0 0 8px;flex:initial}
+  .splash p{color:#9aa4b8;font-size:15px;margin:0 0 22px}
+  .splash button{padding:15px 28px;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;max-width:280px}
+  .splash .resume{margin-top:12px;background:#1a2030;color:#9aa4b8;font-weight:600;font-size:14px;padding:11px 20px;border:1.5px solid #232a36}
+  .summary{padding:20px 4px}
+  .summary h1{font-size:24px;margin:0 0 6px;flex:initial}
+  .summary .score{font-size:54px;font-weight:800;margin:14px 0 6px;background:linear-gradient(90deg,#4ade80,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center}
+  .summary .breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+  .summary .breakdown > div{background:#161b26;border:1px solid #232a36;padding:12px;border-radius:12px;text-align:center}
+  .summary .breakdown .n{font-size:24px;font-weight:700}
+  .summary .breakdown .l{color:#9aa4b8;font-size:13px;margin-top:2px}
+  .review-list{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+  .review-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:#161b26;border:1px solid #232a36;border-radius:10px;cursor:pointer;font-size:14px}
+  .review-item .ix{flex:0 0 30px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .review-item.ok .ix{background:#0f2a1a;color:#4ade80}
+  .review-item.bad .ix{background:#2a1010;color:#f87171}
+  .review-item.skip .ix{background:#1a2030;color:#9aa4b8}
+  .review-item .lbl{flex:1;color:#cdd5e2}
+  .review-item .res{font-size:18px}
+  .summary button.restart{width:100%;padding:14px;background:#1a2030;color:#e6e9ef;border:1.5px solid #232a36;border-radius:12px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:6px}
+  .qbody code, .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.93em}
+  .qbody p{margin:0 0 8px}
+  mjx-container{font-size:1em !important;max-width:100%;overflow-x:auto;overflow-y:hidden}
+  .solution mjx-container[display="true"]{margin:0 !important}
+  @media (max-width: 420px){
+    .wrap{padding:10px 10px 90px}
+    header{padding:8px 10px;margin:0 -10px 10px}
+    .opt{padding:12px 12px;font-size:15px}
+    .qtitle{font-size:16px}
+    .qbody{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+// Formula sheet entries — referenced by key in each question's hint array
+const F = {
+  unitVec:    {nm:"Unit vector",          t:"$\\hat r = \\dfrac{\\vec r}{|\\vec r|}$"},
+  dirCos:     {nm:"Direction cosines",    t:"$\\hat r = \\langle \\cos\\theta_x,\\ \\cos\\theta_y,\\ \\cos\\theta_z\\rangle$"},
+  posUpdate:  {nm:"Position update",      t:"$\\vec r_f = \\vec r_i + \\vec v_{avg}\\,\\Delta t$"},
+  pmv:        {nm:"Momentum (low v)",     t:"$\\vec p = m\\vec v$"},
+  pgmv:       {nm:"Relativistic momentum",t:"$\\vec p = \\gamma m\\vec v$"},
+  gamma:      {nm:"Gamma factor",         t:"$\\gamma = \\dfrac{1}{\\sqrt{1-(|\\vec v|/c)^{2}}}$"},
+  Fma:        {nm:"Newton's 2nd",         t:"$\\sum\\vec F = m\\vec a$"},
+  impulse:    {nm:"Momentum principle",   t:"$\\Delta\\vec p = \\vec F_{net}\\,\\Delta t$"},
+  grav:       {nm:"Universal gravity",    t:"$\\vec F_{grav} = -G\\,\\dfrac{m_1 m_2}{|\\vec r|^{2}}\\,\\hat r$"},
+  spring:     {nm:"Spring force",         t:"$\\vec F = -k_s\\,s\\,\\hat L$"},
+  fg:         {nm:"Surface gravity",      t:"$F_g \\approx mg$"},
+  gSurface:   {nm:"Planet's g",           t:"$g = G\\dfrac{M}{R^{2}}$"},
+  coulomb:    {nm:"Coulomb's law",        t:"$\\vec F_{elec} = \\dfrac{1}{4\\pi\\varepsilon_0}\\,\\dfrac{q_1 q_2}{|\\vec r|^{2}}\\,\\hat r$"},
+  magnitude:  {nm:"Vector magnitude",     t:"$|\\vec A| = \\sqrt{A_x^{2}+A_y^{2}+A_z^{2}}$"},
+  delta:      {nm:"Displacement",         t:"$\\Delta\\vec r = \\vec r_f - \\vec r_i$"},
+  vavg:       {nm:"Average velocity",     t:"$\\vec v_{avg} = \\dfrac{\\Delta\\vec r}{\\Delta t}$"},
+  dp:         {nm:"Change in momentum",   t:"$\\Delta\\vec p = m(\\vec v_f - \\vec v_i)$"},
+  N3:         {nm:"Newton's 3rd law",     t:"$\\vec F_{A\\to B} = -\\vec F_{B\\to A}$"},
+  stretch:    {nm:"Spring stretch",       t:"$s = |\\vec L| - L_0$"},
+  siPrefix:   {nm:"SI prefixes",          t:"G $= 10^{9}$, M $= 10^{6}$, k $= 10^{3}$, m $= 10^{-3}$, $\\mu = 10^{-6}$, n $= 10^{-9}$"},
+  kmhMs:      {nm:"km/h ↔ m/s",           t:"$v\\,[\\text{m/s}] = v\\,[\\text{km/h}]/3.6$"}
+};
+
+const QUESTIONS = [
+  {
+    id: 1, topic: "W1.2 — SI prefixes",
+    tags: ["#units","#SI-prefixes","#conversion"],
+    hint: [F.siPrefix],
+    q: "A power plant outputs <strong>4.2 GW</strong>. Convert this power to watts, written in scientific notation. (G = 10⁹, M = 10⁶, k = 10³, m = 10⁻³, µ = 10⁻⁶, n = 10⁻⁹.)",
+    opts: ["4.2 × 10⁶ W", "4.2 × 10⁹ W", "4.2 × 10¹² W", "4.2 × 10⁻⁹ W"],
+    answer: 1,
+    steps: [
+      {l:"Identify the prefix", t:"$1\\text{ G} = 10^{9}$"},
+      {l:"Multiply", t:"$4.2 \\text{ GW} = 4.2 \\times 10^{9}\\text{ W}$"}
+    ]
+  },
+  {
+    id: 2, topic: "W1.2 — Unit conversion",
+    tags: ["#units","#conversion","#velocity"],
+    hint: [F.kmhMs],
+    q: "A car travels at <strong>90 km/h</strong> on the highway. What is its speed in m/s? (1 km/h = 0.278 m/s; 1 m/s = 3.6 km/h.)",
+    opts: ["15 m/s", "25 m/s", "324 m/s", "0.025 m/s"],
+    answer: 1,
+    steps: [
+      {l:"Conversion formula", t:"$v\\,[\\text{m/s}] = \\dfrac{v\\,[\\text{km/h}]}{3.6}$"},
+      {l:"Plug in", t:"$v = \\dfrac{90}{3.6} = 25\\text{ m/s}$"}
+    ]
+  },
+  {
+    id: 3, topic: "W1.3 — Vector magnitude",
+    tags: ["#vectors","#magnitude"],
+    hint: [F.magnitude],
+    q: "Given $\\vec A = \\langle 3,\\ -4,\\ 12\\rangle$ m, what is $|\\vec A|$?",
+    opts: ["11 m", "12 m", "13 m", "19 m"],
+    answer: 2,
+    steps: [
+      {l:"Magnitude formula", t:"$|\\vec A| = \\sqrt{A_x^{2} + A_y^{2} + A_z^{2}}$"},
+      {l:"Substitute", t:"$|\\vec A| = \\sqrt{3^{2} + (-4)^{2} + 12^{2}}$"},
+      {l:"Simplify", t:"$|\\vec A| = \\sqrt{9 + 16 + 144} = \\sqrt{169} = 13\\text{ m}$"}
+    ]
+  },
+  {
+    id: 4, topic: "W1.3 — Unit vector",
+    tags: ["#vectors","#unit-vector"],
+    hint: [F.unitVec, F.magnitude],
+    q: "Find the unit vector $\\hat B$ in the direction of $\\vec B = \\langle 6,\\ 0,\\ -8\\rangle$.",
+    opts: ["⟨0.6, 0, −0.8⟩", "⟨0.75, 0, −1.0⟩", "⟨1, 0, −1⟩", "⟨6, 0, −8⟩"],
+    answer: 0,
+    steps: [
+      {l:"Magnitude", t:"$|\\vec B| = \\sqrt{36 + 0 + 64} = 10$"},
+      {l:"Divide each component", t:"$\\hat B = \\dfrac{\\vec B}{|\\vec B|} = \\left\\langle \\dfrac{6}{10},\\ 0,\\ \\dfrac{-8}{10}\\right\\rangle$"},
+      {l:"Result", t:"$\\hat B = \\langle 0.6,\\ 0,\\ -0.8\\rangle$"}
+    ]
+  },
+  {
+    id: 5, topic: "W1.3 — Displacement",
+    tags: ["#vectors","#displacement"],
+    hint: [F.delta],
+    q: "Drone at $\\vec r_i = \\langle 2, 5, -1\\rangle$ m moves to $\\vec r_f = \\langle 7, 1, 3\\rangle$ m. Find $\\Delta\\vec r$.",
+    opts: ["⟨9, 6, 2⟩ m", "⟨5, −4, 4⟩ m", "⟨−5, 4, −4⟩ m", "⟨5, 4, 4⟩ m"],
+    answer: 1,
+    steps: [
+      {l:"Definition", t:"$\\Delta\\vec r = \\vec r_f - \\vec r_i$"},
+      {l:"Component subtraction", t:"$\\Delta\\vec r = \\langle 7-2,\\ 1-5,\\ 3-(-1)\\rangle$"},
+      {l:"Result", t:"$\\Delta\\vec r = \\langle 5,\\ -4,\\ 4\\rangle\\text{ m}$"}
+    ]
+  },
+  {
+    id: 6, topic: "W1.3 — Direction cosines",
+    tags: ["#vectors","#direction-cosines"],
+    hint: [F.dirCos],
+    q: "A 10 m rod has one end at the origin. It makes 60° with the +x axis, 60° with the +y axis, 45° with the +z axis. Where is its far end?",
+    opts: ["⟨10, 10, 10⟩ m", "⟨5.0, 5.0, 7.07⟩ m", "⟨7.07, 7.07, 5.0⟩ m", "⟨3.33, 3.33, 3.33⟩ m"],
+    answer: 1,
+    steps: [
+      {l:"Direction-cosine form", t:"$\\vec r = L\\langle\\cos\\theta_x,\\ \\cos\\theta_y,\\ \\cos\\theta_z\\rangle$"},
+      {l:"Plug in angles", t:"$\\vec r = 10\\langle\\cos 60^\\circ,\\ \\cos 60^\\circ,\\ \\cos 45^\\circ\\rangle$"},
+      {l:"Evaluate cosines", t:"$\\vec r = 10\\langle 0.5,\\ 0.5,\\ 0.707\\rangle$"},
+      {l:"Result", t:"$\\vec r = \\langle 5.0,\\ 5.0,\\ 7.07\\rangle\\text{ m}$"}
+    ]
+  },
+  {
+    id: 7, topic: "W1.4 — Average velocity",
+    tags: ["#velocity","#avg-velocity"],
+    hint: [F.vavg],
+    q: "You walk 12 m in 4 s along +x, then 9 m in 3 s along +y. Magnitude of overall average velocity?",
+    opts: ["3.0 m/s", "2.14 m/s", "4.5 m/s", "15 m/s"],
+    answer: 1,
+    steps: [
+      {l:"Total displacement", t:"$\\Delta\\vec r = \\langle 12,\\ 9,\\ 0\\rangle\\text{ m}$"},
+      {l:"Total time", t:"$\\Delta t = 4 + 3 = 7\\text{ s}$"},
+      {l:"Average velocity", t:"$\\vec v_{\\text{avg}} = \\dfrac{\\Delta\\vec r}{\\Delta t} = \\langle 1.71,\\ 1.29,\\ 0\\rangle\\text{ m/s}$"},
+      {l:"Magnitude", t:"$|\\vec v_{\\text{avg}}| = \\sqrt{1.71^{2} + 1.29^{2}} \\approx 2.14\\text{ m/s}$"}
+    ]
+  },
+  {
+    id: 8, topic: "W1.4 — Momentum (non-relativistic)",
+    tags: ["#momentum","#non-rel-momentum"],
+    hint: [F.pmv],
+    q: "A 0.250 kg ball travels at 18 m/s (low speed). Magnitude of its momentum?",
+    opts: ["0.014 kg·m/s", "4.50 kg·m/s", "72 kg·m/s", "81 kg·m/s"],
+    answer: 1,
+    steps: [
+      {l:"Low-speed momentum", t:"$|\\vec p| = m|\\vec v|$"},
+      {l:"Substitute", t:"$|\\vec p| = 0.250 \\times 18$"},
+      {l:"Result", t:"$|\\vec p| = 4.50\\text{ kg·m/s}$"}
+    ]
+  },
+  {
+    id: 9, topic: "W1.4 — Change in momentum",
+    tags: ["#momentum","#impulse","#delta-p"],
+    hint: [F.dp],
+    q: "A 0.060 kg ball hits a wall at $\\vec v_i = \\langle 50, 0, 0\\rangle$ m/s and rebounds at $\\vec v_f = \\langle -40, 0, 0\\rangle$ m/s. Find $|\\Delta\\vec p|$.",
+    opts: ["0.60 kg·m/s", "5.4 kg·m/s", "0.54 kg·m/s", "3.0 kg·m/s"],
+    answer: 1,
+    steps: [
+      {l:"Definition", t:"$\\Delta\\vec p = m(\\vec v_f - \\vec v_i)$"},
+      {l:"Subtract velocities first", t:"$\\vec v_f - \\vec v_i = \\langle -40 - 50,\\ 0,\\ 0\\rangle = \\langle -90,\\ 0,\\ 0\\rangle$"},
+      {l:"Multiply by mass", t:"$\\Delta\\vec p = 0.060\\langle -90,\\ 0,\\ 0\\rangle = \\langle -5.4,\\ 0,\\ 0\\rangle$"},
+      {l:"Magnitude", t:"$|\\Delta\\vec p| = 5.4\\text{ kg·m/s}$"}
+    ]
+  },
+  {
+    id: 10, topic: "W1.4 — Relativistic gamma",
+    tags: ["#relativistic","#gamma"],
+    hint: [F.gamma],
+    q: "A particle moves at $v = 0.80c$. What is the relativistic factor $\\gamma$?",
+    opts: ["0.60", "1.25", "1.67", "5.00"],
+    answer: 2,
+    steps: [
+      {l:"Gamma formula", t:"$\\gamma = \\dfrac{1}{\\sqrt{1 - (v/c)^{2}}}$"},
+      {l:"Compute $(v/c)^{2}$", t:"$(0.80)^{2} = 0.64$"},
+      {l:"Simplify denominator", t:"$\\sqrt{1 - 0.64} = \\sqrt{0.36} = 0.60$"},
+      {l:"Result", t:"$\\gamma = \\dfrac{1}{0.60} \\approx 1.67$"}
+    ]
+  },
+  {
+    id: 11, topic: "W2.1 — Newton's 1st law",
+    tags: ["#newton-1st","#conceptual","#momentum-principle"],
+    hint: [F.impulse],
+    q: "A spaceship moves at 5000 m/s in +x, far from all stars/planets. Crew shuts off engines. What happens?",
+    opts: [
+      "It gradually slows down and stops.",
+      "It curves into orbit around the nearest body.",
+      "Speed stays at 5000 m/s; travels in a straight line forever.",
+      "Velocity reverses direction."
+    ],
+    answer: 2,
+    steps: [
+      {l:"Newton's 1st law", t:"If $\\vec F_{\\text{net}} = 0$ then $\\Delta\\vec p = 0$."},
+      {l:"Consequence", t:"Both magnitude AND direction of $\\vec v$ stay constant — no force, no change."},
+      {l:"Conclusion", t:"Speed remains 5000 m/s, travelling in a straight line."}
+    ]
+  },
+  {
+    id: 12, topic: "W2.1 — Momentum Principle",
+    tags: ["#momentum-principle","#force","#impulse"],
+    hint: [F.impulse],
+    q: "2.0 kg object has $\\vec p_i = \\langle 10, 0, 0\\rangle$ kg·m/s. Constant force $\\vec F = \\langle -4, 6, 0\\rangle$ N acts for $\\Delta t = 2.0$ s. Final momentum?",
+    opts: ["⟨2, 12, 0⟩ kg·m/s", "⟨6, 6, 0⟩ kg·m/s", "⟨−4, 6, 0⟩ kg·m/s", "⟨18, −12, 0⟩ kg·m/s"],
+    answer: 0,
+    steps: [
+      {l:"Momentum Principle", t:"$\\vec p_f = \\vec p_i + \\vec F_{\\text{net}}\\,\\Delta t$"},
+      {l:"Impulse $= \\vec F\\Delta t$", t:"$\\vec F\\,\\Delta t = \\langle -4, 6, 0\\rangle \\cdot 2 = \\langle -8, 12, 0\\rangle$"},
+      {l:"Add to $\\vec p_i$", t:"$\\vec p_f = \\langle 10 - 8,\\ 0 + 12,\\ 0\\rangle = \\langle 2, 12, 0\\rangle\\text{ kg·m/s}$"}
+    ]
+  },
+  {
+    id: 13, topic: "W2.1 — Position update",
+    tags: ["#position-update","#momentum"],
+    hint: [F.posUpdate, F.pmv],
+    q: "0.5 kg block at $\\vec r_i = \\langle 0,0,0\\rangle$ m has constant $\\vec p = \\langle 2, 0, 0\\rangle$ kg·m/s. Position after 3 s?",
+    opts: ["⟨3, 0, 0⟩ m", "⟨6, 0, 0⟩ m", "⟨12, 0, 0⟩ m", "⟨1, 0, 0⟩ m"],
+    answer: 2,
+    steps: [
+      {l:"Velocity from momentum", t:"$\\vec v = \\dfrac{\\vec p}{m} = \\dfrac{\\langle 2,0,0\\rangle}{0.5} = \\langle 4,0,0\\rangle\\text{ m/s}$"},
+      {l:"Position update", t:"$\\vec r_f = \\vec r_i + \\vec v\\,\\Delta t$"},
+      {l:"Substitute", t:"$\\vec r_f = \\langle 0,0,0\\rangle + \\langle 4,0,0\\rangle \\cdot 3 = \\langle 12,0,0\\rangle\\text{ m}$"}
+    ]
+  },
+  {
+    id: 14, topic: "W2.1 — Hooke's law",
+    tags: ["#spring","#hooke","#force","#equilibrium"],
+    hint: [F.spring, F.stretch],
+    q: "Spring: relaxed length 20 cm, $k = 50$ N/m. Stretched to 35 cm. Magnitude of spring force on the attached object?",
+    opts: ["7.5 N", "10 N", "17.5 N", "0.30 N"],
+    answer: 0,
+    steps: [
+      {l:"Stretch", t:"$s = L - L_0 = 0.35 - 0.20 = 0.15\\text{ m}$"},
+      {l:"Hooke's law", t:"$|F_{\\text{spring}}| = k\\,|s|$"},
+      {l:"Substitute", t:"$|F_{\\text{spring}}| = 50 \\times 0.15 = 7.5\\text{ N}$"}
+    ]
+  },
+  {
+    id: 15, topic: "W2.1 — Net force / acceleration",
+    tags: ["#force","#net-force","#newton-2nd"],
+    hint: [F.Fma],
+    q: "Three forces on a 1.0 kg object: $\\vec F_1 = \\langle 4, 3, 0\\rangle$ N, $\\vec F_2 = \\langle -2, 5, 0\\rangle$ N, $\\vec F_3 = \\langle 0, -2, 6\\rangle$ N. Magnitude of resulting acceleration?",
+    opts: ["6 m/s²", "10 m/s²", "2 m/s²", "14 m/s²"],
+    answer: 1,
+    steps: [
+      {l:"Sum the forces component-wise", t:"$\\vec F_{\\text{net}} = \\langle 4-2+0,\\ 3+5-2,\\ 0+0+6\\rangle = \\langle 2, 6, 6\\rangle\\text{ N}$"},
+      {l:"Magnitude", t:"$|\\vec F_{\\text{net}}| = \\sqrt{4 + 36 + 36} = \\sqrt{76} \\approx 8.72\\text{ N}$"},
+      {l:"Acceleration", t:"$a = \\dfrac{F}{m} \\approx 8.72\\text{ m/s}^{2}$"},
+      {l:"Closest option", t:"Closest to 10 m/s² (rule: pick nearest)."}
+    ]
+  },
+  {
+    id: 16, topic: "W2.2 — Universal gravitation",
+    tags: ["#gravity","#central-force"],
+    hint: [F.grav],
+    q: "Two identical 5.0 kg masses, centres 0.50 m apart. Magnitude of gravitational force? ($G = 6.674 \\times 10^{-11}$ N·m²/kg².)",
+    opts: ["6.67 × 10⁻⁹ N", "6.67 × 10⁻⁸ N", "3.34 × 10⁻⁹ N", "1.34 × 10⁻⁸ N"],
+    answer: 0,
+    steps: [
+      {l:"Newton's law of gravitation", t:"$F = G\\dfrac{m_1 m_2}{r^{2}}$"},
+      {l:"Substitute", t:"$F = (6.674\\times 10^{-11})\\dfrac{(5)(5)}{(0.50)^{2}}$"},
+      {l:"Simplify", t:"$F = (6.674\\times 10^{-11})\\dfrac{25}{0.25} = 6.674\\times 10^{-11} \\times 100$"},
+      {l:"Result", t:"$F \\approx 6.67\\times 10^{-9}\\text{ N}$"}
+    ]
+  },
+  {
+    id: 17, topic: "W2.2 — Surface gravity",
+    tags: ["#gravity","#surface-gravity"],
+    hint: [F.gSurface],
+    q: "Planet: $M = 6.0 \\times 10^{23}$ kg, $R = 3.0 \\times 10^{6}$ m. Surface gravitational acceleration?",
+    opts: ["0.45 m/s²", "4.45 m/s²", "9.81 m/s²", "22.2 m/s²"],
+    answer: 1,
+    steps: [
+      {l:"Surface-gravity formula", t:"$g = \\dfrac{GM}{R^{2}}$"},
+      {l:"Numerator", t:"$GM = (6.674\\times 10^{-11})(6.0\\times 10^{23}) \\approx 4.00\\times 10^{13}$"},
+      {l:"Denominator", t:"$R^{2} = (3.0\\times 10^{6})^{2} = 9.0\\times 10^{12}$"},
+      {l:"Divide", t:"$g = \\dfrac{4.00\\times 10^{13}}{9.0\\times 10^{12}} \\approx 4.45\\text{ m/s}^{2}$"}
+    ]
+  },
+  {
+    id: 18, topic: "W2.2 — Newton's 3rd law",
+    tags: ["#newton-3rd","#gravity","#conceptual"],
+    hint: [F.N3, F.grav],
+    q: "A 50 kg person stands on Earth. Earth pulls the person down with force $F_1$. What force does the person exert on Earth?",
+    opts: [
+      "Zero — the person is too small to affect Earth.",
+      "$F_1 / M_{\\text{Earth}}$, directed upward.",
+      "Same magnitude $F_1$, directed upward (away from the person).",
+      "$9.8 \\times 50$ N, directed sideways."
+    ],
+    answer: 2,
+    steps: [
+      {l:"Newton's 3rd law", t:"$\\vec F_{A\\to B} = -\\vec F_{B\\to A}$"},
+      {l:"Apply to Earth↔person", t:"Same magnitude, opposite direction. Both experience $F_1$."},
+      {l:"Why Earth doesn't visibly move", t:"$a_{\\text{Earth}} = F_1 / M_{\\text{Earth}}$ — Earth's mass is huge, so its acceleration is negligible."}
+    ]
+  },
+  {
+    id: 19, topic: "W3.1 — Coulomb's law",
+    tags: ["#coulomb","#electric-force","#central-force"],
+    hint: [F.coulomb],
+    q: "Charges $+2.0\\,\\mu\\text{C}$ and $-3.0\\,\\mu\\text{C}$ separated by 0.30 m. Magnitude of Coulomb force? ($k = 8.99 \\times 10^{9}$ N·m²/C².)",
+    opts: ["0.30 N", "0.60 N", "0.20 N", "0.067 N"],
+    answer: 1,
+    steps: [
+      {l:"Coulomb's law", t:"$|F| = k\\,\\dfrac{|q_1 q_2|}{r^{2}}$"},
+      {l:"Substitute (use absolute values)", t:"$|F| = (8.99\\times 10^{9})\\,\\dfrac{(2\\times 10^{-6})(3\\times 10^{-6})}{(0.30)^{2}}$"},
+      {l:"Numerator: $kq_1q_2$", t:"$(8.99\\times 10^{9})(6\\times 10^{-12}) = 5.39\\times 10^{-2}$"},
+      {l:"Divide by $r^{2} = 0.09$", t:"$|F| \\approx \\dfrac{0.0539}{0.09} \\approx 0.60\\text{ N}$"}
+    ]
+  },
+  {
+    id: 20, topic: "W3.1 — Electric vs gravitational",
+    tags: ["#coulomb","#gravity","#conceptual","#ratio"],
+    hint: [F.coulomb, F.grav],
+    q: "Two protons separated by $r$. Both $F_{\\text{elec}}$ and $F_{\\text{grav}}$ scale as $1/r^{2}$, so their ratio is independent of $r$. How many times stronger is the electric force?",
+    opts: [
+      "About the same order of magnitude (≈ 1).",
+      "∼ 10⁶",
+      "∼ 10³⁶",
+      "∼ 10⁻³⁶ (gravity dominates)"
+    ],
+    answer: 2,
+    steps: [
+      {l:"Ratio (the $1/r^{2}$ cancels)", t:"$\\dfrac{F_{\\text{elec}}}{F_{\\text{grav}}} = \\dfrac{k e^{2}}{G m_p^{2}}$"},
+      {l:"Numerator", t:"$k e^{2} = (8.99\\times 10^{9})(1.6\\times 10^{-19})^{2} \\approx 2.30\\times 10^{-28}$"},
+      {l:"Denominator", t:"$G m_p^{2} = (6.674\\times 10^{-11})(1.67\\times 10^{-27})^{2} \\approx 1.86\\times 10^{-64}$"},
+      {l:"Divide", t:"$\\dfrac{F_{\\text{elec}}}{F_{\\text{grav}}} \\approx 1.24\\times 10^{36}$"},
+      {l:"Takeaway", t:"At the atomic scale, electric forces utterly dominate gravity."}
+    ]
+  }
+];
+
+const STORE = "lucy_midterm_v1";
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !Array.isArray(s.answers) || s.answers.length !== QUESTIONS.length) return null;
+    s.hints = s.hints || {};
+    return s;
+  } catch(e){ return null; }
+}
+function saveState(s){
+  try { localStorage.setItem(STORE, JSON.stringify(s)); } catch(e){}
+}
+function clearState(){ try { localStorage.removeItem(STORE); } catch(e){} }
+
+let state = loadState() || {
+  i: 0,
+  answers: new Array(QUESTIONS.length).fill(null),
+  hints: {},
+  view: "splash"
+};
+
+const app = document.getElementById("app");
+
+function typeset(){
+  if (window.MathJax && window.MathJax.typesetPromise){
+    window.MathJax.typesetPromise([app]).catch(()=>{});
+  }
+}
+
+function render(){
+  if (state.view === "splash") return renderSplash();
+  if (state.view === "summary") return renderSummary();
+  return renderQuestion();
+}
+
+function renderSplash(){
+  const answered = state.answers.filter(a => a !== null).length;
+  const hasProgress = answered > 0 && answered < QUESTIONS.length;
+  app.innerHTML = `
+    <div style="padding:8px 0 0"><a href="index.html" class="back-link" style="display:inline-block">← Home</a></div>
+    <div class="splash">
+      <h1>Mock Midterm</h1>
+      <p>CPCS110 BA0 · Weeks 1–3 · 20 questions · 40 marks<br>Tap 💡 on each question for the relevant formula.</p>
+      <button id="start">${hasProgress ? "Start Over" : "Start Quiz"}</button>
+      ${hasProgress ? `<div><button class="resume" id="resume">Resume (${answered}/${QUESTIONS.length} answered)</button></div>` : ""}
+    </div>
+  `;
+  document.getElementById("start").onclick = () => {
+    state = { i: 0, answers: new Array(QUESTIONS.length).fill(null), hints: {}, view: "question" };
+    saveState(state); render();
+  };
+  if (hasProgress){
+    document.getElementById("resume").onclick = () => {
+      const next = state.answers.findIndex(a => a === null);
+      state.i = next >= 0 ? next : 0;
+      state.view = "question";
+      saveState(state); render();
+    };
+  }
+}
+
+function renderQuestion(){
+  const i = state.i;
+  const q = QUESTIONS[i];
+  const ans = state.answers[i];
+  const answered = ans !== null;
+  const hintOpen = !!state.hints[i];
+  const score = state.answers.filter((a, idx) => a !== null && a === QUESTIONS[idx].answer).length;
+  const pct = ((i + (answered ? 1 : 0)) / QUESTIONS.length) * 100;
+  const tagsHtml = (q.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+  const hintHtml = (q.hint && q.hint.length) ? `
+    <button class="hint-btn ${hintOpen?'open':''}" id="hint-toggle">💡 ${hintOpen?'Hide formula':'Show formula hint'}</button>
+    <div class="hint-box ${hintOpen?'show':''}" id="hint-box">
+      <span class="lbl">Formula sheet — relevant entries</span>
+      ${q.hint.map(h => `<div class="formula-line"><span class="nm">${h.nm}</span>${h.t}</div>`).join("")}
+    </div>` : "";
+
+  app.innerHTML = `
+    <header>
+      <div class="row">
+        <a href="index.html" class="back-link" title="Home">←</a>
+        <h1>Mock Midterm</h1>
+        <div class="pill">Q <strong>${i+1}</strong>/${QUESTIONS.length} · ⭐ <strong>${score}</strong></div>
+      </div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+    </header>
+    <p class="qmeta">${q.topic}</p>
+    <div class="tags">${tagsHtml}</div>
+    <h2 class="qtitle">Question ${i+1}</h2>
+    <div class="qbody">${q.q}</div>
+    ${hintHtml}
+    <div class="opts" id="opts">
+      ${q.opts.map((o, k) => `
+        <button class="opt ${answered ? (k === q.answer ? 'correct' : (k === ans ? 'wrong' : 'dim')) : ''}" data-k="${k}" ${answered ? 'disabled' : ''}>
+          <span class="letter">${"ABCD"[k]}</span>
+          <span class="text">${o}</span>
+        </button>
+      `).join("")}
+    </div>
+    <div class="verdict ${answered ? 'show ' + (ans === q.answer ? 'ok' : 'bad') : ''}">
+      ${answered ? (ans === q.answer ? '✓ Correct!' : `✗ Not quite — correct answer is <strong>${"ABCD"[q.answer]}</strong>`) : ''}
+    </div>
+    <div class="solution ${answered ? 'show' : ''}">
+      <h3>Step-by-step</h3>
+      ${q.steps.map(s => `<div class="step"><span class="label">${s.l}</span>${s.t}</div>`).join("")}
+    </div>
+    <nav class="bottom">
+      <button id="prev" ${i === 0 ? 'disabled' : ''}>← Prev</button>
+      <button id="next" class="primary" ${!answered ? 'disabled' : ''}>${i === QUESTIONS.length - 1 ? 'Finish' : 'Next →'}</button>
+    </nav>
+  `;
+  const hintBtn = document.getElementById("hint-toggle");
+  if (hintBtn){
+    hintBtn.onclick = () => {
+      const box = document.getElementById("hint-box");
+      const willOpen = !box.classList.contains("show");
+      box.classList.toggle("show");
+      hintBtn.classList.toggle("open");
+      hintBtn.innerHTML = willOpen ? "💡 Hide formula" : "💡 Show formula hint";
+      state.hints[i] = willOpen;
+      saveState(state);
+      if (willOpen) typeset();
+    };
+  }
+  document.querySelectorAll(".opt").forEach(btn => {
+    btn.onclick = () => {
+      if (state.answers[i] !== null) return;
+      state.answers[i] = parseInt(btn.dataset.k, 10);
+      saveState(state);
+      render();
+    };
+  });
+  document.getElementById("prev").onclick = () => { if (state.i > 0){ state.i--; saveState(state); render(); } };
+  document.getElementById("next").onclick = () => {
+    if (state.i < QUESTIONS.length - 1){ state.i++; saveState(state); render(); }
+    else { state.view = "summary"; saveState(state); render(); }
+  };
+  typeset();
+  window.scrollTo({top:0});
+}
+
+function renderSummary(){
+  const correct = state.answers.filter((a, idx) => a !== null && a === QUESTIONS[idx].answer).length;
+  const wrong = state.answers.filter((a, idx) => a !== null && a !== QUESTIONS[idx].answer).length;
+  const skipped = state.answers.filter(a => a === null).length;
+  const marks = correct * 2;
+  app.innerHTML = `
+    <div style="padding:8px 0 0"><a href="index.html" class="back-link" style="display:inline-block">← Home</a></div>
+    <div class="summary">
+      <h1 style="text-align:center">Results</h1>
+      <div class="score">${marks} / 40</div>
+      <p style="text-align:center;color:#9aa4b8;margin:0">${correct} correct out of ${QUESTIONS.length} (${Math.round(correct/QUESTIONS.length*100)}%)</p>
+      <div class="breakdown">
+        <div><div class="n" style="color:#4ade80">${correct}</div><div class="l">Correct</div></div>
+        <div><div class="n" style="color:#f87171">${wrong}</div><div class="l">Wrong</div></div>
+      </div>
+      ${skipped > 0 ? `<p style="text-align:center;color:#9aa4b8;font-size:13px;margin:-10px 0 12px">${skipped} skipped</p>` : ""}
+      <div class="review-list">
+        ${QUESTIONS.map((q, idx) => {
+          const a = state.answers[idx];
+          const cls = a === null ? 'skip' : (a === q.answer ? 'ok' : 'bad');
+          const sym = a === null ? '—' : (a === q.answer ? '✓' : '✗');
+          return `<div class="review-item ${cls}" data-i="${idx}">
+            <span class="ix">${idx+1}</span>
+            <span class="lbl">${q.topic}</span>
+            <span class="res">${sym}</span>
+          </div>`;
+        }).join("")}
+      </div>
+      <button class="restart" id="restart">Restart Quiz</button>
+    </div>
+  `;
+  document.querySelectorAll(".review-item").forEach(r => {
+    r.onclick = () => { state.i = parseInt(r.dataset.i, 10); state.view = "question"; saveState(state); render(); };
+  });
+  document.getElementById("restart").onclick = () => {
+    if (confirm("Reset all answers and start over?")){
+      clearState();
+      state = { i: 0, answers: new Array(QUESTIONS.length).fill(null), hints: {}, view: "splash" };
+      render();
+    }
+  };
+}
+
+render();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/tony.js" defer></script>
+</body>
+</html>

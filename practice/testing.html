@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Animations — Under Construction</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    background:#0e1116;color:#e6e9ef;line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:12px 12px 30px}
+  header{position:sticky;top:0;background:#0e1116ee;backdrop-filter:blur(8px);padding:10px 12px;margin:0 -12px 14px;border-bottom:1px solid #232a36;z-index:10}
+  header .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .back{color:#9aa4b8;text-decoration:none;font-weight:600;font-size:13px;padding:6px 11px;background:#1a2030;border-radius:8px;border:1px solid #232a36}
+  h1{font-size:15px;margin:0;font-weight:700;text-align:center;flex:1}
+  .uc{
+    background:linear-gradient(90deg,#3a2410,#1a1f10);border:1.5px dashed #fbbf24;color:#fbbf24;
+    padding:10px 14px;border-radius:10px;font-size:13px;text-align:center;margin-bottom:14px;font-weight:600;
+  }
+  .uc strong{color:#fde68a}
+  .group{margin-bottom:18px}
+  .group-hdr{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:4px 2px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9aa4b8;font-weight:700;
+  }
+  .group-hdr .count{background:#1a2030;color:#cdd5e2;padding:2px 8px;border-radius:6px;font-size:11px}
+  .cards{display:flex;flex-direction:column;gap:8px}
+  .card{
+    display:block;text-decoration:none;color:inherit;
+    background:#161b26;border:1.5px solid #232a36;border-radius:12px;padding:12px 14px;
+    transition:transform .08s,border-color .15s;
+  }
+  .card:active{transform:scale(.985)}
+  .card.ready{border-color:#3b82f644}
+  .card.ready:hover{border-color:#3b82f6}
+  .card-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .card-info{flex:1;min-width:0}
+  .card-meta{font-size:11px;color:#7d8aa3;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+  .card-title{font-size:14.5px;font-weight:700;color:#fff;line-height:1.3}
+  .btn{
+    flex:0 0 auto;font-size:12px;font-weight:700;padding:7px 11px;border-radius:8px;
+    letter-spacing:.04em;text-transform:uppercase;border:1px solid;
+  }
+  .btn.ready{background:linear-gradient(180deg,#3b82f6,#2563eb);border-color:#2563eb;color:#fff}
+  .btn.soon{background:#1a1f10;border-color:#3a4410;color:#a8a560}
+  .summary{
+    background:#11161f;border:1px solid #232a36;border-radius:10px;padding:10px 14px;
+    margin-bottom:14px;font-size:13px;color:#9aa4b8;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  }
+  .summary strong{color:#22d3ee}
+  @media (max-width: 420px){
+    .wrap{padding:10px 10px 30px}
+    .card{padding:11px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <a class="back" href="index.html">←</a>
+      <h1>🧪 Animations</h1>
+      <span class="back" style="visibility:hidden">←</span>
+    </div>
+  </header>
+
+  <div class="uc">
+    <strong>UNDER CONSTRUCTION</strong><br>
+    Animated walkthroughs in the style of 3blue1brown.<br>
+    <span style="color:#a8a560;font-weight:500">Some cards are live; the rest are coming soon.</span>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div id="groups"></div>
+</div>
+
+<script>
+const READY = new Set([
+  // midterm — fully implemented
+  "midtermQ3","midtermQ4","midtermQ6","midtermQ9","midtermQ10","midtermQ11",
+  "midtermQ12","midtermQ14","midtermQ15","midtermQ16","midtermQ17","midtermQ19",
+  // assignments
+  "A1Q2","A3Q6"
+]);
+
+const GROUPS = [
+  {label:"Mock Midterm — 20 MC", items:[
+    {id:"midtermQ1",  title:"SI prefix conversion (4.2 GW → W)"},
+    {id:"midtermQ2",  title:"km/h → m/s"},
+    {id:"midtermQ3",  title:"Vector magnitude ⟨3,-4,12⟩"},
+    {id:"midtermQ4",  title:"Unit vector ⟨6,0,-8⟩"},
+    {id:"midtermQ5",  title:"Displacement Δr"},
+    {id:"midtermQ6",  title:"Direction cosines (rod at angles)"},
+    {id:"midtermQ7",  title:"Average velocity (two segments)"},
+    {id:"midtermQ8",  title:"Momentum (non-rel)"},
+    {id:"midtermQ9",  title:"Δp on rebound (tennis ball off wall)"},
+    {id:"midtermQ10", title:"Relativistic γ at v=0.80c"},
+    {id:"midtermQ11", title:"Newton's 1st law (spaceship)"},
+    {id:"midtermQ12", title:"Momentum Principle (impulse)"},
+    {id:"midtermQ13", title:"Position update from momentum"},
+    {id:"midtermQ14", title:"Hooke's law spring"},
+    {id:"midtermQ15", title:"Net force from 3 vectors"},
+    {id:"midtermQ16", title:"Universal gravity (slider)"},
+    {id:"midtermQ17", title:"Surface gravity g = GM/R²"},
+    {id:"midtermQ18", title:"Newton's 3rd law (Earth ↔ person)"},
+    {id:"midtermQ19", title:"Coulomb force (interactive)"},
+    {id:"midtermQ20", title:"Electric vs gravitational ratio"}
+  ]},
+  {label:"Assignment 1 — 15 (submitted)", items:[
+    {id:"A1Q1",  title:"Unit vector + scaling"},
+    {id:"A1Q2",  title:"Drone navigation (sequential displacements)"},
+    {id:"A1Q3",  title:"Direction cosines: end of a rod"},
+    {id:"A1Q4",  title:"Graphical vector addition"},
+    {id:"A1Q5",  title:"Graphical vector subtraction"},
+    {id:"A1Q6",  title:"Two-leg walk (avg velocity)"},
+    {id:"A1Q7",  title:"Newton's 1st law (conceptual)"},
+    {id:"A1Q8",  title:"Star → planet position"},
+    {id:"A1Q9",  title:"Slow neutron average velocity"},
+    {id:"A1Q10", title:"Electron position update"},
+    {id:"A1Q11", title:"Baseball momentum"},
+    {id:"A1Q12", title:"Saturn V acceleration"},
+    {id:"A1Q13", title:"Bowling ball position"},
+    {id:"A1Q14", title:"Tennis ball off a wall (Δp vs Δ|p|)"},
+    {id:"A1Q15", title:"Relativistic electron"}
+  ]},
+  {label:"Assignment 2 — 11 (submitted)", items:[
+    {id:"A2Q1",  title:"Net force, impulse, avg force"},
+    {id:"A2Q2",  title:"Constant force update"},
+    {id:"A2Q3",  title:"Two-leg drive (time-weighted avg)"},
+    {id:"A2Q4",  title:"Model rocket (thrust + gravity + air)"},
+    {id:"A2Q5",  title:"Nerf ball iterative"},
+    {id:"A2Q6",  title:"Hanging ball on spring (2D)"},
+    {id:"A2Q7",  title:"Spring oscillation (3-step)"},
+    {id:"A2Q8",  title:"Projectile (conceptual)"},
+    {id:"A2Q9",  title:"Baseball–bat collision"},
+    {id:"A2Q10", title:"Sun ↔ Jupiter gravity"},
+    {id:"A2Q11", title:"Cavendish + asteroid"}
+  ]},
+  {label:"Assignment 3 — 6 (TODO)", items:[
+    {id:"A3Q1", title:"Two blocks in deep space"},
+    {id:"A3Q2", title:"Softball dropped (Newton's 3rd)"},
+    {id:"A3Q3", title:"Human on Venus"},
+    {id:"A3Q4", title:"Two charged spheres"},
+    {id:"A3Q5", title:"Proton–proton scattering"},
+    {id:"A3Q6", title:"Wet clay collision (stick)"}
+  ]}
+];
+
+let total = 0, ready = 0;
+GROUPS.forEach(g => g.items.forEach(it => { total++; if (READY.has(it.id)) ready++; }));
+document.getElementById("summary").innerHTML = `
+  <div><strong>${ready}</strong> ready</div>
+  <div>${total - ready} coming soon</div>
+  <div>${total} total</div>
+`;
+
+const groupsEl = document.getElementById("groups");
+GROUPS.forEach(g => {
+  const div = document.createElement("div");
+  div.className = "group";
+  const readyCount = g.items.filter(it => READY.has(it.id)).length;
+  div.innerHTML = `
+    <div class="group-hdr">
+      <span>${g.label}</span>
+      <span class="count">${readyCount}/${g.items.length} ready</span>
+    </div>
+    <div class="cards">
+      ${g.items.map(it => {
+        const isReady = READY.has(it.id);
+        const tag = it.id.startsWith("midterm") ? `Q${it.id.replace("midtermQ","")}` : it.id;
+        return isReady
+          ? `<a class="card ready" href="animation.html?q=${it.id}">
+              <div class="card-row">
+                <div class="card-info">
+                  <div class="card-meta">${tag}</div>
+                  <div class="card-title">${it.title}</div>
+                </div>
+                <span class="btn ready">▶ With Animation</span>
+              </div>
+            </a>`
+          : `<div class="card">
+              <div class="card-row">
+                <div class="card-info">
+                  <div class="card-meta">${tag}</div>
+                  <div class="card-title" style="opacity:.7">${it.title}</div>
+                </div>
+                <span class="btn soon">🚧 Coming soon</span>
+              </div>
+            </div>`;
+      }).join("")}
+    </div>
+  `;
+  groupsEl.appendChild(div);
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/tony.js" defer></script>
+</body>
+</html>

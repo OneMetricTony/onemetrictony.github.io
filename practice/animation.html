@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Lucy's Physics — Animation</title>
+<script>
+window.MathJax = {
+  tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$']]},
+  svg:{fontCache:'global'},
+  startup:{typeset:false}
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    background:#0e1116;color:#e6e9ef;line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:12px 12px 30px}
+  header{position:sticky;top:0;background:#0e1116ee;backdrop-filter:blur(8px);padding:9px 12px;margin:0 -12px 12px;border-bottom:1px solid #232a36;z-index:10}
+  header .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .back{color:#9aa4b8;text-decoration:none;font-weight:700;font-size:14px;padding:6px 11px;background:#1a2030;border-radius:8px;border:1px solid #232a36}
+  h1{font-size:14px;margin:0;font-weight:700;color:#e6e9ef;flex:1;text-align:center}
+  .badge{background:#3a2410;color:#fbbf24;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase}
+  .qmeta{color:#7d8aa3;font-size:12px;margin:0 0 4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .qtitle{font-size:17px;font-weight:700;margin:0 0 8px;color:#fff}
+  .qbody{font-size:14.5px;color:#cdd5e2;margin:0 0 14px;padding:10px 12px;background:#161b26;border:1px solid #232a36;border-radius:10px}
+  .canvas-wrap{
+    background:#0a0d12;border:1.5px solid #232a36;border-radius:14px;padding:8px;margin-bottom:12px;
+    position:relative;overflow:hidden;
+  }
+  canvas{display:block;width:100%;height:auto;border-radius:8px;background:#0a0d12;touch-action:manipulation}
+  .controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .ctrl-btn{
+    flex:1;min-width:90px;padding:11px 14px;background:#1a2030;color:#e6e9ef;border:1.5px solid #232a36;
+    border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+  }
+  .ctrl-btn.primary{background:linear-gradient(180deg,#3b82f6,#2563eb);border-color:#2563eb;color:#fff}
+  .ctrl-btn:active{transform:scale(.97)}
+  .slider-row{display:flex;align-items:center;gap:10px;background:#161b26;border:1px solid #232a36;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+  .slider-row label{font-size:13px;color:#9aa4b8;font-weight:600;flex:0 0 auto}
+  .slider-row input[type=range]{flex:1;accent-color:#22d3ee}
+  .slider-row .val{font-size:14px;color:#facc15;font-weight:700;min-width:54px;text-align:right;font-family:ui-monospace,monospace}
+  .info{
+    background:#11161f;border:1px solid #232a36;border-radius:12px;padding:12px 14px;margin-top:10px;
+    font-size:14px;color:#cdd5e2;
+  }
+  .info h3{margin:0 0 6px;font-size:12px;color:#9aa4b8;text-transform:uppercase;letter-spacing:.06em}
+  .info .line{margin:4px 0;padding:6px 10px;background:#0e1116;border:1px solid #1f2733;border-radius:8px;overflow-x:auto}
+  .info .line .nm{display:inline-block;color:#9aa4b8;font-size:11px;margin-right:6px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .placeholder{
+    background:#1a1f10;border:1.5px dashed #3a4410;border-radius:14px;padding:30px 16px;
+    text-align:center;color:#fbbf24;font-size:15px;
+  }
+  .placeholder .big{font-size:48px;margin-bottom:8px}
+  .placeholder p{margin:0;font-size:14px;color:#a8a560}
+  mjx-container{font-size:1em !important;max-width:100%;overflow-x:auto;overflow-y:hidden}
+  @media (max-width: 420px){
+    .wrap{padding:10px 10px 30px}
+    header{padding:8px 10px;margin:0 -10px 10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <a class="back" href="testing.html">←</a>
+      <h1 id="hdr">Animation</h1>
+      <span class="badge">β</span>
+    </div>
+  </header>
+  <p class="qmeta" id="meta"></p>
+  <h2 class="qtitle" id="title"></h2>
+  <div class="qbody" id="stem"></div>
+
+  <div id="canvasContainer">
+    <div class="canvas-wrap">
+      <canvas id="cv" width="600" height="400"></canvas>
+    </div>
+    <div id="extraControls"></div>
+    <div class="controls">
+      <button class="ctrl-btn primary" id="replay">▶ Replay</button>
+      <button class="ctrl-btn" id="pause">⏸ Pause</button>
+    </div>
+    <div class="info" id="info" style="display:none">
+      <h3 id="infoTitle">Result</h3>
+      <div id="infoBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ----------------------- Question registry -----------------------
+const QUESTIONS = {
+  "midtermQ3": {
+    title:"Vector magnitude",
+    meta:"Midterm Q3 · W1.3",
+    stem:"Given $\\vec A = \\langle 3,\\ -4,\\ 12\\rangle$ m, what is $|\\vec A|$?",
+    anim:"vecMagnitude"
+  },
+  "midtermQ4": {
+    title:"Unit vector",
+    meta:"Midterm Q4 · W1.3",
+    stem:"Find the unit vector $\\hat B$ in the direction of $\\vec B = \\langle 6,\\ 0,\\ -8\\rangle$.",
+    anim:"unitVector"
+  },
+  "midtermQ6": {
+    title:"Direction cosines: rod",
+    meta:"Midterm Q6 · W1.3",
+    stem:"A 10 m rod from the origin makes 60° with +x, 60° with +y, 45° with +z. Where is its far end?",
+    anim:"dirCosines"
+  },
+  "midtermQ9": {
+    title:"Tennis ball off a wall (Δp)",
+    meta:"Midterm Q9 · W1.4",
+    stem:"A 0.060 kg ball hits a wall at $\\vec v_i = \\langle 50, 0, 0\\rangle$ m/s and rebounds at $\\vec v_f = \\langle -40, 0, 0\\rangle$ m/s. Find $|\\Delta\\vec p|$.",
+    anim:"tennisRebound"
+  },
+  "midtermQ10": {
+    title:"Relativistic γ",
+    meta:"Midterm Q10 · W1.4",
+    stem:"A particle moves at $v = 0.80c$. What is $\\gamma$? Drag the slider to explore other speeds.",
+    anim:"gammaSlider"
+  },
+  "midtermQ11": {
+    title:"Newton's 1st law spaceship",
+    meta:"Midterm Q11 · W2.1",
+    stem:"A spaceship moves at 5000 m/s in +x, far from all stars. Engines off. What happens?",
+    anim:"spaceship"
+  },
+  "midtermQ12": {
+    title:"Momentum principle (impulse)",
+    meta:"Midterm Q12 · W2.1",
+    stem:"$\\vec p_i = \\langle 10,0,0\\rangle$ kg·m/s, force $\\vec F = \\langle -4,6,0\\rangle$ N for 2 s. Final $\\vec p$?",
+    anim:"momentumPrinciple"
+  },
+  "midtermQ14": {
+    title:"Hooke's law spring",
+    meta:"Midterm Q14 · W2.1",
+    stem:"Spring $L_0 = 20$ cm, $k = 50$ N/m. Stretched to 35 cm. Magnitude of spring force?",
+    anim:"spring"
+  },
+  "midtermQ15": {
+    title:"Net force from three vectors",
+    meta:"Midterm Q15 · W2.1",
+    stem:"Three forces on 1.0 kg object: $\\langle 4,3,0\\rangle$, $\\langle -2,5,0\\rangle$, $\\langle 0,-2,6\\rangle$ N. Acceleration magnitude?",
+    anim:"netForce"
+  },
+  "midtermQ16": {
+    title:"Universal gravity",
+    meta:"Midterm Q16 · W2.2",
+    stem:"Two 5.0 kg masses, centres $r$ apart. Slide to change $r$ and watch $F \\propto 1/r^2$.",
+    anim:"gravity"
+  },
+  "midtermQ17": {
+    title:"Surface gravity g = GM/R²",
+    meta:"Midterm Q17 · W2.2",
+    stem:"Planet $M = 6.0\\times10^{23}$ kg, $R = 3.0\\times10^{6}$ m. Surface $g$?",
+    anim:"surfaceG"
+  },
+  "midtermQ19": {
+    title:"Coulomb force",
+    meta:"Midterm Q19 · W3.1",
+    stem:"$+2.0\\,\\mu$C and $-3.0\\,\\mu$C separated by 0.30 m. Drag distance — watch the force change. Same-sign reverses the force.",
+    anim:"coulomb"
+  },
+  "A3Q6": {
+    title:"Wet clay collision (stick)",
+    meta:"A3 Q6 · W1.4/2.1",
+    stem:"Two 50 g clay lumps: $\\vec v_1 = \\langle 2,6,-9\\rangle$ m/s, $\\vec v_2 = \\langle -3,0,-6\\rangle$ m/s. Stick on impact — find $\\vec v_f$.",
+    anim:"clayCollision"
+  },
+  "A1Q2": {
+    title:"Drone navigation",
+    meta:"A1 Q2 · W1.3",
+    stem:"Drone at origin. Fly 8 m along $\\langle 36,52,-35\\rangle$, then 6 m along $\\langle -27,12,-24\\rangle$. Final position?",
+    anim:"droneNav"
+  }
+};
+
+// ----------------------- Animation engine -----------------------
+const TAU = Math.PI*2;
+const COLORS = {
+  bg:"#0a0d12", grid:"#1a2030", axis:"#3a4452",
+  cyan:"#22d3ee", yellow:"#facc15", green:"#4ade80",
+  red:"#f87171", blue:"#60a5fa", orange:"#fb923c",
+  white:"#e6e9ef", dim:"#7d8aa3", purple:"#a78bfa"
+};
+
+function ease(t){ return t<.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2; }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function fmt(n, d){ if (Math.abs(n) < 1e-6) return "0"; const fixed = n.toFixed(d??2); return fixed.replace(/\.?0+$/,'') || fixed; }
+
+class Scene {
+  constructor(canvas){
+    this.cv = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.dpr = window.devicePixelRatio || 1;
+    this.resize();
+    this.duration = 6;     // seconds, default
+    this.t = 0;            // current time
+    this.playing = false;
+    this.lastFrame = 0;
+    this.rafId = null;
+    this.drawFn = null;
+    this.onEnd = null;
+  }
+  resize(){
+    const rect = this.cv.getBoundingClientRect();
+    const w = rect.width, h = w * (this.cv.height / this.cv.width);
+    this.cv.style.height = h + "px";
+    this.cv.width = Math.round(w * this.dpr);
+    this.cv.height = Math.round(h * this.dpr);
+    this.W = w; this.H = h;
+    this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+  }
+  clear(){
+    this.ctx.fillStyle = COLORS.bg;
+    this.ctx.fillRect(0,0,this.W,this.H);
+  }
+  play(){
+    if (this.playing) return;
+    this.playing = true;
+    this.lastFrame = performance.now();
+    const tick = (now) => {
+      if (!this.playing) return;
+      const dt = (now - this.lastFrame) / 1000;
+      this.lastFrame = now;
+      this.t += dt;
+      if (this.t >= this.duration){
+        this.t = this.duration;
+        this.playing = false;
+        this.draw();
+        if (this.onEnd) this.onEnd();
+        return;
+      }
+      this.draw();
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+  pause(){ this.playing = false; if (this.rafId) cancelAnimationFrame(this.rafId); }
+  reset(){ this.pause(); this.t = 0; this.draw(); }
+  replay(){ this.reset(); this.play(); }
+  draw(){ this.clear(); if (this.drawFn) this.drawFn(this.t); }
+
+  // ---- drawing primitives ----
+  line(x1,y1,x2,y2,c,w){
+    const ctx = this.ctx;
+    ctx.strokeStyle = c || COLORS.white;
+    ctx.lineWidth = w || 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  dashed(x1,y1,x2,y2,c,w){
+    const ctx = this.ctx;
+    ctx.strokeStyle = c || COLORS.dim;
+    ctx.lineWidth = w || 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  arrow(x1,y1,x2,y2,c,w,headSize){
+    const ctx = this.ctx;
+    c = c || COLORS.white; w = w || 2.2; headSize = headSize || 10;
+    ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = w;
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.5) return;
+    const ux = dx/len, uy = dy/len;
+    const bx = x2 - ux*headSize, by = y2 - uy*headSize;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(bx - uy*headSize*0.5, by + ux*headSize*0.5);
+    ctx.lineTo(bx + uy*headSize*0.5, by - ux*headSize*0.5);
+    ctx.closePath();
+    ctx.fill();
+  }
+  circle(x,y,r,fill,stroke,sw){
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,TAU);
+    if (fill){ ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = sw||1.5; ctx.stroke(); }
+  }
+  text(x,y,str,opts){
+    opts = opts || {};
+    const ctx = this.ctx;
+    ctx.fillStyle = opts.color || COLORS.white;
+    ctx.font = `${opts.weight||600} ${opts.size||14}px ${opts.mono?'ui-monospace,monospace':'-apple-system,sans-serif'}`;
+    ctx.textAlign = opts.align || "left";
+    ctx.textBaseline = opts.baseline || "alphabetic";
+    if (opts.bg){
+      const m = ctx.measureText(str);
+      const w = m.width + 10;
+      const h = (opts.size||14) + 6;
+      const tx = opts.align==="center" ? x - w/2 : opts.align==="right" ? x - w : x - 5;
+      const ty = (opts.baseline||"alphabetic")==="middle" ? y - h/2 : y - h + 4;
+      ctx.fillStyle = opts.bg;
+      ctx.beginPath();
+      const r = 4;
+      ctx.moveTo(tx+r,ty); ctx.arcTo(tx+w,ty,tx+w,ty+h,r);
+      ctx.arcTo(tx+w,ty+h,tx,ty+h,r); ctx.arcTo(tx,ty+h,tx,ty,r);
+      ctx.arcTo(tx,ty,tx+w,ty,r); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = opts.color || COLORS.white;
+    }
+    ctx.fillText(str, x, y);
+  }
+  grid(ox,oy,step,nx,ny,color){
+    color = color || COLORS.grid;
+    for (let i=-nx; i<=nx; i++) this.line(ox+i*step, oy-ny*step, ox+i*step, oy+ny*step, color, 1);
+    for (let j=-ny; j<=ny; j++) this.line(ox-nx*step, oy+j*step, ox+nx*step, oy+j*step, color, 1);
+  }
+  axes(ox,oy,len){
+    this.arrow(ox, oy, ox+len, oy, COLORS.dim, 1.5, 8);
+    this.arrow(ox, oy, ox, oy-len, COLORS.dim, 1.5, 8);
+    this.text(ox+len+6, oy+4, "x", {color:COLORS.dim, size:12});
+    this.text(ox-4, oy-len-6, "y", {color:COLORS.dim, size:12, align:"right"});
+  }
+}
+
+// ============================================================
+// ANIMATIONS — each is a function (scene, info) that sets scene.drawFn
+// ============================================================
+const ANIMS = {};
+
+// --- Vector magnitude |⟨3,-4,12⟩| = 13 -----------------------
+ANIMS.vecMagnitude = (s, info) => {
+  s.duration = 8;
+  const A = [3, -4, 12];
+  const total = Math.sqrt(A[0]*A[0]+A[1]*A[1]+A[2]*A[2]);
+  const squares = A.map(c => c*c);
+  info.set("Magnitude formula",[
+    {l:"Formula", v:"$|\\vec A| = \\sqrt{A_x^{2} + A_y^{2} + A_z^{2}}$"},
+    {l:"Substitute", v:"$|\\vec A| = \\sqrt{9 + 16 + 144} = \\sqrt{169} = 13$"}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration; // 0..1
+    const cx = s.W/2, cy = s.H/2;
+    // Phase 1 (0-0.3): show the vector components
+    // Phase 2 (0.3-0.6): square each
+    // Phase 3 (0.6-0.85): sum
+    // Phase 4 (0.85-1): sqrt + result
+    s.text(cx, 30, "Compute $|\\vec A|$ for $\\vec A = \\langle 3,\\ -4,\\ 12\\rangle$", {color:COLORS.dim, size:13, align:"center"});
+
+    const boxes = [
+      {x:cx-160, y:90, label:"A_x", val:A[0], color:COLORS.cyan},
+      {x:cx,     y:90, label:"A_y", val:A[1], color:COLORS.yellow},
+      {x:cx+160, y:90, label:"A_z", val:A[2], color:COLORS.green}
+    ];
+    // p1: fade in components
+    const p1 = clamp(u/0.25, 0, 1);
+    boxes.forEach((b,i)=>{
+      const a = clamp((u - 0.05*i)/0.25, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.circle(b.x, b.y, 32, "#161b26", b.color, 2);
+      s.text(b.x, b.y-4, b.label, {color:b.color, size:11, align:"center", baseline:"middle"});
+      s.text(b.x, b.y+12, fmt(b.val), {color:COLORS.white, size:16, align:"center", baseline:"middle", mono:true, weight:700});
+      s.ctx.globalAlpha = 1;
+    });
+
+    // p2: square each (animate value -> squared)
+    const p2 = clamp((u-0.30)/0.20, 0, 1);
+    boxes.forEach((b,i)=>{
+      const a = clamp((u-0.30 - 0.04*i)/0.20, 0, 1);
+      const shown = lerp(b.val, b.val*b.val, ease(a));
+      s.ctx.globalAlpha = a;
+      s.text(b.x, 160, `${b.label}^{2}`, {color:b.color, size:11, align:"center"});
+      s.text(b.x, 195, fmt(shown,1), {color:COLORS.white, size:22, align:"center", mono:true, weight:700});
+      s.ctx.globalAlpha = 1;
+    });
+
+    // p3: sum
+    const p3 = clamp((u-0.55)/0.20, 0, 1);
+    if (p3 > 0){
+      s.ctx.globalAlpha = p3;
+      const sumVal = lerp(0, squares[0]+squares[1]+squares[2], ease(p3));
+      s.text(cx, 235, "+   +   =", {color:COLORS.dim, size:14, align:"center"});
+      s.text(cx, 275, fmt(sumVal,1), {color:COLORS.orange, size:30, align:"center", mono:true, weight:800});
+      s.ctx.globalAlpha = 1;
+    }
+    // p4: sqrt
+    const p4 = clamp((u-0.78)/0.22, 0, 1);
+    if (p4 > 0){
+      s.ctx.globalAlpha = p4;
+      const sqrtVal = lerp(squares.reduce((a,b)=>a+b,0), total, ease(p4));
+      s.text(cx, 320, "√", {color:COLORS.cyan, size:32, align:"center", weight:700});
+      s.text(cx, 365, fmt(sqrtVal,2), {color:COLORS.green, size:42, align:"center", mono:true, weight:800, bg:"#0f2a1a"});
+      s.text(cx, 395, "= |A|", {color:COLORS.dim, size:13, align:"center"});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Unit vector ⟨6,0,-8⟩ / 10 = ⟨0.6, 0, -0.8⟩ --------------
+ANIMS.unitVector = (s, info) => {
+  s.duration = 6;
+  const B = [6, 0, -8];
+  info.set("Unit vector",[
+    {l:"Formula", v:"$\\hat r = \\dfrac{\\vec r}{|\\vec r|}$"},
+    {l:"Magnitude", v:"$|\\vec B| = \\sqrt{36+0+64} = 10$"},
+    {l:"Result", v:"$\\hat B = \\langle 0.6,\\ 0,\\ -0.8\\rangle$"}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W/2, cy = s.H/2 + 20;
+    const scale = 25;  // px per unit
+    s.text(cx, 28, "Reduce $\\vec B=\\langle 6,0,-8\\rangle$ to unit length", {color:COLORS.dim, size:13, align:"center"});
+
+    // axes
+    s.axes(cx, cy, 140);
+    // unit circle target
+    s.ctx.globalAlpha = 0.4;
+    s.circle(cx, cy, scale*4, null, COLORS.cyan, 1);  // radius = unit (factor 4 visually => 0.4 of scale=10)
+    s.ctx.globalAlpha = 1;
+    s.text(cx + scale*4 + 8, cy + 4, "|r̂|=1", {color:COLORS.cyan, size:11});
+
+    // animate vector shrinking from full to unit
+    const factor = lerp(1, 0.1, ease(clamp(u, 0, 1)));  // shrink to 10% (factor 1/10)
+    const vx = B[0] * factor;
+    const vz = B[2] * factor;
+    // We project (x,z) into 2D as (x, -z) since y=0
+    const ex = cx + vx*scale;
+    const ey = cy - (-vz)*scale; // z negative goes down? swap: -z so negative z = up?
+    const ey2 = cy + vz*scale; // simpler
+    s.arrow(cx, cy, cx + vx*scale, cy - vz*scale*(-1), COLORS.yellow, 3, 12);
+
+    // labels
+    const showUnit = u > 0.85;
+    const compX = fmt(B[0]*factor, 2);
+    const compZ = fmt(B[2]*factor, 2);
+    s.text(20, s.H - 60, `B factor: ${fmt(factor,2)}`, {color:COLORS.dim, size:12, mono:true});
+    s.text(20, s.H - 36, `Component x: ${compX}`, {color:COLORS.yellow, size:13, mono:true});
+    s.text(20, s.H - 18, `Component z: ${compZ}`, {color:COLORS.yellow, size:13, mono:true});
+    if (showUnit){
+      s.text(s.W-20, s.H - 36, "$\\hat B \\to \\langle 0.6,\\ 0,\\ -0.8\\rangle$", {color:COLORS.green, size:14, align:"right", weight:700});
+    }
+  };
+};
+
+// --- Direction cosines ----------------------------------------
+ANIMS.dirCosines = (s, info) => {
+  s.duration = 7;
+  const L = 10;
+  const thx = 60*Math.PI/180, thy = 60*Math.PI/180, thz = 45*Math.PI/180;
+  const far = [L*Math.cos(thx), L*Math.cos(thy), L*Math.cos(thz)];
+  info.set("Direction cosines",[
+    {l:"Formula", v:"$\\vec r = L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle$"},
+    {l:"Result", v:`Far end $\\approx\\langle ${fmt(far[0],1)},\\ ${fmt(far[1],1)},\\ ${fmt(far[2],1)}\\rangle$`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W*0.32, cy = s.H*0.62;
+    const scale = 22;
+    s.text(s.W/2, 26, "$\\vec r = L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle$", {color:COLORS.dim, size:12, align:"center"});
+
+    // axes (2D projection: x right, y up, z=in-plane = up-right for fake 3D)
+    const ax = 130;
+    s.arrow(cx, cy, cx+ax, cy, COLORS.dim, 1.5, 8);          // +x
+    s.arrow(cx, cy, cx, cy-ax, COLORS.dim, 1.5, 8);          // +y
+    s.arrow(cx, cy, cx+ax*0.55, cy-ax*0.4, COLORS.dim, 1.5, 8); // +z (oblique)
+    s.text(cx+ax+6, cy+4, "x", {color:COLORS.dim, size:11});
+    s.text(cx-6, cy-ax-4, "y", {color:COLORS.dim, size:11, align:"right"});
+    s.text(cx+ax*0.55+8, cy-ax*0.4-4, "z", {color:COLORS.dim, size:11});
+
+    // animate rod: tip at L*û direction
+    const drawTo = ease(clamp(u/0.5, 0, 1)) * L;  // grow rod over first half
+    // 3D point projected
+    const proj = (p) => {
+      const [x,y,z] = p;
+      return [cx + (x + z*0.55)*scale, cy - (y + z*0.4)*scale];
+    };
+    const tip3 = [drawTo*Math.cos(thx), drawTo*Math.cos(thy), drawTo*Math.cos(thz)];
+    const [tx, ty] = proj(tip3);
+    s.arrow(cx, cy, tx, ty, COLORS.yellow, 3, 12);
+
+    // when rod fully drawn, show component decomposition
+    if (u > 0.45){
+      const ph = clamp((u-0.45)/0.5, 0, 1);
+      // x-projection (dashed line down to x-axis)
+      const xp = proj([tip3[0], 0, 0]);
+      const yp = proj([0, tip3[1], 0]);
+      const zp = proj([0, 0, tip3[2]]);
+      s.ctx.globalAlpha = ph;
+      s.dashed(tx, ty, xp[0], xp[1], COLORS.cyan, 1.2);
+      s.dashed(tx, ty, yp[0], yp[1], COLORS.yellow, 1.2);
+      s.dashed(tx, ty, zp[0], zp[1], COLORS.green, 1.2);
+
+      s.arrow(cx, cy, xp[0], xp[1], COLORS.cyan, 2.5, 10);
+      s.arrow(cx, cy, yp[0], yp[1], COLORS.yellow, 2.5, 10);
+      s.arrow(cx, cy, zp[0], zp[1], COLORS.green, 2.5, 10);
+
+      s.ctx.globalAlpha = 1;
+    }
+
+    // numbers panel (right side)
+    const px = s.W*0.66;
+    s.text(px, 90, "L = 10 m", {color:COLORS.white, size:14, weight:700, mono:true});
+    if (u > 0.5){
+      const a = clamp((u-0.5)/0.4, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(px, 130, `cos 60° = 0.5`, {color:COLORS.cyan, size:13, mono:true});
+      s.text(px, 160, `cos 60° = 0.5`, {color:COLORS.yellow, size:13, mono:true});
+      s.text(px, 190, `cos 45° = 0.707`, {color:COLORS.green, size:13, mono:true});
+      s.ctx.globalAlpha = 1;
+    }
+    if (u > 0.8){
+      const a = clamp((u-0.8)/0.2, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(px, 240, "Far end:", {color:COLORS.dim, size:12, weight:700});
+      s.text(px, 268, `⟨${fmt(far[0],1)},`, {color:COLORS.cyan, size:14, mono:true, weight:700});
+      s.text(px, 290, `  ${fmt(far[1],1)},`, {color:COLORS.yellow, size:14, mono:true, weight:700});
+      s.text(px, 312, `  ${fmt(far[2],2)}⟩ m`, {color:COLORS.green, size:14, mono:true, weight:700});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Tennis ball rebound off wall -----------------------------
+ANIMS.tennisRebound = (s, info) => {
+  s.duration = 6;
+  const m = 0.060;
+  const vi = 50, vf = -40;
+  const dp = m*(vf-vi);
+  info.set("Δp by Momentum Principle",[
+    {l:"Formula", v:"$\\Delta\\vec p = m(\\vec v_f - \\vec v_i)$"},
+    {l:"Plug in", v:`$\\Delta\\vec p = 0.060 \\times (-40-50) = -5.40$ kg·m/s`},
+    {l:"Magnitude", v:"$|\\Delta\\vec p| = 5.40$ kg·m/s"}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const wallX = s.W*0.78, floorY = s.H*0.62;
+    // wall
+    s.ctx.fillStyle = "#2a3040";
+    s.ctx.fillRect(wallX, 80, 12, s.H - 130);
+    s.ctx.fillStyle = "#1a2030";
+    s.ctx.fillRect(0, floorY, s.W, 4);
+
+    // ball motion
+    const tHit = 0.45; // ball hits wall at u=0.45
+    let bx, vAt, vec, vColor;
+    if (u < tHit){
+      const a = u/tHit;
+      bx = lerp(40, wallX - 18, a);
+      vAt = vi;
+      vec = +1; vColor = COLORS.cyan;
+    } else {
+      const a = (u - tHit) / (1 - tHit);
+      bx = lerp(wallX - 18, 40, a);
+      vAt = vf;
+      vec = -1; vColor = COLORS.red;
+    }
+    const by = floorY - 60;
+
+    // ball trail
+    s.ctx.globalAlpha = 0.3;
+    for (let i=0;i<6;i++){
+      const tt = clamp(u - i*0.02, 0, 1);
+      let tx;
+      if (tt < tHit) tx = lerp(40, wallX - 18, tt/tHit);
+      else tx = lerp(wallX - 18, 40, (tt-tHit)/(1-tHit));
+      s.circle(tx, by, 12 - i, vColor + "60", null);
+    }
+    s.ctx.globalAlpha = 1;
+
+    s.circle(bx, by, 14, vColor, "#000", 1.5);
+    s.text(bx, by+3, "⚾", {size:18, align:"center", baseline:"middle"});
+
+    // velocity arrow
+    s.arrow(bx + vec*16, by, bx + vec*16 + vec*60, by, vColor, 3, 11);
+    s.text(bx + vec*46, by - 14, `v=${vec>0?"+50":"-40"} m/s`, {color:vColor, size:12, mono:true, weight:700, align:"center"});
+
+    // panel
+    const px = 24, py = 30;
+    s.text(px, py, "Tennis ball off the wall", {color:COLORS.dim, size:13, weight:700});
+    s.text(px, py+22, `m = 60 g = 0.060 kg`, {color:COLORS.white, size:12, mono:true});
+
+    // Δp reveal at end
+    if (u > 0.8){
+      const a = clamp((u-0.8)/0.2, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(s.W/2, s.H-30, `Δp = m(v_f − v_i) = ${fmt(dp,2)} kg·m/s`, {color:COLORS.yellow, size:15, align:"center", weight:700, bg:"#1a1f10"});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Relativistic γ slider ------------------------------------
+ANIMS.gammaSlider = (s, info, ctrls) => {
+  s.duration = 0.01;
+  let beta = 0.80;
+  const setInfo = () => {
+    const g = 1/Math.sqrt(1-beta*beta);
+    info.set("Relativistic γ",[
+      {l:"Formula", v:"$\\gamma = \\dfrac{1}{\\sqrt{1-(v/c)^{2}}}$"},
+      {l:`v/c = ${fmt(beta,3)}`, v:`$\\gamma = ${fmt(g,3)}$`},
+      {l:"At v=0.80c", v:"$\\gamma \\approx 1.67$"}
+    ]);
+  };
+  ctrls.slider("v / c", 0, 0.999, beta, 0.001, (v) => { beta = v; setInfo(); s.draw(); });
+
+  s.drawFn = () => {
+    const cx = s.W/2, cy = s.H/2 + 10;
+    const g = 1/Math.sqrt(1-beta*beta);
+    s.text(cx, 30, "Relativistic factor γ = 1 / √(1 − (v/c)²)", {color:COLORS.dim, size:13, align:"center"});
+
+    // big gamma number
+    s.text(cx, cy + 8, fmt(g, 3), {color:COLORS.cyan, size:88, align:"center", baseline:"middle", weight:800, mono:true});
+    s.text(cx, cy + 70, "γ", {color:COLORS.dim, size:24, align:"center", weight:700});
+
+    // ruler length contraction visual
+    const restLen = s.W * 0.5;
+    const contracted = restLen / g;
+    const ry = s.H - 60;
+    // background "rest ruler"
+    s.ctx.fillStyle = COLORS.grid;
+    s.ctx.fillRect(cx - restLen/2, ry, restLen, 22);
+    s.text(cx - restLen/2, ry - 6, "rest length", {color:COLORS.dim, size:10});
+    // contracted ruler
+    s.ctx.fillStyle = COLORS.yellow;
+    s.ctx.fillRect(cx - contracted/2, ry, contracted, 22);
+    s.text(cx + contracted/2 + 8, ry + 16, "moving", {color:COLORS.yellow, size:11, weight:700});
+
+    // β bar
+    const by = 90, bw = s.W*0.7;
+    const bx = cx - bw/2;
+    s.ctx.fillStyle = COLORS.grid;
+    s.ctx.fillRect(bx, by, bw, 6);
+    s.ctx.fillStyle = COLORS.cyan;
+    s.ctx.fillRect(bx, by, bw*beta, 6);
+    s.text(cx, by - 8, `v/c = ${fmt(beta,3)}`, {color:COLORS.cyan, size:12, align:"center", weight:700, mono:true});
+  };
+  setInfo();
+  s.draw();
+};
+
+// --- Newton's 1st law spaceship (drifting forever) -------------
+ANIMS.spaceship = (s, info) => {
+  s.duration = 7;
+  info.set("Newton's 1st law",[
+    {l:"Statement", v:"If $\\vec F_{net}=0$ then $\\Delta\\vec p=0$ — velocity unchanged."},
+    {l:"Conclusion", v:"Speed stays at 5000 m/s, straight line forever."}
+  ]);
+  // starfield
+  const stars = [];
+  for (let i=0; i<70; i++) stars.push({x:Math.random()*s.W, y:Math.random()*s.H, r:Math.random()*1.4+0.3});
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    // pan stars left to simulate motion
+    const off = u * s.W * 1.4;
+    stars.forEach(st => {
+      const sx = ((st.x - off) % s.W + s.W) % s.W;
+      s.circle(sx, st.y, st.r, COLORS.white + "aa", null);
+    });
+    const px = s.W*0.5, py = s.H*0.5;
+    // ship body
+    s.ctx.fillStyle = COLORS.cyan;
+    s.ctx.beginPath();
+    s.ctx.moveTo(px+30, py);
+    s.ctx.lineTo(px-20, py-15);
+    s.ctx.lineTo(px-10, py);
+    s.ctx.lineTo(px-20, py+15);
+    s.ctx.closePath();
+    s.ctx.fill();
+
+    // velocity arrow (constant)
+    s.arrow(px+30, py, px+90, py, COLORS.yellow, 3, 12);
+    s.text(px+92, py-8, "v = 5000 m/s", {color:COLORS.yellow, size:12, weight:700, mono:true});
+
+    // engines off label after t=2s
+    if (t > 2){
+      const a = clamp((t-2)/0.5, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(s.W/2, 36, "🛑 ENGINES OFF — F_net = 0", {color:COLORS.red, size:14, align:"center", weight:700, bg:"#2a1010"});
+      s.ctx.globalAlpha = 1;
+    }
+    if (t > 4){
+      const a = clamp((t-4)/0.5, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(s.W/2, s.H - 30, "Velocity unchanged — same speed, same direction, forever.", {color:COLORS.green, size:13, align:"center", weight:700, bg:"#0f2a1a"});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Momentum Principle (impulse) -----------------------------
+ANIMS.momentumPrinciple = (s, info) => {
+  s.duration = 6;
+  const pi = [10, 0]; const F = [-4, 6]; const dt = 2;
+  const pf = [pi[0] + F[0]*dt, pi[1] + F[1]*dt];
+  info.set("Momentum Principle",[
+    {l:"Formula", v:"$\\vec p_f = \\vec p_i + \\vec F_{net}\\Delta t$"},
+    {l:"Impulse", v:`$\\vec F\\Delta t = \\langle ${fmt(F[0]*dt,1)},\\ ${fmt(F[1]*dt,1)}\\rangle$`},
+    {l:"Final $\\vec p$", v:`$\\vec p_f = \\langle ${fmt(pf[0],1)},\\ ${fmt(pf[1],1)}\\rangle$ kg·m/s`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W*0.5, cy = s.H*0.5 + 20;
+    const scale = 14;
+    s.text(cx, 26, "$\\vec p_f = \\vec p_i + \\vec F\\Delta t$", {color:COLORS.dim, size:13, align:"center"});
+    s.axes(cx, cy, 180);
+
+    // pi (cyan)
+    const ePi = [cx + pi[0]*scale, cy - pi[1]*scale];
+    s.arrow(cx, cy, ePi[0], ePi[1], COLORS.cyan, 3, 11);
+    s.text(ePi[0] + 6, ePi[1] - 6, "p_i", {color:COLORS.cyan, size:13, weight:700, mono:true});
+
+    // Impulse (yellow) — grows over time, starts at tip of pi
+    const a = ease(clamp(u, 0, 1));
+    const imp = [F[0]*dt*a, F[1]*dt*a];
+    const eImp = [ePi[0] + imp[0]*scale, ePi[1] - imp[1]*scale];
+    s.arrow(ePi[0], ePi[1], eImp[0], eImp[1], COLORS.yellow, 2.5, 10);
+    s.text((ePi[0]+eImp[0])/2 - 20, (ePi[1]+eImp[1])/2 - 8, "F·Δt", {color:COLORS.yellow, size:12, weight:700, mono:true});
+
+    // pf (green) — appears at end
+    if (a > 0.7){
+      const af = clamp((a-0.7)/0.3, 0, 1);
+      s.ctx.globalAlpha = af;
+      s.arrow(cx, cy, eImp[0], eImp[1], COLORS.green, 3.5, 13);
+      s.text(eImp[0] - 8, eImp[1] - 8, "p_f", {color:COLORS.green, size:14, weight:700, mono:true});
+      s.ctx.globalAlpha = 1;
+    }
+
+    // numeric updates
+    const curP = [pi[0] + imp[0], pi[1] + imp[1]];
+    s.text(20, s.H-30, `p_f = ⟨${fmt(curP[0],1)}, ${fmt(curP[1],1)}⟩`, {color:COLORS.green, size:14, mono:true, weight:700});
+  };
+};
+
+// --- Hooke's law spring ---------------------------------------
+ANIMS.spring = (s, info) => {
+  s.duration = 5;
+  const L0 = 20, L1 = 35, k = 50;
+  const s0 = (L1-L0)/100; // m
+  const F1 = k*s0;
+  info.set("Hooke's law",[
+    {l:"Stretch", v:`$s = L - L_0 = 0.35 - 0.20 = 0.15$ m`},
+    {l:"Force", v:`$|F| = k|s| = 50 \\times 0.15 = 7.5$ N`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const oscU = clamp(u*1.2, 0, 1); // animate stretching first part
+    const Lcur = lerp(L0, L1, ease(oscU));
+    const stretch = (Lcur - L0)/100;
+    const F = k*stretch;
+
+    // wall on left
+    const wallX = 60, wallY = s.H/2;
+    s.ctx.fillStyle = "#2a3040";
+    s.ctx.fillRect(wallX-10, wallY-50, 8, 100);
+    // hatching
+    for (let i=-4;i<=4;i++){
+      s.line(wallX-10, wallY+i*12, wallX-18, wallY+i*12-8, COLORS.dim, 1);
+    }
+
+    // spring coils from wallX to wallX+px(Lcur)
+    const pxPerCm = 7;
+    const springLen = Lcur * pxPerCm;
+    const tipX = wallX + springLen;
+    const coils = 10;
+    s.ctx.strokeStyle = COLORS.cyan;
+    s.ctx.lineWidth = 2.5;
+    s.ctx.beginPath();
+    s.ctx.moveTo(wallX, wallY);
+    const segs = coils*2;
+    for (let i=1; i<=segs; i++){
+      const xx = wallX + (springLen) * i/segs;
+      const yy = wallY + (i%2===0 ? 0 : (i%4===1 ? -14 : 14));
+      s.ctx.lineTo(xx, yy);
+    }
+    s.ctx.lineTo(tipX, wallY);
+    s.ctx.stroke();
+
+    // block
+    s.ctx.fillStyle = COLORS.yellow;
+    s.ctx.fillRect(tipX, wallY-22, 36, 44);
+    s.ctx.strokeStyle = "#000"; s.ctx.lineWidth = 1.5;
+    s.ctx.strokeRect(tipX, wallY-22, 36, 44);
+
+    // ruler / marks (L0 line)
+    const x0 = wallX + L0*pxPerCm;
+    s.dashed(x0, wallY+30, x0, wallY+60, COLORS.dim, 1);
+    s.text(x0, wallY+74, "L₀ = 20 cm", {color:COLORS.dim, size:11, align:"center"});
+
+    // current length text
+    s.text(wallX + springLen/2, wallY-60, `L = ${fmt(Lcur,0)} cm`, {color:COLORS.white, size:13, align:"center", weight:700});
+    s.text(wallX + springLen/2, wallY-42, `s = ${fmt(stretch,2)} m`, {color:COLORS.cyan, size:12, align:"center", mono:true});
+
+    // force arrow (right side, pulling block back toward wall)
+    s.arrow(tipX + 36 + 30 + F*5, wallY, tipX + 36 + 30, wallY, COLORS.red, 3, 12);
+    s.text(tipX + 36 + 50 + F*2.5, wallY - 16, `F = ${fmt(F,1)} N`, {color:COLORS.red, size:13, align:"center", weight:700, mono:true});
+
+    if (u > 0.85){
+      const a = clamp((u-0.85)/0.15, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(s.W/2, s.H - 24, `|F_spring| = k|s| = 50 × 0.15 = 7.5 N`, {color:COLORS.green, size:14, align:"center", weight:700, bg:"#0f2a1a", mono:true});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Net force from 3 vectors --------------------------------
+ANIMS.netForce = (s, info) => {
+  s.duration = 6;
+  const F1=[4,3], F2=[-2,5], F3=[0,-2];  // 2D projection (z not shown)
+  const Fnet = [F1[0]+F2[0]+F3[0], F1[1]+F2[1]+F3[1]+6]; // include z=6 in length only
+  const mag = Math.sqrt(2*2 + 6*6 + 6*6); // 76 ≈ 8.72
+  info.set("Net force = sum of vectors",[
+    {l:"Sum", v:`$\\vec F_{net} = \\langle 2,\\ 6,\\ 6\\rangle$ N`},
+    {l:"Magnitude", v:`$|F| = \\sqrt{76} \\approx 8.72$ N`},
+    {l:"a = F/m", v:`$a \\approx 8.72$ m/s² ≈ 10 m/s² (closest option)`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W*0.45, cy = s.H*0.5 + 20;
+    const scale = 20;
+    s.text(s.W/2, 26, "Adding three forces head-to-tail", {color:COLORS.dim, size:13, align:"center"});
+    s.axes(cx, cy, 150);
+
+    // head-to-tail
+    const phases = [F1, F2, F3];
+    const colors = [COLORS.cyan, COLORS.yellow, COLORS.green];
+    let curX = cx, curY = cy;
+    const tipPhase = u * 3;
+    for (let i=0;i<3;i++){
+      const a = clamp(tipPhase - i, 0, 1);
+      if (a <= 0) continue;
+      const eX = curX + phases[i][0]*scale*ease(a);
+      const eY = curY - phases[i][1]*scale*ease(a);
+      s.arrow(curX, curY, eX, eY, colors[i], 2.5, 10);
+      s.text((curX+eX)/2 + 6, (curY+eY)/2 - 6, `F_${i+1}`, {color:colors[i], size:11, mono:true, weight:700});
+      if (a >= 1){
+        curX = curX + phases[i][0]*scale;
+        curY = curY - phases[i][1]*scale;
+      } else {
+        curX = eX; curY = eY;
+      }
+    }
+    // final F_net arrow appearing at end
+    if (u > 0.85){
+      const af = clamp((u-0.85)/0.15, 0, 1);
+      const ex = cx + 2*scale, ey = cy - 6*scale;
+      s.ctx.globalAlpha = af;
+      s.arrow(cx, cy, ex, ey, COLORS.orange, 3.5, 12);
+      s.text(ex+6, ey-6, "F_net", {color:COLORS.orange, size:14, weight:700, mono:true});
+      s.ctx.globalAlpha = 1;
+    }
+
+    // panel
+    const px = s.W*0.74;
+    s.text(px, 110, "F_net (with z=6):", {color:COLORS.dim, size:12, weight:700});
+    s.text(px, 130, "⟨2, 6, 6⟩ N", {color:COLORS.white, size:14, mono:true, weight:700});
+    if (u > 0.7){
+      s.text(px, 170, "|F| = √76", {color:COLORS.yellow, size:13, mono:true});
+      s.text(px, 192, " ≈ 8.72 N", {color:COLORS.yellow, size:13, mono:true});
+      s.text(px, 230, "a = F/m", {color:COLORS.dim, size:11});
+      s.text(px, 250, "≈ 8.72 m/s²", {color:COLORS.green, size:14, mono:true, weight:700});
+    }
+  };
+};
+
+// --- Universal gravity (distance slider) ---------------------
+ANIMS.gravity = (s, info, ctrls) => {
+  s.duration = 0.01;
+  const G = 6.674e-11, m1=5, m2=5;
+  let r = 0.50;
+  const setInfo = () => {
+    const F = G*m1*m2/(r*r);
+    info.set("Gravity",[
+      {l:"Formula", v:"$F = G\\dfrac{m_1 m_2}{r^{2}}$"},
+      {l:`At r = ${fmt(r,2)} m`, v:`$F = ${F.toExponential(2)}$ N`}
+    ]);
+  };
+  ctrls.slider("r (m)", 0.20, 2.0, r, 0.01, (v) => { r = v; setInfo(); s.draw(); });
+  s.drawFn = () => {
+    const cx = s.W/2, cy = s.H/2 + 10;
+    s.text(cx, 26, "Gravity $\\propto 1/r^{2}$", {color:COLORS.dim, size:13, align:"center"});
+
+    // separation visualized 0.2 m -> 50px, 2 m -> 250px
+    const sep = lerp(40, 320, (r-0.20)/(2.0-0.20));
+    const x1 = cx - sep/2, x2 = cx + sep/2;
+    s.circle(x1, cy, 22, COLORS.cyan, "#000", 2);
+    s.text(x1, cy+4, "5 kg", {color:"#000", size:11, weight:700, align:"center", baseline:"middle"});
+    s.circle(x2, cy, 22, COLORS.cyan, "#000", 2);
+    s.text(x2, cy+4, "5 kg", {color:"#000", size:11, weight:700, align:"center", baseline:"middle"});
+
+    // force arrows (always attractive — point inward)
+    const F = G*m1*m2/(r*r);
+    // map F to arrow length: F=6.67e-9 at r=1 -> length 30, etc. Use log scale.
+    const Fmax = G*25/(0.20*0.20);
+    const Fmin = G*25/(2.0*2.0);
+    const arrowLen = lerp(8, 90, (Math.log(F)-Math.log(Fmin))/(Math.log(Fmax)-Math.log(Fmin)));
+    s.arrow(x1 - 30, cy, x1 - 30 + arrowLen, cy, COLORS.red, 2.5, 10);
+    s.arrow(x2 + 30, cy, x2 + 30 - arrowLen, cy, COLORS.red, 2.5, 10);
+
+    s.text(cx, cy - 60, `r = ${fmt(r,2)} m`, {color:COLORS.dim, size:13, align:"center", mono:true});
+    s.text(cx, cy + 70, `F = ${F.toExponential(3)} N`, {color:COLORS.yellow, size:16, align:"center", weight:700, mono:true, bg:"#1a1f10"});
+    s.text(cx, cy + 100, "(attractive, equal-and-opposite)", {color:COLORS.dim, size:11, align:"center"});
+
+    // ruler
+    s.line(x1, cy + 30, x2, cy + 30, COLORS.dim, 1.5);
+    s.line(x1, cy + 26, x1, cy + 34, COLORS.dim, 1.5);
+    s.line(x2, cy + 26, x2, cy + 34, COLORS.dim, 1.5);
+  };
+  setInfo();
+  s.draw();
+};
+
+// --- Surface gravity g = GM/R^2 --------------------------------
+ANIMS.surfaceG = (s, info) => {
+  s.duration = 5;
+  const G = 6.674e-11, M = 6e23, R = 3e6;
+  const g = G*M/(R*R);
+  info.set("Surface gravity",[
+    {l:"Formula", v:"$g = G\\dfrac{M}{R^{2}}$"},
+    {l:"Numerator", v:`$GM = ${(G*M).toExponential(2)}$`},
+    {l:"Denominator", v:`$R^{2} = ${(R*R).toExponential(2)}$`},
+    {l:"Result", v:`$g \\approx ${fmt(g,2)}$ m/s²`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W/2, cy = s.H*0.55;
+    s.text(cx, 26, "$g = GM/R^{2}$ at the surface", {color:COLORS.dim, size:13, align:"center"});
+
+    // planet
+    s.circle(cx, cy, 90, COLORS.cyan + "20", COLORS.cyan, 2);
+    s.text(cx, cy+5, "M, R", {color:COLORS.cyan, size:14, weight:700, align:"center", baseline:"middle"});
+
+    // person on top
+    const personY = cy - 90;
+    s.circle(cx, personY - 8, 5, COLORS.white, null);
+    s.line(cx, personY - 3, cx, personY + 12, COLORS.white, 2);
+
+    // g vector (down toward center) — appears at end
+    if (u > 0.4){
+      const a = clamp((u-0.4)/0.4, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.arrow(cx, personY + 14, cx, personY + 14 + 36*a, COLORS.red, 3, 11);
+      s.text(cx + 14, personY + 50*a + 5, "g", {color:COLORS.red, size:14, weight:700});
+      s.ctx.globalAlpha = 1;
+    }
+    if (u > 0.85){
+      const a = clamp((u-0.85)/0.15, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(cx, s.H - 28, `g = ${fmt(g,2)} m/s²`, {color:COLORS.green, size:16, align:"center", weight:700, mono:true, bg:"#0f2a1a"});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Coulomb force (interactive distance + signs) -------------
+ANIMS.coulomb = (s, info, ctrls) => {
+  s.duration = 0.01;
+  const k = 8.99e9;
+  let q1 = +2e-6, q2 = -3e-6;
+  let r = 0.30;
+  const setInfo = () => {
+    const F = k * Math.abs(q1*q2) / (r*r);
+    const repel = (q1>0) === (q2>0);
+    info.set("Coulomb's law",[
+      {l:"Formula", v:"$|F| = k\\,|q_1 q_2|/r^{2}$"},
+      {l:`At r = ${fmt(r,2)} m`, v:`$|F| \\approx ${fmt(F,3)}$ N (${repel?"repulsive":"attractive"})`}
+    ]);
+  };
+  ctrls.slider("r (m)", 0.10, 0.80, r, 0.01, (v) => { r = v; setInfo(); s.draw(); });
+  ctrls.button("Flip sign of q₂", () => { q2 = -q2; setInfo(); s.draw(); });
+
+  s.drawFn = () => {
+    const cx = s.W/2, cy = s.H/2 + 10;
+    s.text(cx, 26, "Same sign repels, opposite sign attracts ($\\propto 1/r^{2}$)", {color:COLORS.dim, size:12, align:"center"});
+
+    const sep = lerp(60, 380, (r-0.10)/(0.80-0.10));
+    const x1 = cx - sep/2, x2 = cx + sep/2;
+    const col1 = q1>0 ? COLORS.red : COLORS.blue;
+    const col2 = q2>0 ? COLORS.red : COLORS.blue;
+    s.circle(x1, cy, 22, col1, "#000", 2);
+    s.text(x1, cy+4, q1>0?"+2µC":"−2µC", {color:"#000", size:10, weight:700, align:"center", baseline:"middle"});
+    s.circle(x2, cy, 22, col2, "#000", 2);
+    s.text(x2, cy+4, q2>0?"+3µC":"−3µC", {color:"#000", size:10, weight:700, align:"center", baseline:"middle"});
+
+    const F = k * Math.abs(q1*q2) / (r*r);
+    const Fmax = k * 6e-12 / (0.10*0.10);
+    const Fmin = k * 6e-12 / (0.80*0.80);
+    const aLen = lerp(10, 95, (Math.log(F)-Math.log(Fmin))/(Math.log(Fmax)-Math.log(Fmin)));
+
+    const repel = (q1>0) === (q2>0);
+    if (repel){
+      s.arrow(x1 - 30, cy, x1 - 30 - aLen, cy, COLORS.orange, 2.8, 11);
+      s.arrow(x2 + 30, cy, x2 + 30 + aLen, cy, COLORS.orange, 2.8, 11);
+    } else {
+      s.arrow(x1 - 30, cy, x1 - 30 + aLen, cy, COLORS.green, 2.8, 11);
+      s.arrow(x2 + 30, cy, x2 + 30 - aLen, cy, COLORS.green, 2.8, 11);
+    }
+
+    s.text(cx, cy - 60, `r = ${fmt(r,2)} m`, {color:COLORS.dim, size:13, align:"center", mono:true});
+    s.text(cx, cy + 72, `|F| = ${fmt(F,3)} N`, {color:COLORS.yellow, size:16, align:"center", weight:700, mono:true, bg:"#1a1f10"});
+    s.text(cx, cy + 100, repel ? "Same sign — repulsive" : "Opposite sign — attractive", {color:repel?COLORS.orange:COLORS.green, size:12, align:"center", weight:700});
+
+    // distance ruler
+    s.line(x1, cy + 32, x2, cy + 32, COLORS.dim, 1.5);
+    s.line(x1, cy + 28, x1, cy + 36, COLORS.dim, 1.5);
+    s.line(x2, cy + 28, x2, cy + 36, COLORS.dim, 1.5);
+  };
+  setInfo();
+  s.draw();
+};
+
+// --- Wet clay collision (2D in xy plane) ----------------------
+ANIMS.clayCollision = (s, info) => {
+  s.duration = 7;
+  const m = 0.050;  // each
+  const v1 = [2, 6];   // we'll show xy plane only (ignore z)
+  const v2 = [-3, 0];
+  const p1 = [m*v1[0], m*v1[1]];
+  const p2 = [m*v2[0], m*v2[1]];
+  const pf = [p1[0]+p2[0], p1[1]+p2[1]];
+  const vf = [pf[0]/(2*m), pf[1]/(2*m)];
+  info.set("Inelastic collision (stick)",[
+    {l:"Conservation", v:"$\\vec p_{tot,\\,i} = \\vec p_{tot,\\,f}$"},
+    {l:"Total p", v:`$\\vec p_{tot} = \\langle ${fmt(pf[0],3)},\\ ${fmt(pf[1],3)}\\rangle$ kg·m/s`},
+    {l:"Final v (3D)", v:"$\\vec v_f = \\langle -0.5,\\ 3.0,\\ -7.5\\rangle$ m/s"}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W/2, cy = s.H*0.55;
+    const scale = 18; // px per m/s
+    s.text(cx, 26, "Two clay lumps stick — momentum conserved", {color:COLORS.dim, size:13, align:"center"});
+
+    // pre-collision (u<0.5) approaching origin
+    // ball1 starts left, ball2 starts right, they meet at center
+    const phase1 = clamp(u/0.5, 0, 1);
+    const phase2 = clamp((u-0.5)/0.5, 0, 1);
+    const meetT = 0.5;
+
+    if (u < meetT){
+      // approaching
+      const b1x = lerp(cx - 160, cx - 12, ease(phase1));
+      const b1y = lerp(cy + 80, cy - 12, ease(phase1));
+      const b2x = lerp(cx + 160, cx + 12, ease(phase1));
+      const b2y = lerp(cy + 60, cy, ease(phase1));
+      // ball1
+      s.circle(b1x, b1y, 14, COLORS.cyan, "#000", 1.5);
+      s.text(b1x, b1y+4, "1", {color:"#000", size:11, weight:700, align:"center", baseline:"middle"});
+      s.arrow(b1x, b1y, b1x + v1[0]*scale*0.5, b1y - v1[1]*scale*0.5, COLORS.cyan, 2.5, 10);
+      // ball2
+      s.circle(b2x, b2y, 14, COLORS.yellow, "#000", 1.5);
+      s.text(b2x, b2y+4, "2", {color:"#000", size:11, weight:700, align:"center", baseline:"middle"});
+      s.arrow(b2x, b2y, b2x + v2[0]*scale*0.5, b2y - v2[1]*scale*0.5, COLORS.yellow, 2.5, 10);
+    } else {
+      // stuck blob moving with vf
+      const fly = ease(phase2);
+      const bx = cx + vf[0]*scale*fly*1.5;
+      const by = cy - vf[1]*scale*fly*1.5;
+      s.circle(bx, by, 22, COLORS.orange, "#000", 2);
+      s.text(bx, by+4, "1+2", {color:"#000", size:11, weight:700, align:"center", baseline:"middle"});
+      s.arrow(bx, by, bx + vf[0]*scale, by - vf[1]*scale, COLORS.orange, 3, 11);
+    }
+
+    // p-table
+    const px = 20, py = 100;
+    s.text(px, py, "p1 = m·v1", {color:COLORS.cyan, size:11, weight:700, mono:true});
+    s.text(px, py+18, `= ⟨${fmt(p1[0],2)}, ${fmt(p1[1],2)}⟩`, {color:COLORS.cyan, size:11, mono:true});
+    s.text(px, py+42, "p2 = m·v2", {color:COLORS.yellow, size:11, weight:700, mono:true});
+    s.text(px, py+60, `= ⟨${fmt(p2[0],2)}, ${fmt(p2[1],2)}⟩`, {color:COLORS.yellow, size:11, mono:true});
+    if (u > 0.5){
+      const a = clamp((u-0.5)/0.3, 0, 1);
+      s.ctx.globalAlpha = a;
+      s.text(px, py+90, "p_tot = p1+p2", {color:COLORS.orange, size:11, weight:700, mono:true});
+      s.text(px, py+108, `= ⟨${fmt(pf[0],3)}, ${fmt(pf[1],2)}⟩`, {color:COLORS.orange, size:11, mono:true});
+      s.text(px, py+135, "v_f = p_tot / (2m)", {color:COLORS.green, size:11, weight:700, mono:true});
+      s.text(px, py+153, `= ⟨${fmt(vf[0],2)}, ${fmt(vf[1],1)}⟩`, {color:COLORS.green, size:12, mono:true, weight:700});
+      s.ctx.globalAlpha = 1;
+    }
+  };
+};
+
+// --- Drone navigation (3D-ish projection) ---------------------
+ANIMS.droneNav = (s, info) => {
+  s.duration = 8;
+  const u1raw = [36,52,-35], u2raw = [-27,12,-24];
+  const norm = (v) => { const l = Math.hypot(...v); return v.map(x=>x/l); };
+  const u1 = norm(u1raw), u2 = norm(u2raw);
+  const step1 = u1.map(x=>x*8);
+  const step2 = u2.map(x=>x*6);
+  const final = [step1[0]+step2[0], step1[1]+step2[1], step1[2]+step2[2]];
+  info.set("Drone navigation",[
+    {l:"Step 1", v:`$8\\,\\hat u_1 \\approx \\langle ${fmt(step1[0],2)},\\ ${fmt(step1[1],2)},\\ ${fmt(step1[2],2)}\\rangle$ m`},
+    {l:"Step 2", v:`$6\\,\\hat u_2 \\approx \\langle ${fmt(step2[0],2)},\\ ${fmt(step2[1],2)},\\ ${fmt(step2[2],2)}\\rangle$ m`},
+    {l:"Final position", v:`$\\langle ${fmt(final[0],2)},\\ ${fmt(final[1],2)},\\ ${fmt(final[2],2)}\\rangle$ m`}
+  ]);
+  s.drawFn = (t) => {
+    const u = t/s.duration;
+    const cx = s.W*0.5, cy = s.H*0.62;
+    const scale = 15;
+    const proj = (p) => [cx + (p[0] + p[2]*0.55)*scale, cy - (p[1] + p[2]*0.4)*scale];
+
+    s.text(cx, 26, "Two legs, then result vector to final position", {color:COLORS.dim, size:13, align:"center"});
+
+    // axes
+    s.arrow(cx, cy, cx+130, cy, COLORS.dim, 1.5, 8);
+    s.arrow(cx, cy, cx, cy-130, COLORS.dim, 1.5, 8);
+    s.arrow(cx, cy, cx+130*0.55, cy-130*0.4, COLORS.dim, 1.5, 8);
+    s.text(cx+136, cy+4, "x", {color:COLORS.dim, size:11});
+    s.text(cx-4, cy-136, "y", {color:COLORS.dim, size:11, align:"right"});
+    s.text(cx+85, cy-52, "z", {color:COLORS.dim, size:11});
+
+    const phase1 = clamp(u/0.45, 0, 1);
+    const phase2 = clamp((u-0.45)/0.45, 0, 1);
+    const phaseRes = clamp((u-0.85)/0.15, 0, 1);
+
+    const e1raw = [step1[0]*ease(phase1), step1[1]*ease(phase1), step1[2]*ease(phase1)];
+    const [e1x, e1y] = proj(e1raw);
+    s.arrow(cx, cy, e1x, e1y, COLORS.cyan, 3, 11);
+
+    if (phase2 > 0){
+      const e2raw = [e1raw[0] + step2[0]*ease(phase2), e1raw[1] + step2[1]*ease(phase2), e1raw[2] + step2[2]*ease(phase2)];
+      const [e2x, e2y] = proj(e2raw);
+      s.arrow(e1x, e1y, e2x, e2y, COLORS.yellow, 3, 11);
+
+      // drone marker
+      s.circle(e2x, e2y, 6, COLORS.white, "#000", 1.5);
+
+      if (phaseRes > 0){
+        const [fx, fy] = proj(final);
+        s.ctx.globalAlpha = phaseRes;
+        s.arrow(cx, cy, fx, fy, COLORS.green, 3.5, 12);
+        s.text(fx+8, fy-8, "Δr_total", {color:COLORS.green, size:13, weight:700, mono:true});
+        s.ctx.globalAlpha = 1;
+      }
+    }
+
+    // panel
+    const px = 18, py = s.H - 55;
+    s.text(px, py, `Final: ⟨${fmt(final[0],2)}, ${fmt(final[1],2)}, ${fmt(final[2],2)}⟩ m`, {color:COLORS.green, size:13, mono:true, weight:700});
+  };
+};
+
+// ============================================================
+// Glue: parse query, set up controls, run
+// ============================================================
+const qid = (new URLSearchParams(location.search)).get("q");
+const q = QUESTIONS[qid];
+
+if (!q){
+  document.getElementById("canvasContainer").innerHTML = `
+    <div class="placeholder">
+      <div class="big">🚧</div>
+      <p>Pick a question from the TOC to see its animation.</p>
+    </div>`;
+  document.getElementById("title").textContent = "Animation";
+  document.getElementById("meta").textContent = "";
+  document.getElementById("stem").textContent = "No question selected.";
+  document.getElementById("hdr").textContent = "Animation";
+} else {
+  document.getElementById("title").textContent = q.title;
+  document.getElementById("meta").textContent = q.meta;
+  document.getElementById("stem").innerHTML = q.stem;
+  document.getElementById("hdr").textContent = q.meta;
+
+  const cv = document.getElementById("cv");
+  const scene = new Scene(cv);
+  scene.resize();
+  window.addEventListener("resize", () => { scene.resize(); scene.draw(); });
+
+  const info = {
+    set(title, lines){
+      const el = document.getElementById("info");
+      const t = document.getElementById("infoTitle");
+      const b = document.getElementById("infoBody");
+      t.textContent = title;
+      b.innerHTML = lines.map(l => `<div class="line"><span class="nm">${l.l}</span>${l.v}</div>`).join("");
+      el.style.display = "block";
+      if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([el]).catch(()=>{});
+    }
+  };
+
+  const extra = document.getElementById("extraControls");
+  const ctrls = {
+    slider(label, min, max, val, step, onChange){
+      const row = document.createElement("div");
+      row.className = "slider-row";
+      row.innerHTML = `<label>${label}</label><input type="range" min="${min}" max="${max}" step="${step}" value="${val}"><span class="val">${fmt(val,3)}</span>`;
+      const slider = row.querySelector("input");
+      const valEl = row.querySelector(".val");
+      slider.oninput = () => {
+        const v = parseFloat(slider.value);
+        valEl.textContent = fmt(v,3);
+        onChange(v);
+      };
+      extra.appendChild(row);
+    },
+    button(label, onClick){
+      const b = document.createElement("button");
+      b.className = "ctrl-btn";
+      b.textContent = label;
+      b.onclick = onClick;
+      extra.appendChild(b);
+    }
+  };
+
+  const animFn = ANIMS[q.anim];
+  if (animFn){
+    animFn(scene, info, ctrls);
+    scene.draw();
+    // autoplay if not slider-based (slider anims have duration ~0)
+    if (scene.duration > 0.5) scene.play();
+  } else {
+    document.getElementById("canvasContainer").innerHTML = `
+      <div class="placeholder">
+        <div class="big">🚧</div>
+        <p><strong>Animation coming soon for this question.</strong></p>
+        <p style="margin-top:8px">${q.title}</p>
+      </div>`;
+  }
+
+  document.getElementById("replay").onclick = () => scene.replay();
+  document.getElementById("pause").onclick = () => {
+    if (scene.playing){ scene.pause(); document.getElementById("pause").textContent = "▶ Play"; }
+    else { scene.play(); document.getElementById("pause").textContent = "⏸ Pause"; }
+  };
+
+  // typeset stem
+  if (window.MathJax && window.MathJax.typesetPromise){
+    setTimeout(() => window.MathJax.typesetPromise([document.getElementById("stem")]).catch(()=>{}), 100);
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/tony.js" defer></script>
+</body>
+</html>
