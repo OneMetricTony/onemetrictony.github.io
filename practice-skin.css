@@ -1,0 +1,62 @@
+/* Tony Physics — NieR black & white override skin for the practice pages.
+   Loaded AFTER each page's own <style>, so it re-skins the dark theme. */
+:root{ --ink:#0d0d0d; --paper:#f3f1ea; --soft:#5b5b52; }
+
+body{ background:var(--paper)!important; color:var(--ink)!important;
+  font-family:"EB Garamond",Georgia,serif!important; }
+body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.05;
+  background-image:linear-gradient(#0d0d0d 1px,transparent 1px),linear-gradient(90deg,#0d0d0d 1px,transparent 1px);
+  background-size:34px 34px; }
+.wrap{ position:relative; z-index:1; }
+
+/* headings — kill gradient text, go solid black */
+.hero h1,.title,.qtitle,.stem,.score,.nm,h1,h2,h3{
+  background:none!important; -webkit-text-fill-color:#0d0d0d!important; color:#0d0d0d!important; }
+
+/* generic surfaces / panels */
+.quiz,.card,.opt,.opts,.hint-box,.solution,.summary,.review-item,.splash,.res,.asgn,
+.stat,.pill,.tag,.filter,.qbody,.formula,.formula-line,.ans-block,.breakdown>div,
+.substats span,header,.bottom,.tags,.row,.meta,.qmeta,.actions,.tag-filter-bar,.empty{
+  background:var(--paper)!important; color:var(--ink)!important;
+  border-color:var(--ink)!important; border-radius:0!important;
+  -webkit-backdrop-filter:none!important; backdrop-filter:none!important; }
+
+/* the big tappable cards get the signature frame + offset shadow */
+.quiz,.card,.splash,.summary{ border:2px solid var(--ink)!important; box-shadow:6px 6px 0 var(--ink)!important; }
+
+/* labels / meta muted, Oswald */
+.subtitle,.meta,.qmeta,.lbl,.label,.last,.substats,.status,.tag,.step,.pill,.course,
+.back,.back-link,.filter{ font-family:"Oswald",Arial,sans-serif!important; letter-spacing:.06em; }
+.subtitle,.meta,.qmeta,.lbl,.last,.substats,.tag{ color:var(--soft)!important; }
+
+/* buttons */
+.primary,.hint-btn,.reveal-btn,.mark,.filter,.restart,.resume,.back,.back-link,.clr,
+.footer button,.testing-btn,.opt{
+  background:var(--paper)!important; color:var(--ink)!important;
+  border:2px solid var(--ink)!important; border-radius:0!important;
+  font-family:"Oswald",Arial,sans-serif!important; letter-spacing:.06em; text-shadow:none!important; }
+.primary,.testing-btn{ background:var(--ink)!important; color:var(--paper)!important; }
+.primary *,.testing-btn *{ color:var(--paper)!important; }
+
+/* correct / done / selected  => SOLID black (filled = affirmed) */
+.opt.correct,.verdict.ok,.status.done,.stat.got,.card.got,.mark.got,.filter.active,
+.tag.hot,.substats span.good,.good{
+  background:var(--ink)!important; color:var(--paper)!important; border:2px solid var(--ink)!important; }
+.opt.correct *,.verdict.ok *,.card.got *,.good *{ color:var(--paper)!important; }
+
+/* wrong / review / warn => OUTLINED heavy (double frame) */
+.opt.wrong,.verdict.bad,.stat.review,.card.review,.mark.review,.substats span.warn,.warn{
+  background:var(--paper)!important; color:var(--ink)!important; border:3px double var(--ink)!important; }
+.opt.dim{ opacity:.45!important; }
+
+/* progress bars */
+.bar,.progress{ background:var(--paper)!important; border:1px solid var(--ink)!important; border-radius:0!important; }
+.bar>div,.progress>div{ background:var(--ink)!important; }
+
+/* gradient icon tiles => solid black */
+.quiz .icon,.icon{ background:var(--ink)!important; color:var(--paper)!important; border-radius:0!important; }
+
+/* sticky headers / arrows */
+header{ border-bottom:2px solid var(--ink)!important; }
+.arrow{ color:var(--ink)!important; }
+a{ color:var(--ink)!important; }
