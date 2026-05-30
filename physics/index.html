@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2d50">
+<title>Lucy · Physics Assignment 4</title>
+<style>
+  :root{
+    --navy:#1f2d50; --accent:#2b6cb0; --bg:#eef2f7; --card:#ffffff;
+    --ink:#1a2230; --muted:#5b6675; --line:#dde3ec;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100% }
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5;
+  }
+  header{
+    background:linear-gradient(160deg,#243a6b,#1f2d50); color:#fff;
+    padding:calc(env(safe-area-inset-top) + 22px) 18px 20px; text-align:center;
+  }
+  header h1{ margin:0; font-size:1.32rem; letter-spacing:.2px }
+  header p{ margin:6px 0 0; font-size:.85rem; opacity:.8 }
+  .wrap{ max-width:680px; margin:0 auto; padding:14px 12px 60px }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    margin:11px 0; overflow:hidden; box-shadow:0 1px 3px rgba(20,30,50,.05);
+  }
+  .qhead{
+    display:flex; align-items:center; gap:12px; width:100%; border:0; background:none;
+    padding:15px 15px; cursor:pointer; text-align:left; color:inherit; font:inherit;
+  }
+  .num{
+    flex:0 0 auto; width:34px; height:34px; border-radius:9px; background:var(--navy);
+    color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:.95rem;
+  }
+  .qtitle{ flex:1; font-weight:600; font-size:1rem }
+  .qtitle small{ display:block; color:var(--muted); font-weight:500; font-size:.78rem; margin-top:2px }
+  .chev{ flex:0 0 auto; color:var(--accent); transition:transform .2s; font-size:1.1rem }
+  .card.open .chev{ transform:rotate(90deg) }
+  .body{ display:none; padding:4px 13px 16px; border-top:1px solid var(--line) }
+  .card.open .body{ display:block }
+  .label{ font-size:.74rem; text-transform:uppercase; letter-spacing:.6px; color:var(--accent); font-weight:700; margin:14px 4px 7px }
+  img.shot{ width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:10px; background:#fff }
+  .reveal{
+    width:100%; margin-top:6px; padding:13px; border:0; border-radius:11px;
+    background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer;
+  }
+  .reveal:active{ filter:brightness(.94) }
+  .sol{ display:none }
+  .sol.show{ display:block }
+  footer{ text-align:center; color:var(--muted); font-size:.78rem; padding:18px }
+  footer a{ color:var(--accent) }
+</style>
+</head>
+<body>
+<header>
+  <h1>Physics · Assignment 4</h1>
+  <p>Momentum, collisions, friction &amp; oscillations — worked solutions</p>
+</header>
+<div class="wrap" id="list"></div>
+<footer>Tap a question to open it · made for Lucy 💙</footer>
+
+<script>
+const Q = [
+  [1,"Two rocks collide &amp; stick","Inelastic collision · conservation of momentum"],
+  [2,"Momentum of a 2-object system","Total momentum &amp; impulse in a collision"],
+  [3,"Bowling balls: system vs surroundings","Momentum change for different system choices"],
+  [4,"Clay lumps stick together","Inelastic collision · find the final velocity"],
+  [5,"Friction on a block","Static &amp; kinetic coefficients of friction"],
+  [6,"Box on a conveyor belt","Friction forces &amp; ball-spring (“jello”) models"],
+  [7,"Spring period &rarr; unknown mass","Period depends on mass: T &prop; &radic;m"],
+  [8,"Simple harmonic motion","Position &amp; timing for a spring-mass system"],
+  [9,"Period vs amplitude &amp; mass","What changes the period of an oscillator"],
+];
+const list = document.getElementById('list');
+Q.forEach(([n,title,sub])=>{
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <button class="qhead" aria-expanded="false">
+      <span class="num">${n}</span>
+      <span class="qtitle">${title}<small>${sub}</small></span>
+      <span class="chev">&#9654;</span>
+    </button>
+    <div class="body">
+      <div class="label">Question</div>
+      <img class="shot" loading="lazy" src="assets/q${n}_question.png" alt="Question ${n}">
+      <button class="reveal">Reveal worked solution</button>
+      <div class="sol">
+        <div class="label">Worked solution</div>
+        <img class="shot" loading="lazy" src="assets/q${n}_solution.png" alt="Solution ${n}">
+      </div>
+    </div>`;
+  const head = card.querySelector('.qhead');
+  head.addEventListener('click', ()=>{
+    const open = card.classList.toggle('open');
+    head.setAttribute('aria-expanded', open);
+  });
+  const rev = card.querySelector('.reveal');
+  rev.addEventListener('click', ()=>{
+    card.querySelector('.sol').classList.add('show');
+    rev.style.display = 'none';
+  });
+  list.appendChild(card);
+});
+</script>
+</body>
+</html>
