@@ -63,6 +63,7 @@
     border:1px solid rgba(13,13,13,.25);pointer-events:none}
   .tphys-sys{font-family:"Oswald",Arial,sans-serif;font-size:10px;letter-spacing:.4em;
     text-transform:uppercase;text-align:center;opacity:.7;margin-bottom:4px}
+  .tphys-welcome{text-align:center;font-size:1.45rem;font-style:italic;margin:8px 0 2px}
   .tphys-idx{font-family:"Oswald",Arial,sans-serif;text-align:center;font-size:12px;letter-spacing:.3em;
     margin-bottom:18px}
   .tphys-q{font-size:1.5rem;line-height:1.35;text-align:center;margin:6px 6px 22px;font-style:italic}
@@ -109,16 +110,15 @@
     document.body.appendChild(a);
   }
 
-  /* ---------- affirmation popup (once per visit) ----------------------- */
+  /* ---------- affirmation popup (every visit) -------------------------- */
   function mountPopup() {
-    if (sessionStorage.getItem("tphys_seen")) return;
-    sessionStorage.setItem("tphys_seen", "1");
     var item = pick(QUESTIONS);
     var ovl = document.createElement("div");
     ovl.className = "tphys-ovl";
     ovl.innerHTML =
       '<div class="tphys-box" role="dialog" aria-modal="true">' +
         '<div class="tphys-sys">System Check · Mandatory</div>' +
+        '<div class="tphys-welcome">Welcome back, Lucy</div>' +
         '<div class="tphys-idx">1 / 1</div>' +
         '<div class="tphys-q">' + item.q + '</div>' +
         '<div class="tphys-ans"><button data-v="YES">Yes</button><button data-v="NO">No</button></div>' +
