@@ -144,7 +144,14 @@
     });
   }
 
-  function init() { mountBanner(); mountHelp(); mountPopup(); }
+  function init() {
+    mountBanner(); mountHelp();
+    // Pages can opt out of the "Welcome back, Lucy" popup (e.g. the neutral
+    // course directory) via <body data-no-popup> or window.TPHYS_NO_POPUP.
+    var skip = window.TPHYS_NO_POPUP ||
+      (document.body && document.body.hasAttribute("data-no-popup"));
+    if (!skip) mountPopup();
+  }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
