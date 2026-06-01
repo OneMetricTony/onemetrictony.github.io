@@ -101,8 +101,8 @@
 
   <a class="quiz assignments" id="card-assignments" href="assignments.html">
     <div class="icon">📚</div>
-    <h2 class="title">Assignments Practice</h2>
-    <p class="subtitle">A1 (✓ done) · A2 (✓ done) · A3 (todo) · 32 flash cards</p>
+    <h2 class="title">Assignment 4 Practice</h2>
+    <p class="subtitle">Momentum, collisions, friction &amp; oscillations · 9 flash cards</p>
     <div class="progress-row">
       <span class="status notstarted" id="status-assignments">Not started</span>
       <span class="arrow">→</span>
@@ -121,7 +121,8 @@
 // Answer key for mock midterm (indices into options, A=0 B=1 C=2 D=3)
 const MIDTERM_KEY = [1,1,2,0,1,1,1,1,1,2,2,0,2,0,1,0,1,2,1,2];
 const MIDTERM_TOTAL = 20;
-const ASGN_TOTAL = 32;
+const ASGN_TOTAL = 9;            // Practice now holds Assignment 4 only (A1-A3 live in the Assignments tab)
+const ASGN_PREFIX = "A4";        // scope progress to A4 question ids within the shared store
 
 function getMidtermState(){
   try {
@@ -200,9 +201,9 @@ function renderAsgn(){
     card.classList.remove("done","partial");
     return;
   }
-  const vals = Object.values(s.marks);
-  const got = vals.filter(v => v === "got").length;
-  const review = vals.filter(v => v === "review").length;
+  const entries = Object.entries(s.marks).filter(([id]) => id.indexOf(ASGN_PREFIX) === 0);
+  const got = entries.filter(([,v]) => v === "got").length;
+  const review = entries.filter(([,v]) => v === "review").length;
   const total = got + review;
   const pct = (total / ASGN_TOTAL) * 100;
   barEl.style.width = pct + "%";

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Assignment 2 — CPCS110</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="/flashcards.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <h1>Assignment 2</h1>
+      <a class="back" href="/physics/cpcs110/assignments/">← Assignments</a>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="filters" id="filters"></div>
+    <div class="tag-filter-bar" id="tagBar">
+      <span class="lbl">Filtering by tag <code id="tagBarText"></code></span>
+      <button class="clr" id="tagClear">×</button>
+    </div>
+  </header>
+  <div id="list"></div>
+</div>
+
+<script src="/flashcards.js"></script>
+<script>
+const F = window.F;
+initFlashcards({
+  store: "lucy_assignments_v1",
+  questions: [
+  {id:"A2Q1", asgn:"A2", topic:"W2.1 — Momentum Principle", title:"Net force, impulse, avg force",
+    tags:["#force","#net-force","#impulse","#momentum-principle"],
+    hint:[F.impulse],
+    stem:`(1) Forces $\\langle 17,-10,39\\rangle$ N and $\\langle 23,-5,-28\\rangle$ N. Net force?<br>(2) Hockey puck $\\vec p_i=\\langle 0,0,29\\rangle$ kg·m/s comes to a stop. Impulse?<br>(3) Took 3 s. Avg force on puck?`,
+    ans:[
+      {l:"(1) Net force", v:"$\\vec F_{net}=\\langle 40.0,\\ -15.0,\\ 11.0\\rangle$ N"},
+      {l:"(2) Impulse", v:"$\\vec J=\\langle 0,\\ 0,\\ -29.0\\rangle$ N·s"},
+      {l:"(3) Avg force", v:"$\\vec F_{avg}=\\langle 0,\\ 0,\\ -9.67\\rangle$ N"}
+    ],
+    fm:"$\\vec F_{net}=\\sum\\vec F_i;\\ \\vec J=\\Delta\\vec p;\\ \\vec F_{avg}=\\vec J/\\Delta t$"},
+
+  {id:"A2Q2", asgn:"A2", topic:"W2.1 — Momentum Principle", title:"Constant force update",
+    tags:["#momentum-principle","#impulse"],
+    hint:[F.impulse],
+    stem:`Particle has $|\\vec p|=37$ kg·m/s in +x. Force $\\langle -11,8,0\\rangle$ N for 1.0 s. Final momentum?`,
+    ans:[{l:"Final momentum", v:"$\\vec p_f=\\langle 26.0,\\ 8.00,\\ 0\\rangle$ kg·m/s"}],
+    fm:"$\\vec p_f=\\vec p_i+\\vec F_{net}\\Delta t$"},
+
+  {id:"A2Q3", asgn:"A2", topic:"W1.4 — Time-weighted avg", title:"Two-leg drive",
+    tags:["#velocity","#avg-velocity","#conceptual"],
+    hint:[F.vavg],
+    stem:`Drive 1 h at 35 km/h, then 2 h at 105 km/h.<br>(a) Distance? (b) Avg $v_x$? (c) Why isn't this $(35+105)/2=70$?`,
+    ans:[
+      {l:"(a) Distance", v:"$\\Delta x=245$ km"},
+      {l:"(b) Avg velocity", v:"$v_{avg,x}=81.7$ km/h"},
+      {l:"(c) Why not 70", v:"Time-weighted, not arithmetic — more time spent at 105 km/h."}
+    ],
+    fm:"$v_{avg}=\\sum\\Delta x_i/\\sum\\Delta t_i$"},
+
+  {id:"A2Q4", asgn:"A2", topic:"W2.1 — Multiple forces", title:"Model rocket (thrust + gravity + air)",
+    tags:["#force","#net-force","#momentum-principle","#iterative","#gravity"],
+    hint:[F.impulse, F.Fma],
+    stem:`0.05 kg rocket, $\\vec v=\\langle 0,2.9,0\\rangle$ m/s. Forces: thrust $\\langle 0,4,0\\rangle$ N, gravity $\\langle 0,-0.49,0\\rangle$ N, air $\\langle 0,-1.2,0\\rangle$ N.<br>(1) Net force? (2) $\\vec p$ at 0.02 s later? (3) $\\Delta\\vec r$ over that 0.02 s? (use $\\vec v_{avg}\\approx\\vec p_f/m$)`,
+    ans:[
+      {l:"(1) Net force", v:"$\\vec F_{net}=\\langle 0,\\ 2.31,\\ 0\\rangle$ N"},
+      {l:"(2) Momentum", v:"$\\vec p=\\langle 0,\\ 0.191,\\ 0\\rangle$ kg·m/s"},
+      {l:"(3) Displacement", v:"$\\Delta\\vec r=\\langle 0,\\ 0.0765,\\ 0\\rangle$ m"}
+    ],
+    fm:"$\\vec p_f=\\vec p_i+\\vec F_{net}\\Delta t;\\ \\Delta\\vec r\\approx(\\vec p_f/m)\\Delta t$"},
+
+  {id:"A2Q5", asgn:"A2", topic:"W2.1 — Iterative time-stepping", title:"Nerf ball trajectory",
+    tags:["#iterative","#time-step","#momentum-principle"],
+    hint:[F.impulse, F.posUpdate],
+    stem:`Nerf ball mass 0.002 kg. At $t=0.10$ s: $\\vec F=\\langle -0.0196,-0.0240,0\\rangle$ N, $\\vec v=\\langle 1.87,0.84,0\\rangle$ m/s, $\\vec r=\\langle 0.325,0.280,0\\rangle$ m.<br>(1) Position at $t=0.12$ s? (2) Then $\\vec F=\\langle -0.0149,-0.0213,0\\rangle$ N at 0.12; position at $t=0.14$ s?`,
+    ans:[
+      {l:"(1) r(0.12)", v:"$\\vec r=\\langle 0.358,\\ 0.292,\\ 0\\rangle$ m"},
+      {l:"(2) r(0.14)", v:"$\\vec r=\\langle 0.389,\\ 0.300,\\ 0\\rangle$ m"}
+    ],
+    fm:"Iterative: $\\vec p_f=\\vec p_i+\\vec F\\Delta t;\\ \\vec r_f=\\vec r_i+(\\vec p_f/m)\\Delta t$"},
+
+  {id:"A2Q6", asgn:"A2", topic:"W2.1 — Spring in 2D", title:"Hanging ball on spring",
+    tags:["#spring","#hooke","#force","#gravity","#equilibrium"],
+    hint:[F.spring, F.stretch, F.fg],
+    stem:`30 g ball on spring, $L_0=14$ cm, $k=14.5$ N/m. Support at $\\langle 0,0.03,0\\rangle$ m, ball at $\\langle 0.161,-0.192,0\\rangle$ m.<br>(a) $\\vec L$ support→ball? (b) Stretch? (c) Spring force on ball? (d) Gravity force? (e) Net force?`,
+    ans:[
+      {l:"(a) Vector", v:"$\\vec L=\\langle 0.161,\\ -0.222,\\ 0\\rangle$ m"},
+      {l:"(b) Stretch", v:"$s=0.134$ m"},
+      {l:"(c) Spring force", v:"$\\vec F_{spring}=\\langle -1.14,\\ 1.58,\\ 0\\rangle$ N"},
+      {l:"(d) Gravity force", v:"$\\vec F_{grav}=\\langle 0,\\ -0.294,\\ 0\\rangle$ N"},
+      {l:"(e) Net force", v:"$\\vec F_{net}=\\langle -1.14,\\ 1.28,\\ 0\\rangle$ N"}
+    ],
+    fm:"$\\vec L=\\vec r_{ball}-\\vec r_{support};\\ s=|\\vec L|-L_0;\\ \\vec F_{spring}=-ks\\hat L;\\ \\vec F_{grav}=m\\vec g$"},
+
+  {id:"A2Q7", asgn:"A2", topic:"W2.1 — Numerical integration", title:"Spring oscillation (3 steps)",
+    tags:["#spring","#hooke","#iterative","#time-step"],
+    hint:[F.spring, F.impulse, F.posUpdate],
+    stem:`$L_0=36$ cm, $k=13$ N/m, 81 g block pushed down to $L=12$ cm, released at $t=0$. Iterate over 0.09 s in $\\Delta t=0.03$ s steps.`,
+    ans:[
+      {l:"Step 1 (0 → 0.03 s)", v:"$F_{sp,y}=3.12,\\ F_{g,y}=-0.794,\\ F_{net,y}=2.33$ N; $p_y=0.0698$, $v_y=0.862$ m/s, $y=0.146$ m"},
+      {l:"Step 2 (0.03 → 0.06 s)", v:"$F_{sp,y}=2.78,\\ F_{net,y}=1.99$ N; $p_y=0.129$, $v_y=1.60$ m/s, $y=0.194$ m"},
+      {l:"Step 3 (0.06 → 0.09 s)", v:"$F_{sp,y}=2.16,\\ F_{net,y}=1.37$ N; $p_y=0.170$, $v_y=2.10$ m/s, $y=0.257$ m"}
+    ],
+    fm:"$F_{spring}=k(L_0-L);\\ p_y\\leftarrow p_y+F_{net,y}\\Delta t;\\ y\\leftarrow y+(p_y/m)\\Delta t$"},
+
+  {id:"A2Q8", asgn:"A2", topic:"W2.2 — Constant gravity", title:"Projectile (conceptual)",
+    tags:["#gravity","#force","#conceptual","#projectile"],
+    hint:[F.fg, F.impulse],
+    stem:`0.3 kg ball flies through air (negligible drag).<br>(a) Net force? (b) Which $p$ components change? (c) $p_x$? (d) $p_y$? (e) $p_z$? (f) Why is $v_{avg,y}=(v_{yi}+v_{yf})/2$ valid?`,
+    ans:[
+      {l:"(a) Net force", v:"$\\vec F_{net}=\\langle 0,\\ -2.94,\\ 0\\rangle$ N"},
+      {l:"(b) Changing", v:"$y$ only"},
+      {l:"(c)(d)(e)", v:"$p_x$: no change &nbsp; $p_y$: decreases &nbsp; $p_z$: no change"},
+      {l:"(f) Valid because", v:"✓ Speed $\\ll c$ &nbsp; ✓ Net force is constant (constant rate of velocity change)"}
+    ],
+    fm:"$\\vec F=m\\vec g$ near surface; midpoint-rule avg valid when $a$ is constant."},
+
+  {id:"A2Q9", asgn:"A2", topic:"W2.1 — Large impulse", title:"Baseball–bat collision",
+    tags:["#impulse","#momentum-principle","#collision"],
+    hint:[F.impulse, F.pmv],
+    stem:`Bat moves in $-z$. Ball mass 0.145 kg at 74 mph in $+z$. Ball ends up in $-z$. Contact 1.2 ms. Force on ball: $\\langle 0,0,-1.35\\times10^4\\rangle$ N.<br>(1) Initial speed (m/s)? (2) $\\vec p_i$? (3) $\\vec p_f$? (4) $|v_f|$?`,
+    ans:[
+      {l:"(1) Initial speed", v:"$|v_i|=33.1$ m/s (74 mph × 1.61 km/mi)"},
+      {l:"(2) p before", v:"$\\vec p_i=\\langle 0,\\ 0,\\ 4.80\\rangle$ kg·m/s"},
+      {l:"(3) p after", v:"$\\vec p_f=\\langle 0,\\ 0,\\ -11.4\\rangle$ kg·m/s"},
+      {l:"(4) Final speed", v:"$|v_f|=78.6$ m/s"}
+    ],
+    fm:"$\\vec p_i=m\\vec v_i;\\ \\vec p_f=\\vec p_i+\\vec F\\Delta t;\\ |v_f|=|\\vec p_f|/m$"},
+
+  {id:"A2Q10", asgn:"A2", topic:"W2.2 — Universal gravity", title:"Sun ↔ Jupiter",
+    tags:["#gravity","#central-force","#newton-3rd"],
+    hint:[F.grav, F.N3],
+    stem:`$M_\\odot=2\\times10^{30}$ kg, $M_J=1.9\\times10^{27}$ kg, $r=7.8\\times10^{11}$ m.<br>(a) Force by Sun on Jupiter? (b) Force by Jupiter on Sun?`,
+    ans:[
+      {l:"(a) Sun → Jupiter", v:"$F=4.17\\times10^{23}$ N"},
+      {l:"(b) Jupiter → Sun", v:"$F=4.17\\times10^{23}$ N &nbsp; (Newton's 3rd law)"}
+    ],
+    fm:"$F=Gm_1m_2/r^2;\\ G=6.674\\times10^{-11}$ N·m²/kg²"},
+
+  {id:"A2Q11", asgn:"A2", topic:"W2.2 — Solving for mass", title:"Cavendish-style + asteroid",
+    tags:["#gravity","#central-force"],
+    hint:[F.grav],
+    stem:`(1) Two spheres 2 kg and 48 kg, centres 0.3 m apart. Gravitational force?<br>(2) On a spherical asteroid (radius $1\\times10^5$ m), force on your 48 kg object is 7 N. Asteroid mass?`,
+    ans:[
+      {l:"(1) Force between", v:"$F=7.12\\times10^{-8}$ N"},
+      {l:"(2) Asteroid mass", v:"$M=2.19\\times10^{19}$ kg"}
+    ],
+    fm:"$F=Gm_1m_2/r^2;\\ M=FR^2/(Gm)$"}
+  ]
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/practice-skin.css">
+<script src="/tony.js" defer></script>
+</body>
+</html>

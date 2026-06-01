@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Assignment 3 — CPCS110</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="/flashcards.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <h1>Assignment 3</h1>
+      <a class="back" href="/physics/cpcs110/assignments/">← Assignments</a>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="filters" id="filters"></div>
+    <div class="tag-filter-bar" id="tagBar">
+      <span class="lbl">Filtering by tag <code id="tagBarText"></code></span>
+      <button class="clr" id="tagClear">×</button>
+    </div>
+  </header>
+  <div id="list"></div>
+</div>
+
+<script src="/flashcards.js"></script>
+<script>
+const F = window.F;
+initFlashcards({
+  store: "lucy_assignments_v1",
+  questions: [
+  {id:"A3Q1", asgn:"A3", topic:"W2.2 — Gravity + Momentum", title:"Two blocks in deep space",
+    tags:["#gravity","#central-force","#momentum-principle","#newton-3rd"],
+    hint:[F.grav, F.impulse, F.N3],
+    stem:`Block 1 (75 kg) at $\\langle 5,14,0\\rangle$ m; block 2 (850 kg) at $\\langle 9,14,0\\rangle$ m. Outer space.<br>(a) Gravitational force on block 2 by block 1? (b) At 4.4 s, $\\vec p_2$? (start at rest at 4.1 s) (c) $\\vec p_1$ at 4.4 s? (d) Which moves faster?`,
+    ans:[
+      {l:"(a) Force on 2", v:"$\\vec F_{1\\to 2}=\\langle -2.66\\times10^{-7},\\ 0,\\ 0\\rangle$ N"},
+      {l:"(b) p of block 2", v:"$\\vec p_2=\\vec F\\Delta t=\\langle -7.97\\times10^{-8},\\ 0,\\ 0\\rangle$ kg·m/s"},
+      {l:"(c) p of block 1", v:"$\\vec p_1=\\langle 7.97\\times10^{-8},\\ 0,\\ 0\\rangle$ kg·m/s &nbsp; (N3L / total $p=0$)"},
+      {l:"(d) Faster", v:"Block 1 — smaller mass, same $|p|$"}
+    ],
+    fm:"$F=Gm_1m_2/r^2$; r=4 m; attractive direction toward block 1."},
+
+  {id:"A3Q2", asgn:"A3", topic:"W2.2 — Newton's 3rd law", title:"Softball dropped",
+    tags:["#gravity","#newton-3rd","#conceptual","#impulse"],
+    hint:[F.fg, F.impulse, F.N3],
+    stem:`Drop a 179 g softball. In half a second:<br>(1) $|\\Delta p_{ball}|$? (2) $|\\Delta p_{Earth}|$? (3) $|\\Delta v_{ball}|$? (4) $|\\Delta v_{Earth}|$?`,
+    ans:[
+      {l:"(1) Δp ball", v:"$0.877$ kg·m/s &nbsp; $(=mg\\Delta t)$"},
+      {l:"(2) Δp Earth", v:"$0.877$ kg·m/s &nbsp; (N3L: equal magnitude)"},
+      {l:"(3) Δv ball", v:"$|\\Delta v|=g\\Delta t=4.90$ m/s"},
+      {l:"(4) Δv Earth", v:"$|\\Delta v|=0.877/(5.972\\times10^{24})\\approx 1.47\\times10^{-25}$ m/s"}
+    ],
+    fm:"$\\Delta p=F\\Delta t=mg\\Delta t$; equal $|\\Delta p|$ both sides; $\\Delta v=\\Delta p/m$ uses each body's own mass."},
+
+  {id:"A3Q3", asgn:"A3", topic:"W2.2 — Gravity on a planet", title:"Human on Venus",
+    tags:["#gravity","#surface-gravity","#central-force","#conceptual"],
+    hint:[F.grav, F.gSurface],
+    stem:`74 kg human on Venus. $M_V=4.9\\times10^{24}$ kg, $R_V=6.1\\times10^{6}$ m.<br>(a) Force by Venus on human? (b) By human on Venus? (c) Force between two such humans 2 m apart? (d) Which simplifying assumptions are required? (✓ correct physics only)`,
+    ans:[
+      {l:"(a) Force Venus → human", v:"$F=GMm/R^2\\approx 650$ N"},
+      {l:"(b) Force human → Venus", v:"$F=650$ N &nbsp; (N3L)"},
+      {l:"(c) Two-human force", v:"$F=Gm^2/r^2\\approx 9.14\\times10^{-8}$ N"},
+      {l:"(d) Required assumptions", v:"✓ Treat as points/uniform spheres &nbsp; ✓ Venus spherically symmetric &nbsp; ✓ Ignore Sun's effect &nbsp; ✗ G depending on size (false)"}
+    ],
+    fm:"$F=GMm/R^2$ at surface; $G$ is universal (independent of body size)."},
+
+  {id:"A3Q4", asgn:"A3", topic:"W3.1 — Coulomb vector", title:"Two charged spheres",
+    tags:["#coulomb","#electric-force","#central-force","#vectors","#unit-vector"],
+    hint:[F.coulomb, F.unitVec, F.delta],
+    stem:`Two plastic spheres, 0.008 kg each. $q_1=-6\\times10^{-9}$ C at $\\langle 0.330,-0.170,0\\rangle$ m. $q_2=-8\\times10^{-9}$ C at $\\langle -0.310,0.470,0\\rangle$ m.<br>(a) $\\vec r$ from 1 to 2? (b) $|\\vec r|$? (c) $\\hat r$? (d) Electric force by 1 on 2?`,
+    ans:[
+      {l:"(a) Relative position", v:"$\\vec r=\\langle -0.640,\\ 0.640,\\ 0\\rangle$ m"},
+      {l:"(b) Distance", v:"$|\\vec r|=0.640\\sqrt{2}\\approx 0.905$ m"},
+      {l:"(c) Unit vector", v:"$\\hat r=\\langle -0.707,\\ 0.707,\\ 0\\rangle$"},
+      {l:"(d) Force 1 on 2", v:"$\\vec F_{1\\to 2}\\approx\\langle -3.73\\times10^{-7},\\ 3.73\\times10^{-7},\\ 0\\rangle$ N"}
+    ],
+    fm:"$\\vec r=\\vec r_2-\\vec r_1;\\ \\vec F_{1\\to 2}=k\\,q_1q_2/|\\vec r|^2\\,\\hat r$. Both negative ⇒ repulsive (along $+\\hat r$)."},
+
+  {id:"A3Q5", asgn:"A3", topic:"W3.1 — Momentum conservation", title:"Proton–proton scattering",
+    tags:["#conservation","#momentum","#coulomb","#collision"],
+    hint:[F.consP, F.coulomb],
+    stem:`Proton far away has $\\vec p_1=\\langle 3.9\\times10^{-21},\\ 0,\\ 0\\rangle$ kg·m/s, approaches second proton (initially at rest). They repel electrically, never touching. Final $\\vec p_1=\\langle 3.6\\times10^{-21},\\ 4.1\\times10^{-21},\\ 0\\rangle$. What is $\\vec p_2$ (final)?`,
+    ans:[{l:"Final p of proton 2", v:"$\\vec p_{2,f}=\\langle 3.00\\times10^{-22},\\ -4.10\\times10^{-21},\\ 0\\rangle$ kg·m/s"}],
+    fm:"Total momentum conserved (no external force): $\\vec p_{1,i}+\\vec p_{2,i}=\\vec p_{1,f}+\\vec p_{2,f}$"},
+
+  {id:"A3Q6", asgn:"A3", topic:"W1.4/2.1 — Inelastic collision", title:"Wet clay (stick together)",
+    tags:["#conservation","#collision","#inelastic","#momentum"],
+    hint:[F.consP, F.pmv],
+    stem:`Two 50 g clay lumps. Just before impact: $\\vec v_1=\\langle 2,6,-9\\rangle$ m/s, $\\vec v_2=\\langle -3,0,-6\\rangle$ m/s. They collide and stick.<br>(a) Total p before? (b) Total p after? (c) Velocity after?`,
+    ans:[
+      {l:"(a) p before", v:"$\\vec p_{tot,i}=\\langle -0.0500,\\ 0.300,\\ -0.750\\rangle$ kg·m/s"},
+      {l:"(b) p after", v:"$\\vec p_{tot,f}=\\langle -0.0500,\\ 0.300,\\ -0.750\\rangle$ kg·m/s &nbsp; (conservation)"},
+      {l:"(c) v after", v:"$\\vec v_f=\\langle -0.500,\\ 3.00,\\ -7.50\\rangle$ m/s"}
+    ],
+    fm:"$\\vec p_{tot,i}=\\vec p_{tot,f};\\ \\vec v_f=\\vec p_f/(m_1+m_2)$"}
+  ]
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/practice-skin.css">
+<script src="/tony.js" defer></script>
+</body>
+</html>

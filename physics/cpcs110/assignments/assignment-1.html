@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1116">
+<title>Assignment 1 — CPCS110</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="/flashcards.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <h1>Assignment 1</h1>
+      <a class="back" href="/physics/cpcs110/assignments/">← Assignments</a>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="filters" id="filters"></div>
+    <div class="tag-filter-bar" id="tagBar">
+      <span class="lbl">Filtering by tag <code id="tagBarText"></code></span>
+      <button class="clr" id="tagClear">×</button>
+    </div>
+  </header>
+  <div id="list"></div>
+</div>
+
+<script src="/flashcards.js"></script>
+<script>
+const F = window.F;
+initFlashcards({
+  store: "lucy_assignments_v1",
+  questions: [
+  {id:"A1Q1", asgn:"A1", topic:"W1.3 — Vectors", title:"Unit vector + scaling",
+    tags:["#vectors","#unit-vector","#magnitude"],
+    hint:[F.unitVec, F.magnitude],
+    stem:`Part 1: Unit vector in direction of $\\vec A = \\langle 44,\\ 14,\\ -19\\rangle$ cm?<br>Part 2: $\\vec B$ in same direction with $|\\vec B|=250$ cm?`,
+    ans:[
+      {l:"(1) Unit vector", v:"$\\hat A = \\langle 0.881,\\ 0.280,\\ -0.381\\rangle$"},
+      {l:"(2) Scaled to 250 cm", v:"$\\vec B = \\langle 220,\\ 70.1,\\ -95.1\\rangle$ cm"}
+    ],
+    fm:"$\\hat A = \\vec A / |\\vec A|;\\quad \\vec B = |B|\\,\\hat A$"},
+
+  {id:"A1Q2", asgn:"A1", topic:"W1.3 — Displacement", title:"Drone navigation",
+    tags:["#vectors","#unit-vector","#displacement"],
+    hint:[F.unitVec, F.delta],
+    stem:`Drone at origin. Fly along $\\langle 36, 52, -35\\rangle$ for 8 m; then along $\\langle -27, 12, -24\\rangle$ for 6 m.<br>Part 1: Final coordinates?<br>Part 2: Friend's drone at $\\langle 13, 20, 4\\rangle$ m — vector to fly to your spot?`,
+    ans:[
+      {l:"(1) Final position", v:"$\\langle -0.272,\\ 7.65,\\ -7.66\\rangle$ m"},
+      {l:"(2) Friend → you", v:"$\\langle -13.3,\\ -12.4,\\ -11.7\\rangle$ m"}
+    ],
+    fm:"Step1 $=8\\hat u_1$, Step2 $=6\\hat u_2$. Sum for position. $\\Delta\\vec r=\\vec r_{you}-\\vec r_{friend}$."},
+
+  {id:"A1Q3", asgn:"A1", topic:"W1.3 — Direction cosines", title:"End of a rod",
+    tags:["#vectors","#direction-cosines"],
+    hint:[F.dirCos],
+    stem:`Rod length 6.1 m, one end at $\\langle 10, 18, -13\\rangle$ m. Angles with axes: $49^\\circ$ (+x), $50^\\circ$ (+y), $113^\\circ$ (+z). Location of far end?`,
+    ans:[{l:"Far end", v:"$\\langle 14.0,\\ 21.9,\\ -15.4\\rangle$ m"}],
+    fm:"$\\vec r_{far}=\\vec r_{near}+L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle$"},
+
+  {id:"A1Q4", asgn:"A1", topic:"W1.3 — Vector addition", title:"Graphical sum (MC)",
+    tags:["#vectors","#conceptual"],
+    hint:[F.delta],
+    stem:`Which is correct? (a) $\\vec C = \\vec A + \\vec B$ &nbsp; (b) $\\vec C = \\vec A - \\vec B$ &nbsp; (c) $\\vec C = \\vec B - \\vec A$`,
+    ans:[{l:"Answer", v:"(a) $\\vec C = \\vec A + \\vec B$"}],
+    fm:"Head-to-tail rule for vector sum."},
+
+  {id:"A1Q5", asgn:"A1", topic:"W1.3 — Vector subtraction", title:"Graphical subtraction (select all)",
+    tags:["#vectors","#conceptual","#displacement"],
+    hint:[F.delta],
+    stem:`Which are correct? (i) $\\vec C=\\vec B-\\vec A$ &nbsp; (ii) $\\vec C=\\vec A+\\vec B$ &nbsp; (iii) $\\vec B=\\vec A+\\vec C$ &nbsp; (iv) $\\vec C=\\vec B+\\vec A$`,
+    ans:[
+      {l:"Correct", v:"✓ $\\vec C=\\vec B-\\vec A$ &nbsp;&nbsp; ✓ $\\vec B=\\vec A+\\vec C$"}
+    ],
+    fm:"$\\vec C=\\vec B-\\vec A \\Leftrightarrow \\vec B=\\vec A+\\vec C$ (head-to-tail)."},
+
+  {id:"A1Q6", asgn:"A1", topic:"W1.4 — Average velocity", title:"Two-leg walk",
+    tags:["#velocity","#avg-velocity","#unit-vector"],
+    hint:[F.vavg, F.unitVec],
+    stem:`Walk 24 m along $\\langle 1,0,0\\rangle$ at 2.5 m/s, then 15 m along $\\langle 1,0,1\\rangle/\\sqrt{2}$ at 2.7 m/s. Average velocity?`,
+    ans:[{l:"Avg velocity", v:"$\\vec v_{avg}=\\langle 2.28,\\ 0,\\ 0.700\\rangle$ m/s"}],
+    fm:"$\\vec v_{avg}=\\Delta\\vec r_{total}/\\Delta t_{total}$; $t_1=24/2.5$, $t_2=15/2.7$."},
+
+  {id:"A1Q7", asgn:"A1", topic:"W2.1 — Newton's 1st law", title:"Net interaction (conceptual)",
+    tags:["#newton-1st","#conceptual","#momentum-principle"],
+    hint:[F.impulse],
+    stem:`(a) Which objects are undergoing a net interaction?<br>(i) Book slides + stops &nbsp;(ii) Proton speeds up &nbsp;(iii) Car at constant speed on circular track &nbsp;(iv) Atom at rest in space &nbsp;(v) Spacecraft constant speed toward star<br>(b) Spaceship reaches $10^4$ m/s far from all objects, powers off. What happens?`,
+    ans:[
+      {l:"(a) Interacting", v:"✓ Book sliding &nbsp; ✓ Proton speeding up &nbsp; ✓ Car on circular track"},
+      {l:"(b) After power off", v:"✓ Speed unchanged &nbsp; ✓ Moves in a straight line"}
+    ],
+    fm:"$\\vec v$ changes (magnitude OR direction) $\\Rightarrow \\vec F_{net}\\neq 0$."},
+
+  {id:"A1Q8", asgn:"A1", topic:"W1.3 — Vectors", title:"Star → planet position",
+    tags:["#vectors","#displacement","#unit-vector","#magnitude"],
+    hint:[F.delta, F.unitVec, F.magnitude],
+    stem:`Planet at $\\langle -2\\times10^{10}, 4\\times10^{10}, -2\\times10^{10}\\rangle$ m. Star at $\\langle 8\\times10^{10}, -7\\times10^{10}, 5\\times10^{10}\\rangle$ m.<br>(a) $\\vec r$ from star to planet? (b) $|\\vec r|$? (c) $\\hat r$?`,
+    ans:[
+      {l:"(a) Vector", v:"$\\vec r = \\langle -1.00\\times10^{11},\\ 1.10\\times10^{11},\\ -7.00\\times10^{10}\\rangle$ m"},
+      {l:"(b) Magnitude", v:"$|\\vec r|=1.64\\times10^{11}$ m"},
+      {l:"(c) Unit vector", v:"$\\hat r=\\langle -0.609,\\ 0.670,\\ -0.426\\rangle$"}
+    ],
+    fm:"$\\vec r=\\vec r_{planet}-\\vec r_{star};\\ |\\vec r|=\\sqrt{r_x^2+r_y^2+r_z^2};\\ \\hat r=\\vec r/|\\vec r|$"},
+
+  {id:"A1Q9", asgn:"A1", topic:"W1.4 — Average velocity", title:"Slow neutron",
+    tags:["#velocity","#avg-velocity"],
+    hint:[F.vavg],
+    stem:`Neutron from $\\langle 0.5,\\ -0.01,\\ 0.4\\rangle$ m to $\\langle -0.224,\\ 0.052,\\ 0.095\\rangle$ m in 2 µs.<br>(a) Average velocity? (b) Magnitude?`,
+    ans:[
+      {l:"(a) Avg velocity", v:"$\\vec v=\\langle -3.62\\times10^{5},\\ 3.10\\times10^{4},\\ -1.53\\times10^{5}\\rangle$ m/s"},
+      {l:"(b) Magnitude", v:"$|\\vec v|=3.94\\times10^{5}$ m/s"}
+    ],
+    fm:"$\\vec v_{avg}=\\Delta\\vec r/\\Delta t$"},
+
+  {id:"A1Q10", asgn:"A1", topic:"W1.4 — Position update", title:"Electron iterative",
+    tags:["#position-update","#velocity","#avg-velocity"],
+    hint:[F.posUpdate, F.vavg],
+    stem:`Electron at $\\langle 0.02,\\ 0.04,\\ -0.06\\rangle$ m, then $\\langle 0.02,\\ 1.98,\\ -0.72\\rangle$ m 7 µs later.<br>(a) Avg velocity? (b) Position in another 11 µs?`,
+    ans:[
+      {l:"(a) Avg velocity", v:"$\\vec v_{avg}=\\langle 0,\\ 2.77\\times10^{5},\\ -9.43\\times10^{4}\\rangle$ m/s"},
+      {l:"(b) New position", v:"$\\vec r=\\langle 0.0200,\\ 5.03,\\ -1.76\\rangle$ m"}
+    ],
+    fm:"$\\vec r_f=\\vec r_i+\\vec v_{avg}\\Delta t$"},
+
+  {id:"A1Q11", asgn:"A1", topic:"W1.4 — Momentum", title:"Pitched baseball",
+    tags:["#momentum","#non-rel-momentum"],
+    hint:[F.pmv],
+    stem:`Baseball mass 0.146 kg pitched at 75 mi/h $=$ 33.5 m/s. Momentum magnitude?`,
+    ans:[{l:"Momentum", v:"$|\\vec p|=4.89$ kg·m/s"}],
+    fm:"$|\\vec p|=m|\\vec v|$ (low speed)"},
+
+  {id:"A1Q12", asgn:"A1", topic:"W2.1 — Acceleration", title:"Saturn V",
+    tags:["#velocity","#newton-2nd"],
+    hint:[F.Fma],
+    stem:`Saturn V reached 2398 m/s at 168 s after liftoff.<br>(a) Avg acceleration (m/s²)? (b) In g's? ($g=9.8$ m/s²)`,
+    ans:[
+      {l:"(a) Acceleration", v:"$a=14.3$ m/s²"},
+      {l:"(b) In g's", v:"$a/g=1.46$ g"}
+    ],
+    fm:"$a=\\Delta v/\\Delta t$"},
+
+  {id:"A1Q13", asgn:"A1", topic:"W1.4 — Momentum + position", title:"Bowling ball",
+    tags:["#momentum","#position-update"],
+    hint:[F.pmv, F.posUpdate],
+    stem:`5.5 kg ball with $\\vec p=\\langle 0.5,\\ 0,\\ 13.5\\rangle$ kg·m/s, starts at origin. Location after 2.1 s?`,
+    ans:[{l:"Position", v:"$\\vec r=\\langle 0.191,\\ 0,\\ 5.15\\rangle$ m"}],
+    fm:"$\\vec v=\\vec p/m;\\ \\vec r=\\vec v\\cdot t$"},
+
+  {id:"A1Q14", asgn:"A1", topic:"W1.4 — Δp vs Δ|p|", title:"Tennis ball off a wall",
+    tags:["#momentum","#impulse","#delta-p"],
+    hint:[F.dp],
+    stem:`Tennis ball mass 57 g. $\\vec v_i=\\langle 64,\\ 0,\\ 0\\rangle$ m/s, $\\vec v_f=\\langle -58,\\ 0,\\ 0\\rangle$ m/s.<br>(b) $\\Delta\\vec p$? (c) $|\\Delta\\vec p|$? (d) $\\Delta|\\vec p|$?`,
+    ans:[
+      {l:"(b) Vector change", v:"$\\Delta\\vec p=\\langle -6.95,\\ 0,\\ 0\\rangle$ kg·m/s"},
+      {l:"(c) Magnitude of change", v:"$|\\Delta\\vec p|=6.95$ kg·m/s"},
+      {l:"(d) Change of magnitude", v:"$\\Delta|\\vec p|=-0.342$ kg·m/s"}
+    ],
+    fm:"$\\Delta\\vec p=m(\\vec v_f-\\vec v_i)$; note $|\\Delta\\vec p|\\neq\\Delta|\\vec p|$ in general."},
+
+  {id:"A1Q15", asgn:"A1", topic:"W1.4 — Relativistic momentum", title:"Fast electron",
+    tags:["#relativistic","#gamma","#momentum","#rel-momentum"],
+    hint:[F.pgmv, F.gamma],
+    stem:`Electron at $|\\vec v|=0.995c$ ($c=3\\times10^{8}$ m/s) in direction $\\hat v=\\langle 0.422,\\ -0.527,\\ -0.738\\rangle$. Mass $9\\times10^{-31}$ kg.<br>(a) $\\gamma$? (b) Speed? (c) $|\\vec p|$? (d) $\\vec p$?`,
+    ans:[
+      {l:"(a) Gamma", v:"$\\gamma=10.0$"},
+      {l:"(b) Speed", v:"$|\\vec v|=2.99\\times10^{8}$ m/s"},
+      {l:"(c) Momentum magnitude", v:"$|\\vec p|=2.69\\times10^{-21}$ kg·m/s"},
+      {l:"(d) Momentum vector", v:"$\\vec p=\\langle 1.14\\times10^{-21},\\ -1.42\\times10^{-21},\\ -1.98\\times10^{-21}\\rangle$ kg·m/s"}
+    ],
+    fm:"$\\vec p=\\gamma m\\vec v;\\ \\vec p=|\\vec p|\\hat v$"}
+  ]
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/practice-skin.css">
+<script src="/tony.js" defer></script>
+</body>
+</html>

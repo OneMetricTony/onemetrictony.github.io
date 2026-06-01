@@ -33,6 +33,47 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function enc(s) { return encodeURIComponent(s); }
 
+  /* ---------- visit detection: don't spam Lucy while she's active ---------
+     "A visit" = a fresh browser session OR returning after being away.
+     While she clicks around (active use) the popup never re-fires; it only
+     comes back on a new session or after ~30 min idle. Each new visit also
+     advances the quote/question index so it's fresh and never repeats the
+     last one shown. */
+  var AWAY_MS = 30 * 60 * 1000;          // idle gap that counts as "a new visit"
+  function lsGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
+  function ssGet(k){ try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v){ try { sessionStorage.setItem(k, v); } catch (e) {} }
+
+  // True the first time it's called in a new visit; false on later page views
+  // within the same active session.
+  var _isNewVisit = null;
+  function isNewVisit(){
+    if (_isNewVisit !== null) return _isNewVisit;
+    var now = Date.now();
+    var last = parseInt(lsGet("tphys_last") || "0", 10);
+    var away = !last || (now - last > AWAY_MS);
+    var sessionActive = ssGet("tphys_session") === "1";
+    _isNewVisit = away || !sessionActive;
+    ssSet("tphys_session", "1");
+    lsSet("tphys_last", String(now));
+    return _isNewVisit;
+  }
+
+  // A per-visit index into an array, advanced once per visit so consecutive
+  // visits never show the same entry. Held in sessionStorage so every page in
+  // one session shows the same fresh pick.
+  function visitIndex(key, len){
+    var s = ssGet(key);
+    if (s !== null) { var n = parseInt(s, 10); if (!isNaN(n)) return n % len; }
+    var prev = parseInt(lsGet(key) || "-1", 10);
+    if (isNaN(prev)) prev = -1;
+    var idx = (prev + 1) % len;
+    lsSet(key, String(idx));
+    ssSet(key, String(idx));
+    return idx;
+  }
+
   /* ---------- inject styles -------------------------------------------- */
   var css = `
   .tphys-banner{font-family:"EB Garamond",Georgia,serif;background:#0d0d0d;color:#f3f1ea;
@@ -88,7 +129,7 @@
     b.innerHTML = '<div class="lab">Tony Physics</div><div class="tphys-quote"></div>';
     document.body.insertBefore(b, document.body.firstChild);
     var qEl = b.querySelector(".tphys-quote");
-    var i = Math.floor(Math.random() * QUOTES.length);
+    var i = visitIndex("tphys_qi", QUOTES.length);   // fresh, alternated per visit
     qEl.textContent = QUOTES[i];
     setInterval(function () {
       qEl.style.opacity = "0";
@@ -112,7 +153,7 @@
 
   /* ---------- affirmation popup (every visit) -------------------------- */
   function mountPopup() {
-    var item = pick(QUESTIONS);
+    var item = QUESTIONS[visitIndex("tphys_pi", QUESTIONS.length)];
     var ovl = document.createElement("div");
     ovl.className = "tphys-ovl";
     ovl.innerHTML =
@@ -145,12 +186,20 @@
   }
 
   function init() {
+    var freshVisit = isNewVisit();   // call once; also stamps last-seen + session
     mountBanner(); mountHelp();
     // Pages can opt out of the "Welcome back, Lucy" popup (e.g. the neutral
     // course directory) via <body data-no-popup> or window.TPHYS_NO_POPUP.
     var skip = window.TPHYS_NO_POPUP ||
       (document.body && document.body.hasAttribute("data-no-popup"));
-    if (!skip) mountPopup();
+    // Only greet on a genuine new visit — never while she's actively clicking
+    // back and forth within a session.
+    if (!skip && freshVisit) mountPopup();
+    // Heartbeat: while the tab is open and visible she's "present", so reading
+    // one page for a long time won't later count as having been away.
+    setInterval(function () {
+      if (document.visibilityState === "visible") lsSet("tphys_last", String(Date.now()));
+    }, 60000);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
