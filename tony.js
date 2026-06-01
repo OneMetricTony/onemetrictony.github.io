@@ -38,8 +38,8 @@
      localStorage, so the browser Back button, scrolling/navigating back and
      forth, bfcache restores, and extra tabs all stay quiet — it cannot show
      again until she's been away for POPUP_GAP_MS. When it does fire it
-     advances the quote/question index so each appearance is fresh and never
-     repeats the previous one. */
+     advances the question index so each appearance is fresh and never repeats
+     the previous one. (The top banner quote is independent — it rotates freely.) */
   var POPUP_GAP_MS = 6 * 60 * 60 * 1000;   // ~6h — a whole study session won't re-trigger it
   function lsGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
@@ -53,10 +53,9 @@
     var at = parseInt(lsGet("tphys_popup_at") || "0", 10);
     return !at || (Date.now() - at >= POPUP_GAP_MS);
   }
-  // Stamp the time and advance both indices so the next pick differs from the last.
+  // Stamp the time and advance the question index so the next one differs.
   function openPopupWindow(){
     lsSet("tphys_popup_at", String(Date.now()));
-    lsSet("tphys_qi", String(parseInt(lsGet("tphys_qi") || "-1", 10) + 1));
     lsSet("tphys_pi", String(parseInt(lsGet("tphys_pi") || "-1", 10) + 1));
   }
 
@@ -115,7 +114,9 @@
     b.innerHTML = '<div class="lab">Tony Physics</div><div class="tphys-quote"></div>';
     document.body.insertBefore(b, document.body.firstChild);
     var qEl = b.querySelector(".tphys-quote");
-    var i = storedIndex("tphys_qi", QUOTES.length);   // stable within a window, fresh per new window
+    // Banner is decorative, not a nag — fresh random quote each page load,
+    // then rotates every 8.5s. Independent of the popup cooldown.
+    var i = Math.floor(Math.random() * QUOTES.length);
     qEl.textContent = QUOTES[i];
     setInterval(function () {
       qEl.style.opacity = "0";
