@@ -128,9 +128,52 @@
   ::-webkit-scrollbar{width:9px;}
   ::-webkit-scrollbar-thumb{background:#26264f;border-radius:6px;}
   ::-webkit-scrollbar-track{background:transparent;}
+
+  /* ---- TOP NAV (bar on desktop, drag-down on mobile) ---- */
+  .appnav{
+    position:fixed; top:0; left:0; right:0; z-index:850;
+    background:linear-gradient(180deg,#0a0a1e,rgba(10,10,30,.92));
+    border-bottom:2px solid var(--neon); box-shadow:0 6px 20px rgba(0,0,0,.45);
+    transform:translateY(-100%); transition:transform .34s cubic-bezier(.4,0,.2,1);
+  }
+  .appnav.open{ transform:translateY(0); }
+  .appnav-handle{
+    position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    min-width:80px; min-height:30px; padding:5px 16px 6px;
+    background:linear-gradient(180deg,#0a0a1e,#0a0a18);
+    border:2px solid var(--neon); border-top:none; border-radius:0 0 14px 14px;
+    cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.5);
+  }
+  .appnav-grip{ width:34px; height:4px; border-radius:3px; background:var(--neon); box-shadow:0 0 8px var(--neon); }
+  .appnav-grip-label{ font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); letter-spacing:1px; }
+  .appnav-links{ display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; padding:10px 12px; }
+  .appnav-link{ font-family:'Press Start 2P',monospace; font-size:9px; letter-spacing:1px;
+    color:var(--txt); background:var(--panel); border:2px solid var(--panel-edge); border-radius:10px;
+    padding:10px 12px; min-height:42px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
+    text-decoration:none; transition:transform .12s, border-color .15s, color .15s; }
+  .appnav-link:active{ transform:scale(.96); }
+  .appnav-link.current{ border-color:var(--sel); color:var(--sel); }
+  @media (min-width:720px){
+    .appnav{ transform:translateY(0); position:relative; }
+    .appnav-handle{ display:none; }
+    .appnav-links{ justify-content:flex-end; }
+  }
 </style>
 </head>
 <body>
+
+<div class="appnav" id="appnav">
+  <button class="appnav-handle" id="appnavHandle" aria-label="Open menu" aria-expanded="false">
+    <span class="appnav-grip"></span><span class="appnav-grip-label">MENU</span>
+  </button>
+  <div class="appnav-links">
+    <a class="appnav-link" href="/physics/cpcs110/">🏠 Home</a>
+    <a class="appnav-link" href="arcade.html">🕹 Arcade</a>
+    <a class="appnav-link current" href="concept-web.html" aria-current="page">🔗 Concept Web</a>
+  </div>
+</div>
+
 <header>
   <h1>🔗 CONCEPT WEB — CPCS110 Physics</h1>
   <p class="tagline">Chapters 1–5 at a glance. <b>Click a node</b> to light up how every idea connects — hover to preview, click an edge to focus one relationship, click empty space to reset.</p>
@@ -455,6 +498,23 @@ document.getElementById('web').addEventListener('click',()=>{
 /* ===================== INIT ===================== */
 clearVisual();
 renderDefault();
+
+/* ===================== TOP NAV (drag-down on mobile) ===================== */
+(function(){
+  var nav=document.getElementById('appnav'), handle=document.getElementById('appnavHandle');
+  function openNav(){ nav.classList.add('open'); handle.setAttribute('aria-expanded','true'); }
+  function closeNav(){ nav.classList.remove('open'); handle.setAttribute('aria-expanded','false'); }
+  handle.addEventListener('click', function(){ nav.classList.contains('open')?closeNav():openNav(); });
+  var startY=null;
+  handle.addEventListener('pointerdown', function(e){ startY=e.clientY; });
+  handle.addEventListener('pointermove', function(e){
+    if(startY===null) return;
+    if(e.clientY-startY>22){ openNav(); startY=null; }
+    else if(startY-e.clientY>22){ closeNav(); startY=null; }
+  });
+  window.addEventListener('pointerup', function(){ startY=null; });
+  document.querySelectorAll('#appnav a').forEach(function(a){ a.addEventListener('click', closeNav); });
+})();
 </script>
 </body>
 </html>
