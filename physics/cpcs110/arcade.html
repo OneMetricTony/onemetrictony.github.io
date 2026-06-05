@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
-<title>⚡ PHYSICS ARCADE — Ch 4 &amp; 5</title>
+<title>⚡ PHYSICS ARCADE — CPCS110 Ch 1–6</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -771,7 +771,7 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
     <div class="mz-tiles">
       <button class="mz-tile learn" data-go="learn">
         <span class="ic">🎓</span><span class="tt">LEARN</span>
-        <span class="ds">Teach + quiz run-through, all 6 concepts</span>
+        <span class="ds">Teach + quiz run-through, all 11 concepts (Ch 1–6)</span>
       </button>
       <button class="mz-tile assign" data-go="assignments">
         <span class="ic">📋</span><span class="tt">ASSIGN</span>
@@ -1200,6 +1200,597 @@ window.PhysicsAnims = {
   momentum:animMomentum, collisions:animCollisions, impulse:animImpulse,
   friction:animFriction, freebody:animFreeBody, energy:animEnergy
 };
+})();
+</script>
+
+<!-- ===================== VECTOR ANIMATIONS (inlined, va- namespaced) =====================
+     POLISHED hero animations from components/vector-anims.html.
+     Self-contained IIFE → window.VectorAnims = { magnitude, unitVector, vectorAdd }.
+     Each animX(canvas) -> {stop()}, same contract as window.PhysicsAnims. -->
+<script>
+(function(){
+"use strict";
+const COL = {
+  bg:'#07070f', neon:'#00f0ff', neon2:'#ff2bd6', neon3:'#9d4bff',
+  green:'#39ff7a', amber:'#ffd23f', red:'#ff4b6b', ink:'#e8e8ff', muted:'#8a8ab0'
+};
+function setupCanvas(canvas){
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = 1;
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2.5));
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  const ro = ('ResizeObserver' in window) ? new ResizeObserver(resize) : null;
+  if (ro) ro.observe(canvas); else window.addEventListener('resize', resize);
+  return {
+    ctx,
+    get W(){return W;}, get H(){return H;},
+    teardown(){ if(ro) ro.disconnect(); else window.removeEventListener('resize', resize); }
+  };
+}
+function loop(env, cb){
+  let raf = 0, running = true, t0 = performance.now();
+  function frame(now){
+    if(!running) return;
+    const t = (now - t0)/1000;
+    cb(env.ctx, env.W, env.H, t);
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+  return {
+    stop(){ running = false; cancelAnimationFrame(raf); env.teardown(); }
+  };
+}
+function clearBg(ctx, W, H){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(157,75,255,0.07)';
+  ctx.lineWidth = 1;
+  const step = Math.max(24, W/12);
+  for(let x=0;x<=W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<=H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.restore();
+}
+function glowCircle(ctx, x, y, r, color){
+  ctx.save();
+  const g = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+  g.addColorStop(0, '#ffffff');
+  g.addColorStop(0.25, color);
+  g.addColorStop(1, color);
+  ctx.shadowColor = color; ctx.shadowBlur = r*1.2;
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+function arrow(ctx, x, y, dx, dy, color, width){
+  width = width || 4;
+  const len = Math.hypot(dx,dy);
+  if(len < 0.5) return;
+  const ux = dx/len, uy = dy/len;
+  const hx = x+dx, hy = y+dy;
+  const head = Math.min(16, Math.max(8, len*0.3));
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color;
+  ctx.lineWidth = width; ctx.lineCap = 'round';
+  ctx.shadowColor = color; ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(hx - ux*head*0.6, hy - uy*head*0.6); ctx.stroke();
+  const ang = Math.atan2(uy,ux);
+  ctx.beginPath();
+  ctx.moveTo(hx, hy);
+  ctx.lineTo(hx - head*Math.cos(ang - 0.4), hy - head*Math.sin(ang - 0.4));
+  ctx.lineTo(hx - head*Math.cos(ang + 0.4), hy - head*Math.sin(ang + 0.4));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function text(ctx, str, x, y, color, size, align, weight){
+  ctx.save();
+  ctx.fillStyle = color || COL.ink;
+  ctx.font = `${weight||600} ${size||12}px -apple-system,system-ui,Segoe UI,sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(str, x, y);
+  ctx.restore();
+}
+function vecLabel(ctx, base, x, y, color, size, align, kind){
+  size = size || 14; align = align || 'center'; kind = kind || 'arrow';
+  color = color || COL.ink;
+  ctx.save();
+  ctx.font = `800 ${size}px -apple-system,system-ui,Segoe UI,sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+  const w = ctx.measureText(base).width;
+  let lx;
+  if(align==='left') lx = x;
+  else if(align==='right') lx = x - w;
+  else lx = x - w/2;
+  ctx.textAlign = 'left';
+  ctx.shadowColor = color; ctx.shadowBlur = 6;
+  ctx.fillText(base, lx, y);
+  const topY = y - size*0.62;
+  ctx.strokeStyle = color; ctx.fillStyle = color;
+  ctx.lineWidth = Math.max(1.5, size*0.10); ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.shadowBlur = 4;
+  if(kind==='hat'){
+    const cx = lx + w/2, hw = Math.max(4, size*0.30);
+    ctx.beginPath();
+    ctx.moveTo(cx-hw, topY+size*0.16);
+    ctx.lineTo(cx, topY-size*0.06);
+    ctx.lineTo(cx+hw, topY+size*0.16);
+    ctx.stroke();
+  } else {
+    const ax0 = lx + size*0.04, ax1 = lx + w - size*0.02;
+    ctx.beginPath(); ctx.moveTo(ax0, topY); ctx.lineTo(ax1, topY); ctx.stroke();
+    const ah = Math.max(3, size*0.22);
+    ctx.beginPath();
+    ctx.moveTo(ax1, topY);
+    ctx.lineTo(ax1-ah, topY-ah*0.7);
+    ctx.lineTo(ax1-ah, topY+ah*0.7);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function rightAngle(ctx, px, py, ax, ay, bx, by, size, color){
+  ctx.save();
+  ctx.strokeStyle = color || COL.muted; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(px+ax*size, py+ay*size);
+  ctx.lineTo(px+ax*size+bx*size, py+ay*size+by*size);
+  ctx.lineTo(px+bx*size, py+by*size);
+  ctx.stroke();
+  ctx.restore();
+}
+const easeInOut = u => u<0.5 ? 2*u*u : 1-Math.pow(-2*u+2,2)/2;
+const clamp01 = u => Math.max(0, Math.min(1, u));
+
+function magnitude(canvas){
+  const env = setupCanvas(canvas);
+  const period = 13.0;
+  return loop(env, (ctx, W, H, t)=>{
+    clearBg(ctx, W, H);
+    const ph = (t % period) / period;
+    if(ph < 0.55){ drawTriangleScene(ctx, W, H, ph/0.55); }
+    else { drawGravityScene(ctx, W, H, (ph-0.55)/0.45); }
+  });
+}
+function drawTriangleScene(ctx, W, H, p){
+  text(ctx, 'FINDING  r   (Pythagoras)', W/2, H*0.07, COL.neon, Math.max(13, W*0.045), 'center', 800);
+  const ox = W*0.20, oy = H*0.74;
+  const legX = W*0.46, legY = H*0.40;
+  const px = ox + legX, py = oy - legY;
+  const drawVec   = clamp01(p/0.20);
+  const drawLegs  = clamp01((p-0.18)/0.20);
+  const sqGrow    = clamp01((p-0.40)/0.22);
+  const showRoot  = clamp01((p-0.66)/0.20);
+  ctx.save();
+  ctx.strokeStyle='rgba(232,232,255,0.18)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(W*0.92, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, H*0.20); ctx.stroke();
+  ctx.restore();
+  text(ctx,'O', ox-10, oy+12, COL.muted, 12);
+  if(drawLegs>0){
+    const xEnd = ox + legX*Math.min(1, drawLegs*2);
+    ctx.save();
+    ctx.strokeStyle=COL.neon; ctx.lineWidth=3; ctx.shadowColor=COL.neon; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(xEnd, oy); ctx.stroke();
+    ctx.restore();
+    if(drawLegs>0.5){
+      const yEnd = oy - legY*Math.min(1,(drawLegs-0.5)*2);
+      ctx.save();
+      ctx.strokeStyle=COL.neon2; ctx.lineWidth=3; ctx.shadowColor=COL.neon2; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.moveTo(px, oy); ctx.lineTo(px, yEnd); ctx.stroke();
+      ctx.restore();
+    }
+    if(drawLegs>0.95){ rightAngle(ctx, px, oy, -1,0, 0,-1, 12, COL.muted); }
+    text(ctx, 'x', (ox+px)/2, oy+14, COL.neon, 14, 'center', 800);
+    if(drawLegs>0.5) text(ctx, 'y', px+12, (oy+py)/2, COL.neon2, 14, 'left', 800);
+  }
+  if(drawVec>0){
+    arrow(ctx, ox, oy, (px-ox)*drawVec, (py-oy)*drawVec, COL.amber, 4);
+    if(drawVec>0.5){
+      const mx = (ox+px)/2 - 16, my=(oy+py)/2 - 14;
+      text(ctx, 'r', mx, my, COL.amber, 16, 'center', 800);
+    }
+  }
+  if(sqGrow>0){
+    ctx.save();
+    ctx.globalAlpha = sqGrow;
+    ctx.fillStyle='rgba(0,240,255,0.16)'; ctx.strokeStyle=COL.neon; ctx.lineWidth=1.5;
+    const xsq = Math.min(legX, H-oy-8);
+    ctx.fillRect(ox, oy+4, legX, xsq*0.5); ctx.strokeRect(ox, oy+4, legX, xsq*0.5);
+    text(ctx,'x²', ox+legX/2, oy+4+xsq*0.25, COL.neon, 14, 'center', 800);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = sqGrow;
+    ctx.fillStyle='rgba(255,43,214,0.16)'; ctx.strokeStyle=COL.neon2; ctx.lineWidth=1.5;
+    const ysqW = Math.min(legY*0.5, ox-8);
+    ctx.fillRect(px - ysqW, py, ysqW, legY); ctx.strokeRect(px - ysqW, py, ysqW, legY);
+    text(ctx,'y²', px - ysqW/2, py+legY/2, COL.neon2, 14, 'center', 800);
+    ctx.restore();
+  }
+  const eqY = H*0.155;
+  if(showRoot>0){
+    ctx.save();
+    ctx.globalAlpha = showRoot;
+    const s = Math.max(15, W*0.052);
+    text(ctx, 'r = √( x² + y² )', W/2, eqY, COL.amber, s, 'center', 800);
+    ctx.restore();
+    text(ctx, 'in 3D:  r = √(x² + y² + z²)', W/2, eqY+Math.max(20,W*0.06),
+         COL.muted, Math.max(11, W*0.036), 'center', 600);
+  }
+  text(ctx, 'legs x & y  →  hypotenuse r', W/2, H*0.93, COL.muted, Math.max(10,W*0.034), 'center', 600);
+}
+function drawGravityScene(ctx, W, H, p){
+  text(ctx, 'r  IN  PHYSICS:   1 / r²', W/2, H*0.07, COL.neon2, Math.max(13, W*0.045), 'center', 800);
+  const grow = easeInOut(clamp01(p));
+  const cy = H*0.40;
+  const m1x = W*0.20;
+  const rMin = W*0.30, rMax = W*0.62;
+  const r = rMin + (rMax-rMin)*grow;
+  const m2x = m1x + r;
+  const rad = Math.max(12, W*0.045);
+  ctx.save();
+  ctx.strokeStyle='rgba(255,210,63,0.55)'; ctx.lineWidth=2; ctx.setLineDash([6,5]);
+  ctx.beginPath(); ctx.moveTo(m1x, cy); ctx.lineTo(m2x, cy); ctx.stroke();
+  ctx.restore();
+  text(ctx, 'r', (m1x+m2x)/2, cy-14, COL.amber, 15, 'center', 800);
+  const strength = 1/( (r/rMin)*(r/rMin) );
+  const aLen = (W*0.10)*strength + 6;
+  arrow(ctx, m1x+rad+4, cy, aLen, 0, COL.green, 3+2*strength);
+  arrow(ctx, m2x-rad-4, cy, -aLen, 0, COL.green, 3+2*strength);
+  glowCircle(ctx, m1x, cy, rad, COL.neon);
+  glowCircle(ctx, m2x, cy, rad, COL.neon2);
+  text(ctx,'m₁', m1x, cy, '#06121a', Math.max(11,rad*0.7), 'center', 800);
+  text(ctx,'m₂', m2x, cy, '#06121a', Math.max(11,rad*0.7), 'center', 800);
+  const fy = H*0.66, s = Math.max(15, W*0.05);
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle=COL.ink; ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+  const lead = 'F = G·m₁·m₂';
+  const leadW = ctx.measureText(lead).width;
+  const fx = W/2;
+  ctx.fillText('F =', fx - leadW*0.5 - W*0.10, fy);
+  const numTxt = 'G·m₁·m₂';
+  ctx.font=`800 ${s*0.82}px -apple-system,system-ui,sans-serif`;
+  const numW = ctx.measureText(numTxt).width;
+  const cxF = fx + W*0.06;
+  ctx.fillStyle=COL.ink;
+  ctx.fillText(numTxt, cxF, fy - s*0.55);
+  ctx.strokeStyle=COL.ink; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cxF-numW*0.6, fy); ctx.lineTo(cxF+numW*0.6, fy); ctx.stroke();
+  ctx.fillStyle=COL.amber; ctx.font=`800 ${s*0.92}px -apple-system,system-ui,sans-serif`;
+  ctx.fillText('r²', cxF, fy + s*0.58);
+  ctx.restore();
+  text(ctx, grow>0.55 ? 'r bigger → 1/r² smaller → weaker pull'
+                      : 'r is the straight-line distance (Pythagoras)',
+       W/2, H*0.86, COL.muted, Math.max(11,W*0.036), 'center', 600);
+  text(ctx, 'r goes under the line, squared', W/2, H*0.93, COL.green, Math.max(10,W*0.032), 'center', 600);
+}
+function unitVector(canvas){
+  const env = setupCanvas(canvas);
+  const period = 14.0;
+  return loop(env, (ctx, W, H, t)=>{
+    clearBg(ctx, W, H);
+    const ph = (t % period)/period;
+    if(ph < 0.5) drawScaleScene(ctx, W, H, ph/0.5);
+    else         drawNormalizeScene(ctx, W, H, (ph-0.5)/0.5);
+  });
+}
+function uvGeom(W,H){
+  const ox = W*0.30, oy = H*0.60;
+  const baseLen = Math.min(W,H)*0.34;
+  const ang = -Math.PI*0.30;
+  const ux = Math.cos(ang), uy = Math.sin(ang);
+  return {ox,oy,baseLen,ux,uy};
+}
+function drawScaleScene(ctx, W, H, p){
+  (function(){
+    const s = Math.max(13,W*0.05);
+    ctx.save(); ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+    const pre='SCALING:  k·', preW=ctx.measureText(pre).width, vW=ctx.measureText('v').width;
+    const total=preW+vW, lx=W/2-total/2;
+    text(ctx, pre, lx, H*0.08, COL.neon, s, 'left', 800);
+    vecLabel(ctx, 'v', lx+preW, H*0.08, COL.neon, s, 'left', 'arrow');
+    ctx.restore();
+  })();
+  const {ox,oy,baseLen,ux,uy} = uvGeom(W,H);
+  let k;
+  if(p<0.30)      k = 1 + (2-1)*easeInOut(p/0.30);
+  else if(p<0.45) k = 2;
+  else if(p<0.62) k = 2 + (0.5-2)*easeInOut((p-0.45)/0.17);
+  else if(p<0.78) k = 0.5;
+  else            k = 0.5 + (1-0.5)*easeInOut((p-0.78)/0.22);
+  ctx.save(); ctx.globalAlpha=0.35;
+  arrow(ctx, ox, oy, ux*baseLen, uy*baseLen, COL.muted, 3);
+  ctx.restore();
+  vecLabel(ctx, 'v', ox+ux*baseLen*0.5 - 14, oy+uy*baseLen*0.5 - 12, COL.muted, 14, 'center', 'arrow');
+  const L = baseLen*k;
+  const col = k>1.05 ? COL.green : (k<0.95 ? COL.amber : COL.neon);
+  arrow(ctx, ox, oy, ux*L, uy*L, col, 5);
+  vecLabel(ctx, 'k·v', ox+ux*L + 16, oy+uy*L - 6, col, 15, 'left', 'arrow');
+  glowCircle(ctx, ox, oy, 4, COL.ink);
+  const kTxt = (Math.abs(k-Math.round(k))<0.02 ? k.toFixed(0) : k.toFixed(1));
+  text(ctx, 'k = '+kTxt, W/2, H*0.80, col, Math.max(16,W*0.055), 'center', 800);
+  text(ctx, k>1.05 ? 'STRETCH — twice as long, same direction'
+        : k<0.95 ? 'SHRINK — shorter, same direction'
+        : 'same as v',
+       W/2, H*0.88, COL.muted, Math.max(11,W*0.036), 'center', 600);
+  text(ctx, 'a number stretches/shrinks — direction unchanged',
+       W/2, H*0.95, COL.muted, Math.max(10,W*0.032), 'center', 600);
+}
+function drawNormFormula(ctx, x, y, color, size){
+  ctx.save();
+  ctx.font=`800 ${size}px -apple-system,system-ui,sans-serif`;
+  const wV = ctx.measureText('v').width;
+  const wEq = ctx.measureText(' = ').width;
+  const wSl = ctx.measureText(' / |').width;
+  const wBar= ctx.measureText('|').width;
+  let cx = x - (wV + wEq + wV + wSl + wV + wBar)/2;
+  vecLabel(ctx, 'v', cx, y, color, size, 'left', 'hat'); cx += wV;
+  text(ctx, ' = ', cx, y, color, size, 'left', 800); cx += wEq;
+  vecLabel(ctx, 'v', cx, y, color, size, 'left', 'arrow'); cx += wV;
+  text(ctx, ' / |', cx, y, color, size, 'left', 800); cx += wSl;
+  vecLabel(ctx, 'v', cx, y, color, size, 'left', 'arrow'); cx += wV;
+  text(ctx, '|', cx, y, color, size, 'left', 800);
+  ctx.restore();
+}
+function drawNormalizeScene(ctx, W, H, p){
+  (function(){
+    const s=Math.max(13,W*0.046);
+    ctx.save(); ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+    const pre='NORMALIZE:   ', preW=ctx.measureText(pre).width;
+    const formW = (function(){
+      const wV=ctx.measureText('v').width, wEq=ctx.measureText(' = ').width,
+            wSl=ctx.measureText(' / |').width, wBar=ctx.measureText('|').width;
+      return wV+wEq+wV+wSl+wV+wBar;
+    })();
+    const total=preW+formW, lx=W/2-total/2;
+    text(ctx, pre, lx, H*0.08, COL.neon2, s, 'left', 800);
+    drawNormFormula(ctx, lx+preW+formW/2, H*0.08, COL.neon2, s);
+    ctx.restore();
+  })();
+  const {ox,oy,baseLen,ux,uy} = uvGeom(W,H);
+  const unitPx = baseLen*0.40;
+  ctx.save();
+  ctx.strokeStyle='rgba(57,255,122,0.30)'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.arc(ox,oy,unitPx,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+  text(ctx, 'unit circle (r=1)', ox, oy-unitPx-10, COL.green, Math.max(10,W*0.03), 'center', 600);
+  let L;
+  if(p<0.25)      L = baseLen;
+  else if(p<0.75) L = baseLen + (unitPx-baseLen)*easeInOut((p-0.25)/0.50);
+  else            L = unitPx;
+  const atUnit = p>=0.72;
+  ctx.save(); ctx.globalAlpha=0.30;
+  arrow(ctx, ox, oy, ux*baseLen, uy*baseLen, COL.muted, 3);
+  ctx.restore();
+  const col = atUnit ? COL.green : COL.neon2;
+  arrow(ctx, ox, oy, ux*L, uy*L, col, 5);
+  glowCircle(ctx, ox, oy, 4, COL.ink);
+  if(atUnit){ glowCircle(ctx, ox+ux*unitPx, oy+uy*unitPx, 5, COL.green); }
+  vecLabel(ctx, 'v', ox+ux*L + 16, oy+uy*L - 6, col, 15, 'left', atUnit?'hat':'arrow');
+  drawNormFormula(ctx, W/2, H*0.80, COL.neon2, Math.max(15,W*0.05));
+  if(atUnit){
+    const s=Math.max(13,W*0.045);
+    ctx.save(); ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+    const wBar=ctx.measureText('|').width, wV=ctx.measureText('v').width;
+    const total=wBar+wV+ctx.measureText('| = 1').width, lx=W/2-total/2;
+    text(ctx,'|',lx,H*0.88,COL.green,s,'left',800);
+    vecLabel(ctx,'v',lx+wBar,H*0.88,COL.green,s,'left','hat');
+    text(ctx,'| = 1',lx+wBar+wV,H*0.88,COL.green,s,'left',800);
+    ctx.restore();
+  } else {
+    text(ctx, 'dividing by its own length…', W/2, H*0.88, COL.muted, Math.max(13,W*0.045), 'center', 800);
+  }
+  text(ctx, 'keeps the direction, throws away the size',
+       W/2, H*0.95, COL.muted, Math.max(10,W*0.032), 'center', 600);
+}
+function vectorAdd(canvas){
+  const env = setupCanvas(canvas);
+  const period = 8.0;
+  return loop(env, (ctx, W, H, t)=>{
+    clearBg(ctx, W, H);
+    const ph = (t % period)/period;
+    (function(){
+      const s=Math.max(13,W*0.05);
+      ctx.save(); ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+      const pre='TIP-TO-TAIL:  ', preW=ctx.measureText(pre).width,
+            wA=ctx.measureText('a').width, wPlus=ctx.measureText(' + ').width, wB=ctx.measureText('b').width;
+      const total=preW+wA+wPlus+wB; let lx=W/2-total/2;
+      text(ctx, pre, lx, H*0.09, COL.neon, s, 'left', 800); lx+=preW;
+      vecLabel(ctx,'a',lx,H*0.09,COL.neon,s,'left','arrow'); lx+=wA;
+      text(ctx,' + ',lx,H*0.09,COL.neon,s,'left',800); lx+=wPlus;
+      vecLabel(ctx,'b',lx,H*0.09,COL.neon,s,'left','arrow');
+      ctx.restore();
+    })();
+    const ox = W*0.18, oy = H*0.70;
+    const a = { x: W*0.42, y: -H*0.16 };
+    const b = { x: W*0.22, y: -H*0.34 };
+    const drawA = clamp01(ph/0.25);
+    const drawB = clamp01((ph-0.28)/0.25);
+    const drawR = clamp01((ph-0.60)/0.30);
+    glowCircle(ctx, ox, oy, 4, COL.ink);
+    if(drawA>0){
+      arrow(ctx, ox, oy, a.x*drawA, a.y*drawA, COL.neon, 5);
+      if(drawA>0.6) vecLabel(ctx,'a', ox+a.x*0.5, oy+a.y*0.5+16, COL.neon, 15, 'center', 'arrow');
+    }
+    const aTipX = ox+a.x, aTipY = oy+a.y;
+    if(drawB>0){
+      arrow(ctx, aTipX, aTipY, b.x*drawB, b.y*drawB, COL.neon2, 5);
+      if(drawB>0.6) vecLabel(ctx,'b', aTipX+b.x*0.5+14, aTipY+b.y*0.5, COL.neon2, 15, 'left', 'arrow');
+    }
+    const bTipX = aTipX+b.x, bTipY = aTipY+b.y;
+    if(drawR>0){
+      arrow(ctx, ox, oy, (bTipX-ox)*drawR, (bTipY-oy)*drawR, COL.amber, 5);
+      if(drawR>0.6){
+        const s=15;
+        ctx.save(); ctx.font=`800 ${s}px -apple-system,system-ui,sans-serif`;
+        const wA=ctx.measureText('a').width, wPlus=ctx.measureText(' + ').width, wB=ctx.measureText('b').width;
+        const total=wA+wPlus+wB;
+        let lx=ox+(bTipX-ox)*0.5 - 6 - total/2;
+        const ly=oy+(bTipY-oy)*0.5 - 16;
+        vecLabel(ctx,'a',lx,ly,COL.amber,s,'left','arrow'); lx+=wA;
+        text(ctx,' + ',lx,ly,COL.amber,s,'left',800); lx+=wPlus;
+        vecLabel(ctx,'b',lx,ly,COL.amber,s,'left','arrow');
+        ctx.restore();
+      }
+    }
+    text(ctx, 'walk a, then b from its tip — resultant is start → end',
+         W/2, H*0.93, COL.muted, Math.max(10,W*0.032), 'center', 600);
+  });
+}
+window.VectorAnims = { magnitude, unitVector, vectorAdd };
+})();
+</script>
+
+<!-- ===================== TEACH CH1-3 ANIMS (inlined from teach-ch123.html, vzt- namespaced) =====================
+     SI-units + inverse-square (gravity/coulomb) teach anims. Self-contained IIFE →
+     window.VZTeachAnims = { si, gravity, coulomb }. Same {stop()} contract. -->
+<script>
+(function(){
+"use strict";
+const COL = { bg:'#07070f', cyan:'#21e6ff', magenta:'#ff3df0', purple:'#9d4bff',
+  green:'#39ff88', yellow:'#ffe14d', red:'#ff5470', ink:'#d7e6ff', dim:'#7d86b8' };
+function setupCanvas(canvas){
+  const ctx = canvas.getContext('2d'); let W=0,H=0,dpr=1;
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.max(1, Math.min(window.devicePixelRatio||1, 2.5));
+    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  const ro = ('ResizeObserver' in window) ? new ResizeObserver(resize) : null;
+  if(ro) ro.observe(canvas); else window.addEventListener('resize', resize);
+  return { ctx, get W(){return W;}, get H(){return H;},
+    teardown(){ if(ro) ro.disconnect(); else window.removeEventListener('resize', resize); } };
+}
+function loop(env, cb){
+  let raf=0, running=true, t0=performance.now();
+  function frame(now){ if(!running) return; cb(env.ctx, env.W, env.H, (now-t0)/1000); raf=requestAnimationFrame(frame); }
+  raf=requestAnimationFrame(frame);
+  return { stop(){ running=false; cancelAnimationFrame(raf); env.teardown(); } };
+}
+function clearBg(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  ctx.save(); ctx.strokeStyle='rgba(157,75,255,0.07)'; ctx.lineWidth=1;
+  const step=Math.max(24,W/14);
+  for(let x=0;x<=W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<=H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.restore();
+}
+function glowCircle(ctx,x,y,r,color){
+  ctx.save();
+  const g=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(0.25,color); g.addColorStop(1,color);
+  ctx.shadowColor=color; ctx.shadowBlur=r*1.2; ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+function arrow(ctx,x,y,dx,dy,color,width){
+  width=width||4; const len=Math.hypot(dx,dy); if(len<0.5) return;
+  const ux=dx/len, uy=dy/len, hx=x+dx, hy=y+dy;
+  const head=Math.min(14,Math.max(7,len*0.28));
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.lineCap='round';
+  ctx.shadowColor=color; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(hx-ux*head*0.6, hy-uy*head*0.6); ctx.stroke();
+  const ang=Math.atan2(uy,ux);
+  ctx.beginPath(); ctx.moveTo(hx,hy);
+  ctx.lineTo(hx-head*Math.cos(ang-0.4), hy-head*Math.sin(ang-0.4));
+  ctx.lineTo(hx-head*Math.cos(ang+0.4), hy-head*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function label(ctx,t,x,y,color,size,align){
+  ctx.save(); ctx.fillStyle=color||COL.ink;
+  ctx.font=`700 ${size||13}px -apple-system,system-ui,Segoe UI,sans-serif`;
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle';
+  ctx.shadowColor=color||COL.ink; ctx.shadowBlur=6; ctx.fillText(t,x,y); ctx.restore();
+}
+function dashed(ctx,x1,y1,x2,y2,color){
+  ctx.save(); ctx.strokeStyle=color; ctx.setLineDash([4,4]); ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.restore();
+}
+function animSI(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    label(ctx,'measurement = number + unit', W/2, 18, COL.dim, 12);
+    const cellW=W/3, midY=H*0.56, pulse=0.5+0.5*Math.sin(t*2);
+    (function(){
+      const cx=cellW*0.5, y=midY;
+      ctx.save(); ctx.strokeStyle=COL.cyan; ctx.lineWidth=3; ctx.shadowColor=COL.cyan; ctx.shadowBlur=10;
+      ctx.beginPath(); ctx.moveTo(cx-cellW*0.34,y); ctx.lineTo(cx+cellW*0.34,y); ctx.stroke();
+      for(let i=0;i<=5;i++){ const tx=cx-cellW*0.34 + (cellW*0.68)*(i/5);
+        ctx.beginPath(); ctx.moveTo(tx,y); ctx.lineTo(tx,y-9); ctx.stroke(); }
+      ctx.restore();
+      label(ctx,'1 m', cx, y+20, COL.cyan, 14);
+      label(ctx,'length · metre', cx, y+38, COL.dim, 10);
+    })();
+    (function(){
+      const cx=cellW*1.5, y=midY;
+      glowCircle(ctx,cx,y-6,Math.max(10,cellW*0.12)*(0.92+0.08*pulse),COL.magenta);
+      ctx.save(); ctx.strokeStyle=COL.magenta; ctx.lineWidth=2.5; ctx.shadowColor=COL.magenta; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.moveTo(cx-cellW*0.22,y+16); ctx.lineTo(cx+cellW*0.22,y+16); ctx.stroke(); ctx.restore();
+      label(ctx,'1 kg', cx, y+34, COL.magenta, 14);
+      label(ctx,'mass · kilogram', cx, y+50, COL.dim, 10);
+    })();
+    (function(){
+      const cx=cellW*2.5, y=midY-4, r=Math.max(16,cellW*0.20);
+      ctx.save(); ctx.strokeStyle=COL.green; ctx.lineWidth=2.5; ctx.shadowColor=COL.green; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.arc(cx,y,r,0,Math.PI*2); ctx.stroke();
+      const a=-Math.PI/2 + (t%2)/2*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(cx,y); ctx.lineTo(cx+Math.cos(a)*r*0.8, y+Math.sin(a)*r*0.8); ctx.stroke();
+      ctx.restore();
+      label(ctx,'1 s', cx, y+r+18, COL.green, 14);
+      label(ctx,'time · second', cx, y+r+34, COL.dim, 10);
+    })();
+  });
+}
+function animInverseSquare(canvas,opts){
+  opts=opts||{}; const coulomb = opts.kind==='coulomb';
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    const cy=H*0.56;
+    const aX=W*0.20;
+    const r=0.5+0.5*Math.sin(t*0.9);
+    const bX=W*0.46 + (W*0.40)*r;
+    const rPix=bX-aX;
+    const F=Math.min(1, (W*0.34)/(rPix*rPix)*W*0.55);
+    const rA=Math.max(11,W*0.05), rB=Math.max(9,W*0.04);
+    dashed(ctx,aX,cy,bX,cy,'rgba(215,230,255,.30)');
+    label(ctx,'r', (aX+bX)/2, cy-14, COL.dim, 12);
+    glowCircle(ctx,aX,cy,rA, coulomb?COL.cyan:COL.yellow);
+    glowCircle(ctx,bX,cy,rB, coulomb?COL.magenta:COL.cyan);
+    label(ctx, coulomb?'q₁':'m₁', aX, cy, '#06121a', 11);
+    label(ctx, coulomb?'q₂':'m₂', bX, cy, '#06121a', 10);
+    const aLen=F*W*0.22;
+    arrow(ctx,aX+rA+3,cy,  aLen,0, COL.green, 4);
+    arrow(ctx,bX-rB-3,cy, -aLen,0, COL.green, 4);
+    label(ctx, coulomb?'F = k·q₁q₂ / r²':'F = G·m₁m₂ / r²', W/2, 18,
+          coulomb?COL.magenta:COL.yellow, 13);
+    label(ctx, 'bigger r  →  weaker F (1/r²)', W/2, H-14, COL.dim, 11);
+  });
+}
+window.VZTeachAnims = {
+  si: animSI,
+  gravity: (c)=>animInverseSquare(c,{kind:'grav'}),
+  coulomb: (c)=>animInverseSquare(c,{kind:'coulomb'})
+};
+/* alias the Ch1-3 teach anims onto window.VectorAnims so TEACH_CH123's
+   animFn names ("VectorAnims.si", "VectorAnims.coulomb", "VectorAnims.gravity")
+   resolve. magnitude/unitVector/vectorAdd are already the polished hero anims. */
+if(window.VectorAnims){
+  window.VectorAnims.si      = window.VZTeachAnims.si;
+  window.VectorAnims.gravity = window.VZTeachAnims.gravity;
+  window.VectorAnims.coulomb = window.VZTeachAnims.coulomb;
+}
 })();
 </script>
 
@@ -3146,6 +3737,1478 @@ window.PhysicsAnims = {
 })(typeof window !== "undefined" ? window : this);
 </script>
 
+<!-- ===================== ASSIGN BANK FULL (inlined) — window.ASSIGN_FULL + window.EXAM_MOCK ===================== -->
+<script>
+/* ================================================================
+   ASSIGN-BANK-FULL  —  CPCS110 Physics, LARGEST question bank
+   ----------------------------------------------------------------
+   Standalone drag-to-build + MCQ data module. No imports.
+   Consumed by solver-quiz.html (same engine as question-bank.js,
+   assign-1-2-3.js, assign-4-5.js).
+
+   Source PDFs (read in full from the student's Google Drive):
+     - "All of the ASSIGNMENTS together.pdf"  (WebAssign A1-A5 set)
+     - "Mock_Midterm.pdf"                     (20-Q mock exam)
+
+   Every numeric answer below was computed and verified by hand.
+   Constants used: G = 6.674e-11, k = 9e9 (8.99e9 where the PDF
+   used it), e = 1.6e-19, g = 9.8.
+
+   Each question object follows the solver-quiz.html DATA SCHEMA exactly:
+   {
+     id, concept,                               // ids / short concept label
+     fromAssignment,                            // "From Assignment N, Qx" tag
+     prompt:    HTML string,                    // word problem (\\( ... \\) inline LaTeX)
+     inventory: [ {id, tex, label, relevant} ], // equation cards (LaTeX tex)
+     answerEqId:string,                         // correct card to drag down
+     dockedTex: LaTeX,                          // headline equation when docked
+     lhs:       LaTeX,                          // generalized left-hand symbol
+     joiner:    LaTeX between terms ("" product, "+" sum, "\\cdot" dot),
+     terms: [ {symbol(LaTeX), sub(LaTeX)} ],    // ORDERED right-hand terms
+     distractors:[ LaTeX, ... ],                // wrong chips (snap back)
+     result: { expression, substitution, answer }, // LaTeX final lines (FINAL = numbers)
+     mcq: { options:[LaTeX x4], correct:index, why:"one-line reason" }
+   }
+
+   Vector momentum uses  \\vec p = m\\vec v . The final substitution line
+   always replaces ALL variables with numbers.
+
+   Export shape:
+     window.ASSIGN_FULL = { a1:[...], a2:[...], a3:[...], a4:[...], a5:[...] }
+     window.EXAM_MOCK   = [ ... ]   (the 20-question mock midterm)
+   (also module.exports for node)
+   ================================================================ */
+
+(function (root) {
+
+  /* shared equation inventories (kept compact, reused per concept) */
+  const INV = {
+    unit:  { id: "unit", tex: "\\hat A=\\dfrac{\\vec A}{|\\vec A|}", label: "unit vector",  relevant: false },
+    mag:   { id: "mag",  tex: "|\\vec A|=\\sqrt{A_x^2+A_y^2+A_z^2}", label: "magnitude",   relevant: false },
+    disp:  { id: "disp", tex: "\\Delta\\vec r=\\vec r_f-\\vec r_i", label: "displacement", relevant: false },
+    vavg:  { id: "vavg", tex: "\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}", label: "avg velocity", relevant: false },
+    pmv:   { id: "pmv",  tex: "\\vec p=m\\vec v",            label: "momentum",     relevant: false },
+    dp:    { id: "dp",   tex: "\\Delta\\vec p=m(\\vec v_f-\\vec v_i)", label: "Δ momentum", relevant: false },
+    gamma: { id: "gamma",tex: "\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}", label: "gamma", relevant: false },
+    relp:  { id: "relp", tex: "\\vec p=\\gamma m\\vec v",   label: "rel. momentum",relevant: false },
+    accel: { id: "accel",tex: "a=\\dfrac{\\Delta v}{\\Delta t}", label: "acceleration", relevant: false },
+    fnet:  { id: "fnet", tex: "\\vec F_{net}=\\sum\\vec F",  label: "net force",    relevant: false },
+    imp:   { id: "imp",  tex: "\\vec J=\\Delta\\vec p=\\vec F\\Delta t", label: "impulse", relevant: false },
+    pf:    { id: "pf",   tex: "\\vec p_f=\\vec p_i+\\vec F_{net}\\Delta t", label: "momentum update", relevant: false },
+    rf:    { id: "rf",   tex: "\\vec r_f=\\vec r_i+\\tfrac{\\vec p}{m}\\Delta t", label: "position update", relevant: false },
+    fric:  { id: "fric", tex: "f_k=\\mu_k N",               label: "friction",     relevant: false },
+    spring:{ id: "spring",tex:"|\\vec F_s|=k|s|",            label: "spring",       relevant: false },
+    grav:  { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}",     label: "gravity",      relevant: false },
+    gsurf: { id: "gsurf",tex: "g=\\dfrac{GM}{R^2}",          label: "surface g",    relevant: false },
+    coul:  { id: "coul", tex: "F=\\dfrac{k|q_1q_2|}{r^2}",   label: "coulomb",      relevant: false },
+    wfd:   { id: "wfd",  tex: "W=Fd\\cos\\theta",            label: "work",         relevant: false },
+    cons:  { id: "cons", tex: "\\vec P_i=\\vec P_f",         label: "conservation", relevant: false },
+    fma:   { id: "fma",  tex: "F=ma",                        label: "newton 2nd",   relevant: false },
+    ke:    { id: "ke",   tex: "KE=\\tfrac12 mv^2",           label: "kinetic E",    relevant: false }
+  };
+  // helper: pull a few inventory cards, marking one as the relevant answer
+  function inv(answerKey, ...keys){
+    return keys.map(kk => {
+      const base = INV[kk];
+      return { id: base.id, tex: base.tex, label: base.label, relevant: (kk === answerKey) };
+    });
+  }
+
+  const ASSIGN_FULL = {
+
+    /* ============================================================
+       ASSIGNMENT 1  —  Ch 1 Interactions & Motion
+       (vectors, velocity, momentum, Δp, relativistic momentum)
+       ============================================================ */
+    a1: [
+
+      /* A1 Q1 — unit vector */
+      {
+        id: "a1q1-unitvec", concept: "Vectors", fromAssignment: "From Assignment 1, Q1",
+        prompt: '<b>From Assignment 1, Q1.</b> Given \\(\\vec A=\\langle 44,14,-19\\rangle\\) cm. ' +
+                '<span class="ask">Find the unit vector \\(\\hat A=\\dfrac{\\vec A}{|\\vec A|}\\).</span>',
+        inventory: inv("unit", "unit", "pmv", "fma", "vavg", "ke"),
+        answerEqId: "unit", dockedTex: "\\hat A=\\dfrac{\\vec A}{|\\vec A|}", lhs: "\\hat A", joiner: "",
+        terms: [ { symbol: "\\dfrac{\\vec A}{|\\vec A|}",
+                   sub: "\\dfrac{\\langle 44,14,-19\\rangle}{\\sqrt{44^2+14^2+19^2}}" } ],
+        distractors: ["|\\vec A|", "m", "\\tfrac12", "\\Delta t"],
+        result: {
+          expression:   "\\hat A=\\dfrac{\\vec A}{|\\vec A|}",
+          substitution: "\\hat A=\\dfrac{\\langle 44,14,-19\\rangle}{\\sqrt{1936+196+361}}=\\dfrac{\\langle 44,14,-19\\rangle}{49.93}",
+          answer:       "\\hat A=\\langle 0.881,\\ 0.280,\\ -0.381\\rangle"
+        },
+        mcq: {
+          options: ["\\langle 0.881, 0.280, -0.381\\rangle", "\\langle 0.881, -0.280, 0.381\\rangle",
+                    "\\langle 44, 14, -19\\rangle", "\\langle 0.280, 0.881, -0.381\\rangle"],
+          correct: 0,
+          why: "|A| = √(44²+14²+19²) = 49.93; Â = ⟨44,14,-19⟩/49.93 = ⟨0.881,0.280,-0.381⟩."
+        }
+      },
+
+      /* A1 Q1 part 2 — scale to magnitude 250 */
+      {
+        id: "a1q1-scale", concept: "Vectors", fromAssignment: "From Assignment 1, Q1 (part 2)",
+        prompt: '<b>From Assignment 1, Q1.</b> With \\(\\hat A=\\langle 0.881,0.280,-0.381\\rangle\\), find \\(\\vec B\\) ' +
+                'in the same direction as \\(\\vec A\\) but with magnitude <b>250 cm</b>. ' +
+                '<span class="ask">\\(\\vec B=|B|\\,\\hat A\\).</span>',
+        inventory: inv("unit", "unit", "pmv", "mag", "vavg", "ke"),
+        answerEqId: "unit", dockedTex: "\\vec B=|B|\\,\\hat A", lhs: "\\vec B", joiner: "\\cdot",
+        terms: [ { symbol: "|B|", sub: "(250)" },
+                 { symbol: "\\hat A", sub: "\\langle 0.881,0.280,-0.381\\rangle" } ],
+        distractors: ["|\\vec A|", "\\dfrac{1}{|B|}", "m", "\\Delta t"],
+        result: {
+          expression:   "\\vec B=|B|\\cdot\\hat A",
+          substitution: "\\vec B=250\\cdot\\langle 0.881,0.280,-0.381\\rangle",
+          answer:       "\\vec B=\\langle 220,\\ 70.1,\\ -95.1\\rangle\\ \\text{cm}"
+        },
+        mcq: {
+          options: ["\\langle 220, 70.1, -95.1\\rangle\\ \\text{cm}", "\\langle 250, 250, -250\\rangle\\ \\text{cm}",
+                    "\\langle 110, 35, -47.5\\rangle\\ \\text{cm}", "\\langle 0.881, 0.280, -0.381\\rangle\\ \\text{cm}"],
+          correct: 0,
+          why: "B = 250·Â = 250·⟨0.881,0.280,-0.381⟩ = ⟨220,70.1,-95.1⟩ cm."
+        }
+      },
+
+      /* A1 Q3 — direction cosines, far end of rod */
+      {
+        id: "a1q3-rod", concept: "Direction Cosines", fromAssignment: "From Assignment 1, Q3",
+        prompt: '<b>From Assignment 1, Q3.</b> A rod of length <b>6.1 m</b> has a near end at ' +
+                '\\(\\vec r=\\langle 10,18,-13\\rangle\\) m; angles to +x,+y,+z are 49°, 50°, 113°. ' +
+                '<span class="ask">Find the far end \\(\\vec r_{far}=\\vec r+L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle\\).</span>',
+        inventory: inv("disp", "disp", "unit", "pmv", "vavg", "ke"),
+        answerEqId: "disp", dockedTex: "\\vec r_{far}=\\vec r+L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle",
+        lhs: "\\vec r_{far}", joiner: "",
+        terms: [ { symbol: "\\vec r", sub: "\\langle 10,18,-13\\rangle" },
+                 { symbol: "+L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle",
+                   sub: "+6.1\\langle\\cos49^\\circ,\\cos50^\\circ,\\cos113^\\circ\\rangle" } ],
+        distractors: ["-L\\hat r", "\\dfrac{\\vec r}{L}", "L^2", "\\tfrac12"],
+        result: {
+          expression:   "\\vec r_{far}=\\vec r+L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle",
+          substitution: "\\vec r_{far}=\\langle 10,18,-13\\rangle+6.1\\langle 0.656,0.643,-0.391\\rangle=\\langle 10,18,-13\\rangle+\\langle 4.00,3.92,-2.38\\rangle",
+          answer:       "\\vec r_{far}=\\langle 14.0,\\ 21.9,\\ -15.4\\rangle\\ \\text{m}"
+        },
+        mcq: {
+          options: ["\\langle 14.0, 21.9, -15.4\\rangle\\ \\text{m}", "\\langle 4.00, 3.92, -2.38\\rangle\\ \\text{m}",
+                    "\\langle 16.1, 24.1, -19.1\\rangle\\ \\text{m}", "\\langle 14.0, 21.9, 15.4\\rangle\\ \\text{m}"],
+          correct: 0,
+          why: "r_far = ⟨10,18,-13⟩ + 6.1⟨cos49°,cos50°,cos113°⟩ = ⟨10,18,-13⟩+⟨4.00,3.92,-2.38⟩ = ⟨14.0,21.9,-15.4⟩ m."
+        }
+      },
+
+      /* A1 Q6 — average velocity over two segments */
+      {
+        id: "a1q6-vavg", concept: "Velocity", fromAssignment: "From Assignment 1, Q6",
+        prompt: '<b>From Assignment 1, Q6.</b> Walk \\(\\langle 1,0,0\\rangle\\) 24 m at 2.5 m/s, then ' +
+                '\\(\\langle 1,0,1\\rangle/\\sqrt2\\) 15 m at 2.7 m/s. ' +
+                '<span class="ask">Find the average velocity \\(\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}\\).</span>',
+        inventory: inv("vavg", "vavg", "disp", "pmv", "unit", "ke"),
+        answerEqId: "vavg", dockedTex: "\\vec v=\\dfrac{\\Delta\\vec r_{tot}}{\\Delta t_{tot}}", lhs: "\\vec v", joiner: "",
+        terms: [ { symbol: "\\dfrac{\\Delta\\vec r_{tot}}{\\Delta t_{tot}}",
+                   sub: "\\dfrac{\\langle 24,0,0\\rangle+\\langle 10.6,0,10.6\\rangle}{9.6+5.56}" } ],
+        distractors: ["\\Delta\\vec r\\,\\Delta t", "\\dfrac{\\Delta t}{\\Delta\\vec r}", "m\\vec v", "\\tfrac12"],
+        result: {
+          expression:   "\\vec v=\\dfrac{\\Delta\\vec r_{tot}}{\\Delta t_{tot}}",
+          substitution: "\\vec v=\\dfrac{\\langle 34.6,0,10.6\\rangle}{15.16}\\quad(t_1=24/2.5=9.6,\\ t_2=15/2.7=5.56)",
+          answer:       "\\vec v=\\langle 2.28,\\ 0,\\ 0.700\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: ["\\langle 2.28, 0, 0.700\\rangle\\ \\text{m/s}", "\\langle 2.6, 0, 2.6\\rangle\\ \\text{m/s}",
+                    "\\langle 1.14, 0, 0.35\\rangle\\ \\text{m/s}", "\\langle 3.4, 0, 1.06\\rangle\\ \\text{m/s}"],
+          correct: 0,
+          why: "Δr=⟨34.6,0,10.6⟩, Δt=9.6+5.56=15.16 s; v=Δr/Δt=⟨2.28,0,0.700⟩ m/s."
+        }
+      },
+
+      /* A1 Q8 — star→planet relative position */
+      {
+        id: "a1q8-relpos", concept: "Vectors", fromAssignment: "From Assignment 1, Q8",
+        prompt: '<b>From Assignment 1, Q8.</b> Planet at \\(\\langle -2,4,-2\\rangle\\times10^{10}\\) m, ' +
+                'star at \\(\\langle 8,-7,5\\rangle\\times10^{10}\\) m. ' +
+                '<span class="ask">Find \\(\\vec r\\) from star to planet, \\(\\vec r=\\vec r_p-\\vec r_s\\).</span>',
+        inventory: inv("disp", "disp", "unit", "pmv", "mag", "ke"),
+        answerEqId: "disp", dockedTex: "\\vec r=\\vec r_p-\\vec r_s", lhs: "\\vec r", joiner: "",
+        terms: [ { symbol: "\\vec r_p", sub: "\\langle -2,4,-2\\rangle\\times10^{10}" },
+                 { symbol: "-\\vec r_s", sub: "-\\langle 8,-7,5\\rangle\\times10^{10}" } ],
+        distractors: ["\\vec r_s-\\vec r_p", "\\vec r_p+\\vec r_s", "|\\vec r|", "\\tfrac12"],
+        result: {
+          expression:   "\\vec r=\\vec r_p-\\vec r_s",
+          substitution: "\\vec r=\\langle -2,4,-2\\rangle\\times10^{10}-\\langle 8,-7,5\\rangle\\times10^{10}",
+          answer:       "\\vec r=\\langle -1.00\\times10^{11},\\ 1.10\\times10^{11},\\ -7.00\\times10^{10}\\rangle\\ \\text{m}"
+        },
+        mcq: {
+          options: ["\\langle -1.00\\times10^{11}, 1.10\\times10^{11}, -7.00\\times10^{10}\\rangle\\ \\text{m}",
+                    "\\langle 1.00\\times10^{11}, -1.10\\times10^{11}, 7.00\\times10^{10}\\rangle\\ \\text{m}",
+                    "\\langle 6, -3, 3\\rangle\\times10^{10}\\ \\text{m}",
+                    "\\langle -1.64\\times10^{11}, 0, 0\\rangle\\ \\text{m}"],
+          correct: 0,
+          why: "r = r_planet − r_star = ⟨-2-8, 4-(-7), -2-5⟩×10¹⁰ = ⟨-10,11,-7⟩×10¹⁰ m."
+        }
+      },
+
+      /* A1 Q11 — baseball momentum */
+      {
+        id: "a1q11-pball", concept: "Momentum", fromAssignment: "From Assignment 1, Q11",
+        prompt: '<b>From Assignment 1, Q11.</b> A baseball of mass <b>0.146 kg</b> is thrown at <b>33.5 m/s</b>. ' +
+                '<span class="ask">Find \\(|\\vec p|=m|\\vec v|\\).</span>',
+        inventory: inv("pmv", "pmv", "ke", "vavg", "dp", "fma"),
+        answerEqId: "pmv", dockedTex: "|\\vec p|=m\\,|\\vec v|", lhs: "|\\vec p|", joiner: "\\cdot",
+        terms: [ { symbol: "m", sub: "(0.146)" }, { symbol: "|\\vec v|", sub: "(33.5)" } ],
+        distractors: ["\\tfrac12", "v^2", "a", "\\Delta t"],
+        result: {
+          expression:   "|\\vec p|=m\\cdot|\\vec v|",
+          substitution: "|\\vec p|=(0.146)\\cdot(33.5)",
+          answer:       "|\\vec p|=4.89\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["4.89\\ \\text{kg·m/s}", "229\\ \\text{kg·m/s}", "0.0044\\ \\text{kg·m/s}", "2.45\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "|p| = m|v| = 0.146·33.5 = 4.89 kg·m/s."
+        }
+      },
+
+      /* A1 Q12 — Saturn V acceleration */
+      {
+        id: "a1q12-accel", concept: "Acceleration", fromAssignment: "From Assignment 1, Q12",
+        prompt: '<b>From Assignment 1, Q12.</b> Saturn V reaches <b>2398 m/s</b> at <b>168 s</b>. ' +
+                '<span class="ask">Find the average acceleration \\(a=\\dfrac{\\Delta v}{\\Delta t}\\).</span>',
+        inventory: inv("accel", "accel", "pmv", "vavg", "fma", "ke"),
+        answerEqId: "accel", dockedTex: "a=\\dfrac{\\Delta v}{\\Delta t}", lhs: "a", joiner: "",
+        terms: [ { symbol: "\\dfrac{\\Delta v}{\\Delta t}", sub: "\\dfrac{2398}{168}" } ],
+        distractors: ["\\Delta v\\,\\Delta t", "\\dfrac{\\Delta t}{\\Delta v}", "m\\,a", "\\tfrac12"],
+        result: {
+          expression:   "a=\\dfrac{\\Delta v}{\\Delta t}",
+          substitution: "a=\\dfrac{2398}{168}",
+          answer:       "a=14.3\\ \\text{m/s}^2\\ (=1.46\\,g)"
+        },
+        mcq: {
+          options: ["14.3\\ \\text{m/s}^2", "2398\\ \\text{m/s}^2", "0.070\\ \\text{m/s}^2", "9.8\\ \\text{m/s}^2"],
+          correct: 0,
+          why: "a = Δv/Δt = 2398/168 = 14.3 m/s² = 14.3/9.8 = 1.46 g."
+        }
+      },
+
+      /* A1 Q13 — bowling ball position from momentum */
+      {
+        id: "a1q13-pos", concept: "Momentum→Position", fromAssignment: "From Assignment 1, Q13",
+        prompt: '<b>From Assignment 1, Q13.</b> A <b>5.5 kg</b> ball has momentum \\(\\langle 0.5,0,13.5\\rangle\\) kg·m/s ' +
+                'from the origin. ' +
+                '<span class="ask">Find its position after 2.1 s, \\(\\vec r=\\dfrac{\\vec p}{m}t\\).</span>',
+        inventory: inv("rf", "rf", "pmv", "vavg", "accel", "ke"),
+        answerEqId: "rf", dockedTex: "\\vec r=\\dfrac{\\vec p}{m}\\,t", lhs: "\\vec r", joiner: "\\cdot",
+        terms: [ { symbol: "\\dfrac{\\vec p}{m}", sub: "\\dfrac{\\langle 0.5,0,13.5\\rangle}{5.5}" },
+                 { symbol: "t", sub: "(2.1)" } ],
+        distractors: ["m\\vec p", "\\dfrac{m}{\\vec p}", "\\tfrac12 t^2", "\\vec p\\,t"],
+        result: {
+          expression:   "\\vec r=\\dfrac{\\vec p}{m}\\cdot t",
+          substitution: "\\vec r=\\dfrac{\\langle 0.5,0,13.5\\rangle}{5.5}\\cdot2.1=\\langle 0.0909,0,2.45\\rangle\\cdot2.1",
+          answer:       "\\vec r=\\langle 0.191,\\ 0,\\ 5.15\\rangle\\ \\text{m}"
+        },
+        mcq: {
+          options: ["\\langle 0.191, 0, 5.15\\rangle\\ \\text{m}", "\\langle 1.05, 0, 28.4\\rangle\\ \\text{m}",
+                    "\\langle 0.0909, 0, 2.45\\rangle\\ \\text{m}", "\\langle 0.5, 0, 13.5\\rangle\\ \\text{m}"],
+          correct: 0,
+          why: "v = p/m = ⟨0.0909,0,2.45⟩; r = v·t = ⟨0.0909,0,2.45⟩·2.1 = ⟨0.191,0,5.15⟩ m."
+        }
+      },
+
+      /* A1 Q14 — tennis ball off wall, Δp */
+      {
+        id: "a1q14-dp", concept: "Δ Momentum", fromAssignment: "From Assignment 1, Q14",
+        prompt: '<b>From Assignment 1, Q14.</b> A <b>57 g</b> tennis ball goes from \\(\\langle 64,0,0\\rangle\\) to ' +
+                '\\(\\langle -58,0,0\\rangle\\) m/s. ' +
+                '<span class="ask">Find \\(\\Delta\\vec p=m(\\vec v_f-\\vec v_i)\\).</span>',
+        inventory: inv("dp", "dp", "pmv", "imp", "vavg", "ke"),
+        answerEqId: "dp", dockedTex: "\\Delta\\vec p=m(\\vec v_f-\\vec v_i)", lhs: "\\Delta\\vec p", joiner: "\\cdot",
+        terms: [ { symbol: "m", sub: "(0.057)" },
+                 { symbol: "(\\vec v_f-\\vec v_i)", sub: "(\\langle -58,0,0\\rangle-\\langle 64,0,0\\rangle)" } ],
+        distractors: ["(\\vec v_i-\\vec v_f)", "(\\vec v_f+\\vec v_i)", "\\tfrac12", "v^2"],
+        result: {
+          expression:   "\\Delta\\vec p=m\\cdot(\\vec v_f-\\vec v_i)",
+          substitution: "\\Delta\\vec p=(0.057)\\cdot\\langle -122,0,0\\rangle",
+          answer:       "\\Delta\\vec p=\\langle -6.95,\\ 0,\\ 0\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["\\langle -6.95, 0, 0\\rangle\\ \\text{kg·m/s}", "\\langle 0.342, 0, 0\\rangle\\ \\text{kg·m/s}",
+                    "\\langle -0.342, 0, 0\\rangle\\ \\text{kg·m/s}", "\\langle 6.95, 0, 0\\rangle\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "Δp = m(v_f − v_i) = 0.057·⟨-58-64,0,0⟩ = 0.057·⟨-122,0,0⟩ = ⟨-6.95,0,0⟩ kg·m/s."
+        }
+      },
+
+      /* A1 Q15 — relativistic gamma */
+      {
+        id: "a1q15-gamma", concept: "Relativistic γ", fromAssignment: "From Assignment 1, Q15",
+        prompt: '<b>From Assignment 1, Q15.</b> An electron moves at \\(v=0.995c\\). ' +
+                '<span class="ask">Find \\(\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}\\).</span>',
+        inventory: inv("gamma", "gamma", "relp", "pmv", "ke", "vavg"),
+        answerEqId: "gamma", dockedTex: "\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}", lhs: "\\gamma", joiner: "",
+        terms: [ { symbol: "\\dfrac{1}{\\sqrt{1-(v/c)^2}}", sub: "\\dfrac{1}{\\sqrt{1-0.995^2}}" } ],
+        distractors: ["\\sqrt{1-(v/c)^2}", "1-(v/c)^2", "\\dfrac{v}{c}", "\\tfrac12"],
+        result: {
+          expression:   "\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}",
+          substitution: "\\gamma=\\dfrac{1}{\\sqrt{1-0.990}}=\\dfrac{1}{\\sqrt{0.00998}}=\\dfrac{1}{0.0999}",
+          answer:       "\\gamma=10.0"
+        },
+        mcq: {
+          options: ["10.0", "1.00", "0.0999", "100"],
+          correct: 0,
+          why: "γ = 1/√(1−0.995²) = 1/√0.00998 = 1/0.0999 = 10.0."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 2  —  Ch 2 Momentum Principle, Forces, Springs, Gravity
+       ============================================================ */
+    a2: [
+
+      /* A2 Q1 — net force */
+      {
+        id: "a2q1-fnet", concept: "Net Force", fromAssignment: "From Assignment 2, Q1",
+        prompt: '<b>From Assignment 2, Q1.</b> Two forces act: \\(\\langle 17,-10,39\\rangle\\) N and ' +
+                '\\(\\langle 23,-5,-28\\rangle\\) N. ' +
+                '<span class="ask">Find the net force \\(\\vec F_{net}=\\sum\\vec F\\).</span>',
+        inventory: inv("fnet", "fnet", "imp", "pmv", "fma", "ke"),
+        answerEqId: "fnet", dockedTex: "\\vec F_{net}=\\vec F_1+\\vec F_2", lhs: "\\vec F_{net}", joiner: "",
+        terms: [ { symbol: "\\vec F_1", sub: "\\langle 17,-10,39\\rangle" },
+                 { symbol: "+\\vec F_2", sub: "+\\langle 23,-5,-28\\rangle" } ],
+        distractors: ["\\vec F_1-\\vec F_2", "\\dfrac{\\vec F_1+\\vec F_2}{2}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec F_{net}=\\vec F_1+\\vec F_2",
+          substitution: "\\vec F_{net}=\\langle 17,-10,39\\rangle+\\langle 23,-5,-28\\rangle",
+          answer:       "\\vec F_{net}=\\langle 40.0,\\ -15.0,\\ 11.0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: ["\\langle 40, -15, 11\\rangle\\ \\text{N}", "\\langle -6, -5, 67\\rangle\\ \\text{N}",
+                    "\\langle 20, -7.5, 5.5\\rangle\\ \\text{N}", "\\langle 40, 15, 11\\rangle\\ \\text{N}"],
+          correct: 0,
+          why: "F_net = ⟨17+23, -10-5, 39-28⟩ = ⟨40,-15,11⟩ N."
+        }
+      },
+
+      /* A2 Q1 part 3 — average force from impulse */
+      {
+        id: "a2q1-favg", concept: "Impulse", fromAssignment: "From Assignment 2, Q1 (part 3)",
+        prompt: '<b>From Assignment 2, Q1.</b> A puck with momentum \\(\\langle 0,0,29\\rangle\\) kg·m/s stops in <b>3 s</b>. ' +
+                '<span class="ask">Find the average force \\(\\vec F=\\dfrac{\\Delta\\vec p}{\\Delta t}\\).</span>',
+        inventory: inv("imp", "imp", "fnet", "pmv", "fma", "ke"),
+        answerEqId: "imp", dockedTex: "\\vec F=\\dfrac{\\Delta\\vec p}{\\Delta t}", lhs: "\\vec F", joiner: "",
+        terms: [ { symbol: "\\dfrac{\\Delta\\vec p}{\\Delta t}", sub: "\\dfrac{\\langle 0,0,-29\\rangle}{3}" } ],
+        distractors: ["\\Delta\\vec p\\,\\Delta t", "\\dfrac{\\Delta t}{\\Delta\\vec p}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec F=\\dfrac{\\Delta\\vec p}{\\Delta t}",
+          substitution: "\\vec F=\\dfrac{\\langle 0,0,0\\rangle-\\langle 0,0,29\\rangle}{3}=\\dfrac{\\langle 0,0,-29\\rangle}{3}",
+          answer:       "\\vec F=\\langle 0,\\ 0,\\ -9.67\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: ["\\langle 0, 0, -9.67\\rangle\\ \\text{N}", "\\langle 0, 0, 29\\rangle\\ \\text{N}",
+                    "\\langle 0, 0, -87\\rangle\\ \\text{N}", "\\langle 0, 0, 9.67\\rangle\\ \\text{N}"],
+          correct: 0,
+          why: "J = Δp = ⟨0,0,-29⟩ N·s; F = J/Δt = ⟨0,0,-29⟩/3 = ⟨0,0,-9.67⟩ N."
+        }
+      },
+
+      /* A2 Q2 — momentum update with constant force */
+      {
+        id: "a2q2-pupdate", concept: "Momentum Update", fromAssignment: "From Assignment 2, Q2",
+        prompt: '<b>From Assignment 2, Q2.</b> \\(\\vec p_i=\\langle 37,0,0\\rangle\\) kg·m/s; force ' +
+                '\\(\\langle -11,8,0\\rangle\\) N acts for <b>1.0 s</b>. ' +
+                '<span class="ask">Find \\(\\vec p_f=\\vec p_i+\\vec F\\Delta t\\).</span>',
+        inventory: inv("pf", "pf", "imp", "pmv", "fma", "ke"),
+        answerEqId: "pf", dockedTex: "\\vec p_f=\\vec p_i+\\vec F\\Delta t", lhs: "\\vec p_f", joiner: "",
+        terms: [ { symbol: "\\vec p_i", sub: "\\langle 37,0,0\\rangle" },
+                 { symbol: "+\\vec F\\Delta t", sub: "+\\langle -11,8,0\\rangle(1.0)" } ],
+        distractors: ["-\\vec F\\Delta t", "\\dfrac{\\vec F}{\\Delta t}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec p_f=\\vec p_i+\\vec F\\Delta t",
+          substitution: "\\vec p_f=\\langle 37,0,0\\rangle+\\langle -11,8,0\\rangle(1.0)",
+          answer:       "\\vec p_f=\\langle 26.0,\\ 8.00,\\ 0\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["\\langle 26, 8, 0\\rangle\\ \\text{kg·m/s}", "\\langle 48, -8, 0\\rangle\\ \\text{kg·m/s}",
+                    "\\langle -11, 8, 0\\rangle\\ \\text{kg·m/s}", "\\langle 26, -8, 0\\rangle\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "p_f = ⟨37,0,0⟩ + ⟨-11,8,0⟩·1.0 = ⟨26,8,0⟩ kg·m/s."
+        }
+      },
+
+      /* A2 Q4 — model rocket net force */
+      {
+        id: "a2q4-rocket", concept: "Net Force", fromAssignment: "From Assignment 2, Q4",
+        prompt: '<b>From Assignment 2, Q4.</b> Rocket forces: thrust \\(\\langle 0,4,0\\rangle\\), grav ' +
+                '\\(\\langle 0,-0.49,0\\rangle\\), air \\(\\langle 0,-1.2,0\\rangle\\) N. ' +
+                '<span class="ask">Find \\(\\vec F_{net}=\\sum\\vec F\\).</span>',
+        inventory: inv("fnet", "fnet", "imp", "pmv", "grav", "ke"),
+        answerEqId: "fnet", dockedTex: "\\vec F_{net}=\\vec F_{th}+\\vec F_g+\\vec F_{air}", lhs: "\\vec F_{net}", joiner: "",
+        terms: [ { symbol: "\\vec F_{th}", sub: "\\langle 0,4,0\\rangle" },
+                 { symbol: "+\\vec F_g", sub: "+\\langle 0,-0.49,0\\rangle" },
+                 { symbol: "+\\vec F_{air}", sub: "+\\langle 0,-1.2,0\\rangle" } ],
+        distractors: ["-\\vec F_g", "\\dfrac{\\vec F_{th}}{3}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec F_{net}=\\vec F_{th}+\\vec F_g+\\vec F_{air}",
+          substitution: "\\vec F_{net}=\\langle 0,4,0\\rangle+\\langle 0,-0.49,0\\rangle+\\langle 0,-1.2,0\\rangle",
+          answer:       "\\vec F_{net}=\\langle 0,\\ 2.31,\\ 0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: ["\\langle 0, 2.31, 0\\rangle\\ \\text{N}", "\\langle 0, 5.69, 0\\rangle\\ \\text{N}",
+                    "\\langle 0, 4, 0\\rangle\\ \\text{N}", "\\langle 0, -2.31, 0\\rangle\\ \\text{N}"],
+          correct: 0,
+          why: "F_net,y = 4 − 0.49 − 1.2 = 2.31 N; F_net = ⟨0,2.31,0⟩ N."
+        }
+      },
+
+      /* A2 Q6 — spring stretch */
+      {
+        id: "a2q6-stretch", concept: "Spring", fromAssignment: "From Assignment 2, Q6",
+        prompt: '<b>From Assignment 2, Q6.</b> A spring (relaxed 14 cm) is suspended at \\(\\langle 0,0.03,0\\rangle\\); ' +
+                'ball at \\(\\langle 0.161,-0.192,0\\rangle\\) m. \\(\\vec L=\\langle 0.161,-0.222,0\\rangle\\). ' +
+                '<span class="ask">Find the stretch \\(s=|\\vec L|-L_0\\).</span>',
+        inventory: inv("spring", "spring", "mag", "grav", "pmv", "ke"),
+        answerEqId: "spring", dockedTex: "s=|\\vec L|-L_0", lhs: "s", joiner: "",
+        terms: [ { symbol: "|\\vec L|", sub: "\\sqrt{0.161^2+0.222^2}" },
+                 { symbol: "-L_0", sub: "-0.14" } ],
+        distractors: ["+L_0", "\\dfrac{|\\vec L|}{L_0}", "k\\,s", "\\tfrac12"],
+        result: {
+          expression:   "s=|\\vec L|-L_0",
+          substitution: "s=\\sqrt{0.0259+0.0493}-0.14=0.274-0.14",
+          answer:       "s=0.134\\ \\text{m}"
+        },
+        mcq: {
+          options: ["0.134\\ \\text{m}", "0.274\\ \\text{m}", "0.414\\ \\text{m}", "0.0259\\ \\text{m}"],
+          correct: 0,
+          why: "|L| = √(0.161²+0.222²) = 0.274 m; s = 0.274 − 0.14 = 0.134 m."
+        }
+      },
+
+      /* A2 Q9 — baseball-bat momentum after */
+      {
+        id: "a2q9-bat", concept: "Momentum Update", fromAssignment: "From Assignment 2, Q9",
+        prompt: '<b>From Assignment 2, Q9.</b> Ball (0.145 kg) has \\(\\vec p_i=\\langle 0,0,4.80\\rangle\\) kg·m/s; ' +
+                'bat force \\(\\langle 0,0,-1.35\\times10^4\\rangle\\) N for <b>1.2 ms</b>. ' +
+                '<span class="ask">Find \\(\\vec p_f=\\vec p_i+\\vec F\\Delta t\\).</span>',
+        inventory: inv("pf", "pf", "imp", "pmv", "cons", "ke"),
+        answerEqId: "pf", dockedTex: "\\vec p_f=\\vec p_i+\\vec F\\Delta t", lhs: "\\vec p_f", joiner: "",
+        terms: [ { symbol: "\\vec p_i", sub: "\\langle 0,0,4.80\\rangle" },
+                 { symbol: "+\\vec F\\Delta t", sub: "+\\langle 0,0,-1.35\\times10^4\\rangle(1.2\\times10^{-3})" } ],
+        distractors: ["-\\vec F\\Delta t", "\\dfrac{\\vec F}{\\Delta t}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec p_f=\\vec p_i+\\vec F\\Delta t",
+          substitution: "\\vec p_f=\\langle 0,0,4.80\\rangle+\\langle 0,0,-16.2\\rangle",
+          answer:       "\\vec p_f=\\langle 0,\\ 0,\\ -11.4\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["\\langle 0, 0, -11.4\\rangle\\ \\text{kg·m/s}", "\\langle 0, 0, 21.0\\rangle\\ \\text{kg·m/s}",
+                    "\\langle 0, 0, -16.2\\rangle\\ \\text{kg·m/s}", "\\langle 0, 0, 4.80\\rangle\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "FΔt = -1.35e4·1.2e-3 = -16.2; p_f = 4.80 − 16.2 = -11.4 → ⟨0,0,-11.4⟩ kg·m/s."
+        }
+      },
+
+      /* A2 Q10 — Sun↔Jupiter gravity */
+      {
+        id: "a2q10-grav", concept: "Gravity", fromAssignment: "From Assignment 2, Q10",
+        prompt: '<b>From Assignment 2, Q10.</b> Sun \\(2\\times10^{30}\\) kg, Jupiter \\(1.9\\times10^{27}\\) kg, ' +
+                'separation \\(7.8\\times10^{11}\\) m. ' +
+                '<span class="ask">Find \\(F=\\dfrac{Gm_1m_2}{r^2}\\).</span>',
+        inventory: inv("grav", "grav", "coul", "gsurf", "pmv", "ke"),
+        answerEqId: "grav", dockedTex: "F=\\dfrac{G\\,m_1 m_2}{r^2}", lhs: "F", joiner: "",
+        terms: [ { symbol: "\\dfrac{G\\,m_1 m_2}{r^2}",
+                   sub: "\\dfrac{(6.674\\times10^{-11})(2\\times10^{30})(1.9\\times10^{27})}{(7.8\\times10^{11})^2}" } ],
+        distractors: ["\\dfrac{Gm_1m_2}{r}", "\\dfrac{Gm_1m_2}{r^3}", "k\\dfrac{q_1q_2}{r^2}", "\\tfrac12"],
+        result: {
+          expression:   "F=\\dfrac{G\\,m_1 m_2}{r^2}",
+          substitution: "F=\\dfrac{(6.674\\times10^{-11})(2\\times10^{30})(1.9\\times10^{27})}{6.084\\times10^{23}}",
+          answer:       "F=4.17\\times10^{23}\\ \\text{N}"
+        },
+        mcq: {
+          options: ["4.17\\times10^{23}\\ \\text{N}", "3.25\\times10^{35}\\ \\text{N}",
+                    "5.34\\times10^{11}\\ \\text{N}", "4.17\\times10^{11}\\ \\text{N}"],
+          correct: 0,
+          why: "F = G·2e30·1.9e27/(7.8e11)² = 2.537e47/6.084e23 = 4.17×10²³ N (same both ways, N3L)."
+        }
+      },
+
+      /* A2 Q11 — asteroid mass from gravity */
+      {
+        id: "a2q11-mast", concept: "Gravity", fromAssignment: "From Assignment 2, Q11",
+        prompt: '<b>From Assignment 2, Q11.</b> On an asteroid of radius \\(1\\times10^{5}\\) m the gravitational force ' +
+                'on a <b>48 kg</b> object is <b>7 N</b>. ' +
+                '<span class="ask">Find the asteroid mass \\(M=\\dfrac{F R^2}{G m}\\).</span>',
+        inventory: inv("grav", "grav", "gsurf", "coul", "pmv", "ke"),
+        answerEqId: "grav", dockedTex: "M=\\dfrac{F R^2}{G\\,m}", lhs: "M", joiner: "",
+        terms: [ { symbol: "\\dfrac{F R^2}{G\\,m}",
+                   sub: "\\dfrac{(7)(1\\times10^{5})^2}{(6.674\\times10^{-11})(48)}" } ],
+        distractors: ["\\dfrac{G m}{F R^2}", "\\dfrac{F R}{G m}", "\\dfrac{F R^2}{m}", "\\tfrac12"],
+        result: {
+          expression:   "M=\\dfrac{F R^2}{G\\,m}",
+          substitution: "M=\\dfrac{(7)(1\\times10^{10})}{(6.674\\times10^{-11})(48)}=\\dfrac{7\\times10^{10}}{3.204\\times10^{-9}}",
+          answer:       "M=2.19\\times10^{19}\\ \\text{kg}"
+        },
+        mcq: {
+          options: ["2.19\\times10^{19}\\ \\text{kg}", "2.19\\times10^{9}\\ \\text{kg}",
+                    "4.56\\times10^{-20}\\ \\text{kg}", "7.0\\times10^{10}\\ \\text{kg}"],
+          correct: 0,
+          why: "M = F R²/(G m) = 7·1e10/(6.674e-11·48) = 7e10/3.204e-9 = 2.19×10¹⁹ kg."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 3  —  Gravity + Momentum, Coulomb, Conservation
+       (UNSUBMITTED in PDF; ±2% tolerance — verified by hand)
+       ============================================================ */
+    a3: [
+
+      /* A3 Q1 — gravity force between two deep-space blocks */
+      {
+        id: "a3q1-grav", concept: "Gravity", fromAssignment: "From Assignment 3, Q1",
+        prompt: '<b>From Assignment 3, Q1.</b> Block 1 (75 kg) at \\(\\langle 5,14,0\\rangle\\), block 2 (850 kg) at ' +
+                '\\(\\langle 9,14,0\\rangle\\) m (4 m apart along x). ' +
+                '<span class="ask">Find \\(F=\\dfrac{Gm_1m_2}{r^2}\\) on block 2 (toward block 1).</span>',
+        inventory: inv("grav", "grav", "coul", "gsurf", "pmv", "cons"),
+        answerEqId: "grav", dockedTex: "F=\\dfrac{G\\,m_1 m_2}{r^2}", lhs: "F", joiner: "",
+        terms: [ { symbol: "\\dfrac{G\\,m_1 m_2}{r^2}",
+                   sub: "\\dfrac{(6.674\\times10^{-11})(75)(850)}{4^2}" } ],
+        distractors: ["\\dfrac{Gm_1m_2}{r}", "k\\dfrac{q_1q_2}{r^2}", "\\dfrac{Gm_1m_2}{r^3}", "\\tfrac12"],
+        result: {
+          expression:   "F=\\dfrac{G\\,m_1 m_2}{r^2}",
+          substitution: "F=\\dfrac{(6.674\\times10^{-11})(75)(850)}{16}=\\dfrac{4.255\\times10^{-6}}{16}",
+          answer:       "F=2.66\\times10^{-7}\\ \\text{N (toward block 1, so }-x)"
+        },
+        mcq: {
+          options: ["2.66\\times10^{-7}\\ \\text{N}", "1.06\\times10^{-6}\\ \\text{N}",
+                    "2.66\\times10^{-6}\\ \\text{N}", "6.64\\times10^{-8}\\ \\text{N}"],
+          correct: 0,
+          why: "F = G·75·850/4² = 4.255e-6/16 = 2.66×10⁻⁷ N, directed toward block 1 (−x)."
+        }
+      },
+
+      /* A3 Q2 — softball drop, Δp */
+      {
+        id: "a3q2-drop", concept: "Gravity / Impulse", fromAssignment: "From Assignment 3, Q2",
+        prompt: '<b>From Assignment 3, Q2.</b> A <b>179 g</b> softball is dropped for <b>0.5 s</b> (\\(g=9.8\\)). ' +
+                '<span class="ask">Find \\(|\\Delta p|=mg\\,\\Delta t\\).</span>',
+        inventory: inv("imp", "imp", "grav", "pmv", "dp", "ke"),
+        answerEqId: "imp", dockedTex: "|\\Delta p|=m\\,g\\,\\Delta t", lhs: "|\\Delta p|", joiner: "\\cdot",
+        terms: [ { symbol: "m", sub: "(0.179)" }, { symbol: "g", sub: "(9.8)" }, { symbol: "\\Delta t", sub: "(0.5)" } ],
+        distractors: ["\\dfrac{1}{g}", "v^2", "\\tfrac12", "R^2"],
+        result: {
+          expression:   "|\\Delta p|=m\\cdot g\\cdot\\Delta t",
+          substitution: "|\\Delta p|=(0.179)\\cdot(9.8)\\cdot(0.5)",
+          answer:       "|\\Delta p|=0.877\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["0.877\\ \\text{kg·m/s}", "1.75\\ \\text{kg·m/s}", "4.90\\ \\text{kg·m/s}", "0.0877\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "|Δp| = m g Δt = 0.179·9.8·0.5 = 0.877 kg·m/s (same |Δp| for Earth, N3L)."
+        }
+      },
+
+      /* A3 Q3 — gravity on Venus surface */
+      {
+        id: "a3q3-venus", concept: "Gravity", fromAssignment: "From Assignment 3, Q3",
+        prompt: '<b>From Assignment 3, Q3.</b> A <b>74 kg</b> human stands on Venus ' +
+                '(\\(M=4.9\\times10^{24}\\) kg, \\(R=6.1\\times10^{6}\\) m). ' +
+                '<span class="ask">Find \\(F=\\dfrac{GMm}{R^2}\\).</span>',
+        inventory: inv("grav", "grav", "gsurf", "coul", "pmv", "ke"),
+        answerEqId: "grav", dockedTex: "F=\\dfrac{G\\,M\\,m}{R^2}", lhs: "F", joiner: "",
+        terms: [ { symbol: "\\dfrac{G\\,M\\,m}{R^2}",
+                   sub: "\\dfrac{(6.674\\times10^{-11})(4.9\\times10^{24})(74)}{(6.1\\times10^{6})^2}" } ],
+        distractors: ["\\dfrac{GMm}{R}", "\\dfrac{GM}{R^2}", "k\\dfrac{q^2}{R^2}", "\\tfrac12"],
+        result: {
+          expression:   "F=\\dfrac{G\\,M\\,m}{R^2}",
+          substitution: "F=\\dfrac{(6.674\\times10^{-11})(4.9\\times10^{24})(74)}{3.721\\times10^{13}}=\\dfrac{2.420\\times10^{16}}{3.721\\times10^{13}}",
+          answer:       "F=650\\ \\text{N}"
+        },
+        mcq: {
+          options: ["650\\ \\text{N}", "725\\ \\text{N}", "8.79\\ \\text{N}", "1300\\ \\text{N}"],
+          correct: 0,
+          why: "F = G·4.9e24·74/(6.1e6)² = 2.420e16/3.721e13 = 650 N."
+        }
+      },
+
+      /* A3 Q4 — Coulomb force between two charged spheres */
+      {
+        id: "a3q4-coulomb", concept: "Coulomb", fromAssignment: "From Assignment 3, Q4",
+        prompt: '<b>From Assignment 3, Q4.</b> \\(q_1=-6\\times10^{-9}\\) C, \\(q_2=-8\\times10^{-9}\\) C, separated by ' +
+                '\\(r=0.905\\) m (\\(k=9\\times10^{9}\\)). ' +
+                '<span class="ask">Find \\(|F|=\\dfrac{k|q_1q_2|}{r^2}\\).</span>',
+        inventory: inv("coul", "coul", "grav", "gsurf", "pmv", "ke"),
+        answerEqId: "coul", dockedTex: "|F|=\\dfrac{k|q_1 q_2|}{r^2}", lhs: "|F|", joiner: "",
+        terms: [ { symbol: "\\dfrac{k|q_1 q_2|}{r^2}",
+                   sub: "\\dfrac{(9\\times10^{9})(6\\times10^{-9})(8\\times10^{-9})}{0.905^2}" } ],
+        distractors: ["\\dfrac{k q_1 q_2}{r}", "\\dfrac{G q_1 q_2}{r^2}", "\\dfrac{k|q_1q_2|}{r^3}", "\\tfrac12"],
+        result: {
+          expression:   "|F|=\\dfrac{k|q_1 q_2|}{r^2}",
+          substitution: "|F|=\\dfrac{(9\\times10^{9})(4.8\\times10^{-17})}{0.819}=\\dfrac{4.32\\times10^{-7}}{0.819}",
+          answer:       "|F|=5.28\\times10^{-7}\\ \\text{N (repulsive)}"
+        },
+        mcq: {
+          options: ["5.28\\times10^{-7}\\ \\text{N}", "4.32\\times10^{-7}\\ \\text{N}",
+                    "3.73\\times10^{-7}\\ \\text{N}", "5.28\\times10^{-6}\\ \\text{N}"],
+          correct: 0,
+          why: "|F| = k|q₁q₂|/r² = 9e9·4.8e-17/0.905² = 4.32e-7/0.819 = 5.28×10⁻⁷ N (the PDF's per-axis ⟨-3.73e-7,3.73e-7,0⟩ has magnitude 5.28e-7)."
+        }
+      },
+
+      /* A3 Q5 — proton-proton momentum conservation */
+      {
+        id: "a3q5-pp", concept: "Momentum Conservation", fromAssignment: "From Assignment 3, Q5",
+        prompt: '<b>From Assignment 3, Q5.</b> Proton 1 incoming \\(\\langle 3.9\\times10^{-21},0,0\\rangle\\), ' +
+                'proton 2 initially at rest. After: proton 1 \\(\\langle 3.6\\times10^{-21},4.1\\times10^{-21},0\\rangle\\). ' +
+                '<span class="ask">Find \\(\\vec p_{2,f}=\\vec p_{tot,i}-\\vec p_{1,f}\\).</span>',
+        inventory: inv("cons", "cons", "pf", "pmv", "imp", "ke"),
+        answerEqId: "cons", dockedTex: "\\vec p_{2,f}=\\vec p_{tot,i}-\\vec p_{1,f}", lhs: "\\vec p_{2,f}", joiner: "",
+        terms: [ { symbol: "\\vec p_{tot,i}", sub: "\\langle 3.9\\times10^{-21},0,0\\rangle" },
+                 { symbol: "-\\vec p_{1,f}", sub: "-\\langle 3.6\\times10^{-21},4.1\\times10^{-21},0\\rangle" } ],
+        distractors: ["+\\vec p_{1,f}", "\\dfrac{\\vec p_{tot,i}}{2}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec p_{2,f}=\\vec p_{tot,i}-\\vec p_{1,f}",
+          substitution: "\\vec p_{2,f}=\\langle 3.9,0,0\\rangle\\times10^{-21}-\\langle 3.6,4.1,0\\rangle\\times10^{-21}",
+          answer:       "\\vec p_{2,f}=\\langle 3.00\\times10^{-22},\\ -4.10\\times10^{-21},\\ 0\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["\\langle 3.00\\times10^{-22}, -4.10\\times10^{-21}, 0\\rangle", "\\langle 7.5\\times10^{-21}, 4.1\\times10^{-21}, 0\\rangle",
+                    "\\langle 3.6\\times10^{-21}, 4.1\\times10^{-21}, 0\\rangle", "\\langle 0, 0, 0\\rangle"],
+          correct: 0,
+          why: "p₂f = ⟨3.9,0,0⟩ − ⟨3.6,4.1,0⟩ (×10⁻²¹) = ⟨0.3,-4.1,0⟩×10⁻²¹ = ⟨3.0×10⁻²²,-4.1×10⁻²¹,0⟩."
+        }
+      },
+
+      /* A3 Q6 — wet clay inelastic collision, final velocity */
+      {
+        id: "a3q6-clay", concept: "Inelastic Collision", fromAssignment: "From Assignment 3, Q6",
+        prompt: '<b>From Assignment 3, Q6.</b> Two 50 g clay lumps, \\(\\vec v_1=\\langle 2,6,-9\\rangle\\) and ' +
+                '\\(\\vec v_2=\\langle -3,0,-6\\rangle\\) m/s, collide and stick. ' +
+                '<span class="ask">Find \\(\\vec v_f=\\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}\\).</span>',
+        inventory: inv("cons", "cons", "pmv", "imp", "fma", "ke"),
+        answerEqId: "cons", dockedTex: "\\vec v_f=\\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}", lhs: "\\vec v_f", joiner: "",
+        terms: [ { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}", sub: "\\dfrac{(0.05)\\langle 2,6,-9\\rangle}{0.10}" },
+                 { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(0.05)\\langle -3,0,-6\\rangle}{0.10}" } ],
+        distractors: ["(m_1+m_2)\\vec v_f", "\\dfrac{\\vec v_1-\\vec v_2}{2}", "m\\vec a", "\\tfrac12"],
+        result: {
+          expression:   "\\vec v_f=\\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}=\\dfrac{\\vec v_1+\\vec v_2}{2}",
+          substitution: "\\vec v_f=\\dfrac{\\langle 2,6,-9\\rangle+\\langle -3,0,-6\\rangle}{2}=\\dfrac{\\langle -1,6,-15\\rangle}{2}",
+          answer:       "\\vec v_f=\\langle -0.500,\\ 3.00,\\ -7.50\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: ["\\langle -0.5, 3, -7.5\\rangle\\ \\text{m/s}", "\\langle -1, 6, -15\\rangle\\ \\text{m/s}",
+                    "\\langle 0.5, 3, 7.5\\rangle\\ \\text{m/s}", "\\langle -0.05, 0.3, -0.75\\rangle\\ \\text{m/s}"],
+          correct: 0,
+          why: "Equal masses: v_f = (v₁+v₂)/2 = ⟨-1,6,-15⟩/2 = ⟨-0.5,3,-7.5⟩ m/s."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 4  —  Ch 3.8-4: COLLISIONS (stick) + FRICTION
+       (representative problems on the official topics; verified)
+       ============================================================ */
+    a4: [
+
+      /* A4 Q1 — two rocks collide and stick (2-D) */
+      {
+        id: "a4q1-rocks-stick", concept: "Collisions", fromAssignment: "From Assignment 4, Q1",
+        prompt: '<b>From Assignment 4, Q1.</b> A <b>23 kg</b> rock at \\(\\vec v_1=\\langle 11,-23,0\\rangle\\) and a ' +
+                '<b>43 kg</b> rock at \\(\\vec v_2=\\langle 28,6,0\\rangle\\) m/s collide and stick. ' +
+                '<span class="ask">Find \\(\\vec v\'=\\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}\\).</span>',
+        inventory: inv("cons", "cons", "pmv", "fma", "ke", "imp"),
+        answerEqId: "cons", dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'", lhs: "\\vec v'", joiner: "",
+        terms: [ { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}", sub: "\\dfrac{(23)\\langle 11,-23,0\\rangle}{66}" },
+                 { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(43)\\langle 28,6,0\\rangle}{66}" } ],
+        distractors: ["(m_1+m_2)\\vec v'", "-\\dfrac{m_1\\vec v_1}{m_1+m_2}", "\\tfrac12 mv^2", "\\mu_k N"],
+        result: {
+          expression:   "\\vec v'=\\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v'=\\dfrac{(23)\\langle 11,-23,0\\rangle+(43)\\langle 28,6,0\\rangle}{66}=\\dfrac{\\langle 1457,-271,0\\rangle}{66}",
+          answer:       "\\vec v'=\\langle 22.08,\\ -4.11,\\ 0\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: ["\\langle 22.08, -4.11, 0\\rangle\\ \\text{m/s}", "\\langle 39, -17, 0\\rangle\\ \\text{m/s}",
+                    "\\langle 19.5, -8.5, 0\\rangle\\ \\text{m/s}", "\\langle 22.08, 4.11, 0\\rangle\\ \\text{m/s}"],
+          correct: 0,
+          why: "v' = (23⟨11,-23,0⟩ + 43⟨28,6,0⟩)/66 = ⟨1457,-271,0⟩/66 = ⟨22.08,-4.11,0⟩ m/s."
+        }
+      },
+
+      /* A4 Q4 — two equal clay lumps stick (3-D) */
+      {
+        id: "a4q4-clay-stick", concept: "Collisions", fromAssignment: "From Assignment 4, Q4",
+        prompt: '<b>From Assignment 4, Q4.</b> Two <b>37 g</b> lumps, \\(\\vec v_1=\\langle 8,8,-5\\rangle\\) and ' +
+                '\\(\\vec v_2=\\langle -5,0,-8\\rangle\\) m/s, stick. ' +
+                '<span class="ask">Find \\(\\vec v\'\\) (equal masses cancel).</span>',
+        inventory: inv("cons", "cons", "pmv", "fma", "ke", "imp"),
+        answerEqId: "cons", dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'", lhs: "\\vec v'", joiner: "",
+        terms: [ { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}", sub: "\\dfrac{(0.037)\\langle 8,8,-5\\rangle}{0.074}" },
+                 { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(0.037)\\langle -5,0,-8\\rangle}{0.074}" } ],
+        distractors: ["(m_1+m_2)\\vec v'", "-\\dfrac{m_2\\vec v_2}{m_1+m_2}", "\\mu_k N", "\\tfrac12 mv^2"],
+        result: {
+          expression:   "\\vec v'=\\dfrac{\\vec v_1+\\vec v_2}{2}",
+          substitution: "\\vec v'=\\dfrac{\\langle 8,8,-5\\rangle+\\langle -5,0,-8\\rangle}{2}=\\dfrac{\\langle 3,8,-13\\rangle}{2}",
+          answer:       "\\vec v'=\\langle 1.5,\\ 4,\\ -6.5\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: ["\\langle 1.5, 4, -6.5\\rangle\\ \\text{m/s}", "\\langle 3, 8, -13\\rangle\\ \\text{m/s}",
+                    "\\langle 1.5, 4, 6.5\\rangle\\ \\text{m/s}", "\\langle 13, 8, -3\\rangle\\ \\text{m/s}"],
+          correct: 0,
+          why: "Equal masses: v' = (v₁+v₂)/2 = ⟨3,8,-13⟩/2 = ⟨1.5,4,-6.5⟩ m/s."
+        }
+      },
+
+      /* A4 Q5a — static friction coefficient */
+      {
+        id: "a4q5-mus", concept: "Friction", fromAssignment: "From Assignment 4, Q5a",
+        prompt: '<b>From Assignment 4, Q5a.</b> A <b>4.2 kg</b> block breaks away at a push of <b>20.6 N</b> ' +
+                '(\\(f_s=\\mu_s mg\\), \\(g=9.8\\)). ' +
+                '<span class="ask">Find \\(\\mu_s=\\dfrac{20.6}{mg}\\).</span>',
+        inventory: inv("fric", "fric", "cons", "fma", "ke", "pmv").map(c => {
+          if (c.id === "fric") return { id: "musN", tex: "f_s=\\mu_s mg", label: "static friction", relevant: true };
+          return c;
+        }),
+        answerEqId: "musN", dockedTex: "\\mu_s=\\dfrac{f_s}{m\\,g}", lhs: "\\mu_s", joiner: "",
+        terms: [ { symbol: "\\dfrac{f_s}{m\\,g}", sub: "\\dfrac{20.6}{(4.2)(9.8)}" } ],
+        distractors: ["m\\,g", "\\mu_k", "\\tfrac12", "f_s\\,m\\,g"],
+        result: {
+          expression:   "\\mu_s=\\dfrac{f_s}{m\\,g}",
+          substitution: "\\mu_s=\\dfrac{20.6}{(4.2)(9.8)}=\\dfrac{20.6}{41.16}",
+          answer:       "\\mu_s=0.50"
+        },
+        mcq: { options: ["0.50", "4.90", "0.33", "0.21"], correct: 0,
+          why: "μ_s = 20.6/(4.2·9.8) = 20.6/41.16 = 0.50." }
+      },
+
+      /* A4 Q5b — kinetic friction coefficient */
+      {
+        id: "a4q5-muk", concept: "Friction", fromAssignment: "From Assignment 4, Q5b",
+        prompt: '<b>From Assignment 4, Q5b.</b> The same <b>4.2 kg</b> block slides at constant speed under a ' +
+                '<b>13.6 N</b> push (\\(f_k=\\mu_k mg\\)). ' +
+                '<span class="ask">Find \\(\\mu_k=\\dfrac{13.6}{mg}\\).</span>',
+        inventory: inv("fric", "fric", "cons", "fma", "ke", "pmv").map(c => {
+          if (c.id === "fric") return { id: "fric", tex: "f_k=\\mu_k mg", label: "kinetic friction", relevant: true };
+          return c;
+        }),
+        answerEqId: "fric", dockedTex: "\\mu_k=\\dfrac{f_k}{m\\,g}", lhs: "\\mu_k", joiner: "",
+        terms: [ { symbol: "\\dfrac{f_k}{m\\,g}", sub: "\\dfrac{13.6}{(4.2)(9.8)}" } ],
+        distractors: ["m\\,g", "\\mu_s", "\\tfrac12", "f_k\\,m\\,g"],
+        result: {
+          expression:   "\\mu_k=\\dfrac{f_k}{m\\,g}",
+          substitution: "\\mu_k=\\dfrac{13.6}{(4.2)(9.8)}=\\dfrac{13.6}{41.16}",
+          answer:       "\\mu_k=0.33"
+        },
+        mcq: { options: ["0.33", "0.50", "3.23", "0.66"], correct: 0,
+          why: "μ_k = 13.6/(4.2·9.8) = 13.6/41.16 = 0.33." }
+      },
+
+      /* A4 Q6a — max static friction force */
+      {
+        id: "a4q6-fsmax", concept: "Friction", fromAssignment: "From Assignment 4, Q6a",
+        prompt: '<b>From Assignment 4, Q6a.</b> An <b>8.2 kg</b> box, \\(\\mu_s=0.8\\), \\(g=9.8\\), \\(N=mg\\). ' +
+                '<span class="ask">Find \\(f_{s,\\max}=\\mu_s mg\\).</span>',
+        inventory: inv("fric", "fric", "cons", "fma", "ke", "pmv").map(c => {
+          if (c.id === "fric") return { id: "musN", tex: "f_{s,\\max}=\\mu_s mg", label: "max static", relevant: true };
+          return c;
+        }),
+        answerEqId: "musN", dockedTex: "f_{s,\\max}=\\mu_s\\,m\\,g", lhs: "f_{s,\\max}", joiner: "\\cdot",
+        terms: [ { symbol: "\\mu_s", sub: "(0.8)" }, { symbol: "m", sub: "(8.2)" }, { symbol: "g", sub: "(9.8)" } ],
+        distractors: ["\\mu_k", "\\tfrac12", "a", "N^2"],
+        result: {
+          expression:   "f_{s,\\max}=\\mu_s\\cdot m\\cdot g",
+          substitution: "f_{s,\\max}=(0.8)\\cdot(8.2)\\cdot(9.8)",
+          answer:       "f_{s,\\max}=64.29\\ \\text{N}"
+        },
+        mcq: { options: ["64.29\\ \\text{N}", "48.22\\ \\text{N}", "80.36\\ \\text{N}", "6.56\\ \\text{N}"], correct: 0,
+          why: "f_s,max = μ_s m g = 0.8·8.2·9.8 = 64.29 N." }
+      },
+
+      /* A4 Q6b — kinetic friction force */
+      {
+        id: "a4q6-fk", concept: "Friction", fromAssignment: "From Assignment 4, Q6b",
+        prompt: '<b>From Assignment 4, Q6b.</b> The same <b>8.2 kg</b> box slides, \\(\\mu_k=0.6\\), \\(g=9.8\\). ' +
+                '<span class="ask">Find \\(f_k=\\mu_k mg\\).</span>',
+        inventory: inv("fric", "fric", "cons", "fma", "ke", "pmv").map(c => {
+          if (c.id === "fric") return { id: "fric", tex: "f_k=\\mu_k mg", label: "kinetic", relevant: true };
+          return c;
+        }),
+        answerEqId: "fric", dockedTex: "f_k=\\mu_k\\,m\\,g", lhs: "f_k", joiner: "\\cdot",
+        terms: [ { symbol: "\\mu_k", sub: "(0.6)" }, { symbol: "m", sub: "(8.2)" }, { symbol: "g", sub: "(9.8)" } ],
+        distractors: ["\\mu_s", "\\tfrac12", "a", "N^2"],
+        result: {
+          expression:   "f_k=\\mu_k\\cdot m\\cdot g",
+          substitution: "f_k=(0.6)\\cdot(8.2)\\cdot(9.8)",
+          answer:       "f_k=48.22\\ \\text{N}"
+        },
+        mcq: { options: ["48.22\\ \\text{N}", "64.29\\ \\text{N}", "80.36\\ \\text{N}", "4.92\\ \\text{N}"], correct: 0,
+          why: "f_k = μ_k m g = 0.6·8.2·9.8 = 48.22 N." }
+      },
+
+      /* A4 combo — push vs friction → acceleration */
+      {
+        id: "a4q7-push-accel", concept: "Friction+FBD", fromAssignment: "From Assignment 4, combo",
+        prompt: '<b>From Assignment 4, combo.</b> The <b>8.2 kg</b> box (\\(\\mu_k=0.6\\)) is pushed with <b>70 N</b> ' +
+                'while sliding. ' +
+                '<span class="ask">Find \\(a=\\dfrac{F_{push}-\\mu_k mg}{m}\\).</span>',
+        inventory: inv("fma", "fma", "cons", "ke", "pmv", "fric").map(c => {
+          if (c.id === "fma") return { id: "net", tex: "a=\\dfrac{F_{push}-\\mu_k mg}{m}", label: "net 2nd law", relevant: true };
+          return c;
+        }),
+        answerEqId: "net", dockedTex: "a=\\dfrac{F_{push}-\\mu_k m g}{m}", lhs: "a", joiner: "",
+        terms: [ { symbol: "\\dfrac{F_{push}-\\mu_k m g}{m}", sub: "\\dfrac{70-(0.6)(8.2)(9.8)}{8.2}" } ],
+        distractors: ["\\dfrac{F_{push}+\\mu_k m g}{m}", "F_{push}-\\mu_k m g", "\\mu_k g", "\\dfrac{F_{push}}{m}"],
+        result: {
+          expression:   "a=\\dfrac{F_{push}-\\mu_k m g}{m}",
+          substitution: "a=\\dfrac{70-48.22}{8.2}=\\dfrac{21.78}{8.2}",
+          answer:       "a=2.66\\ \\text{m/s}^2"
+        },
+        mcq: { options: ["2.66\\ \\text{m/s}^2", "8.54\\ \\text{m/s}^2", "1.84\\ \\text{m/s}^2", "5.88\\ \\text{m/s}^2"], correct: 0,
+          why: "f_k=48.22 N; F_net=70−48.22=21.78 N; a=21.78/8.2=2.66 m/s²." }
+      },
+
+      /* A4 combo — sliding stop distance */
+      {
+        id: "a4q8-stop-distance", concept: "Friction+Kinematics", fromAssignment: "From Assignment 4, combo",
+        prompt: '<b>From Assignment 4, combo.</b> A <b>2.0 kg</b> puck launched at <b>6.0 m/s</b>, \\(\\mu_k=0.25\\), ' +
+                'stops after \\(d=\\dfrac{v_0^2}{2\\mu_k g}\\). ' +
+                '<span class="ask">Find the stopping distance \\(d\\).</span>',
+        inventory: inv("fric", "fric", "cons", "fma", "pmv", "ke").map(c => {
+          if (c.id === "fric") return { id: "stop", tex: "d=\\dfrac{v_0^2}{2\\mu_k g}", label: "stop distance", relevant: true };
+          return c;
+        }),
+        answerEqId: "stop", dockedTex: "d=\\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}", lhs: "d", joiner: "",
+        terms: [ { symbol: "\\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}", sub: "\\dfrac{(6.0)^2}{2(0.25)(9.8)}" } ],
+        distractors: ["\\dfrac{v_0}{2\\,\\mu_k\\,g}", "\\dfrac{v_0^{2}}{\\mu_k\\,g}", "\\mu_k g", "2\\,\\mu_k\\,g\\,v_0^{2}"],
+        result: {
+          expression:   "d=\\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}",
+          substitution: "d=\\dfrac{36}{2(0.25)(9.8)}=\\dfrac{36}{4.9}",
+          answer:       "d=7.35\\ \\text{m}"
+        },
+        mcq: { options: ["7.35\\ \\text{m}", "3.67\\ \\text{m}", "14.69\\ \\text{m}", "2.45\\ \\text{m}"], correct: 0,
+          why: "a=μ_k g=2.45 m/s²; d=v₀²/(2a)=36/4.9=7.35 m." }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 5  —  Ch 5 Forces from Motion + Ch 6 Energy
+       ============================================================ */
+    a5: [
+
+      /* A5 Q1 — unknown force from ΣF=ma */
+      {
+        id: "a5q1-unknown-force", concept: "Forces from Motion", fromAssignment: "From Assignment 5, Q1",
+        prompt: '<b>From Assignment 5, Q1.</b> A <b>6.0 kg</b> object: \\(\\vec F_1=\\langle 12,0,0\\rangle\\), ' +
+                '\\(\\vec F_2=\\langle 0,-9,0\\rangle\\) N, unknown \\(\\vec F_3\\), \\(\\vec a=\\langle 3,2,0\\rangle\\) m/s². ' +
+                '<span class="ask">Find \\(\\vec F_3=m\\vec a-\\vec F_1-\\vec F_2\\).</span>',
+        inventory: inv("fnet", "fnet", "pmv", "ke", "cons", "fma").map(c => {
+          if (c.id === "fnet") return { id: "net", tex: "\\sum\\vec F=m\\vec a", label: "net 2nd law", relevant: true };
+          return c;
+        }),
+        answerEqId: "net", dockedTex: "\\vec F_3=m\\vec a-\\vec F_1-\\vec F_2", lhs: "\\vec F_3", joiner: "",
+        terms: [ { symbol: "m\\vec a", sub: "(6)\\langle 3,2,0\\rangle" },
+                 { symbol: "-\\vec F_1", sub: "-\\langle 12,0,0\\rangle" },
+                 { symbol: "-\\vec F_2", sub: "-\\langle 0,-9,0\\rangle" } ],
+        distractors: ["+\\vec F_1", "+\\vec F_2", "\\dfrac{\\vec a}{m}", "\\tfrac12 mv^2"],
+        result: {
+          expression:   "\\vec F_3=m\\vec a-\\vec F_1-\\vec F_2",
+          substitution: "\\vec F_3=\\langle 18,12,0\\rangle-\\langle 12,0,0\\rangle-\\langle 0,-9,0\\rangle",
+          answer:       "\\vec F_3=\\langle 6,\\ 21,\\ 0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: ["\\langle 6, 21, 0\\rangle\\ \\text{N}", "\\langle 30, 21, 0\\rangle\\ \\text{N}",
+                    "\\langle 6, 3, 0\\rangle\\ \\text{N}", "\\langle 18, 12, 0\\rangle\\ \\text{N}"],
+          correct: 0,
+          why: "F₃ = m a − F₁ − F₂ = ⟨18,12,0⟩ − ⟨12,0,0⟩ − ⟨0,-9,0⟩ = ⟨6,21,0⟩ N."
+        }
+      },
+
+      /* A5 Q2 — centripetal force */
+      {
+        id: "a5q2-centripetal", concept: "Circular Motion", fromAssignment: "From Assignment 5, Q2",
+        prompt: '<b>From Assignment 5, Q2.</b> A <b>0.50 kg</b> ball, radius <b>0.80 m</b>, speed <b>4.0 m/s</b>. ' +
+                '<span class="ask">Find \\(F=\\dfrac{mv^2}{r}\\).</span>',
+        inventory: inv("fma", "fma", "fnet", "pmv", "ke", "fric").map(c => {
+          if (c.id === "fma") return { id: "circ", tex: "F=\\dfrac{mv^2}{r}", label: "centripetal", relevant: true };
+          return c;
+        }),
+        answerEqId: "circ", dockedTex: "F=\\dfrac{m\\,v^2}{r}", lhs: "F", joiner: "",
+        terms: [ { symbol: "\\dfrac{m\\,v^2}{r}", sub: "\\dfrac{(0.5)(4.0)^2}{0.8}" } ],
+        distractors: ["\\dfrac{m\\,v}{r}", "\\dfrac{m\\,v^2}{r^2}", "m\\,v^2\\,r", "\\tfrac12 m v^2"],
+        result: {
+          expression:   "F=\\dfrac{m\\,v^2}{r}",
+          substitution: "F=\\dfrac{(0.5)(16)}{0.8}=\\dfrac{8}{0.8}",
+          answer:       "F=10\\ \\text{N (toward center)}"
+        },
+        mcq: { options: ["10\\ \\text{N}", "2.5\\ \\text{N}", "2.0\\ \\text{N}", "20\\ \\text{N}"], correct: 0,
+          why: "F = m v²/r = 0.5·16/0.8 = 8/0.8 = 10 N toward center." }
+      },
+
+      /* A5 Q3 — work at an angle */
+      {
+        id: "a5q3-work-angle", concept: "Work", fromAssignment: "From Assignment 5, Q3",
+        prompt: '<b>From Assignment 5, Q3.</b> A <b>50 N</b> force pulls a sled <b>8.0 m</b> at <b>30°</b> above horizontal. ' +
+                '<span class="ask">Find \\(W=Fd\\cos\\theta\\).</span>',
+        inventory: inv("ke", "ke", "fnet", "fma", "pmv", "fric").map(c => {
+          if (c.id === "ke") return { id: "wfd", tex: "W=Fd\\cos\\theta", label: "work", relevant: true };
+          return c;
+        }),
+        answerEqId: "wfd", dockedTex: "W=F\\,d\\,\\cos\\theta", lhs: "W", joiner: "\\cdot",
+        terms: [ { symbol: "F", sub: "(50)" }, { symbol: "d", sub: "(8.0)" }, { symbol: "\\cos\\theta", sub: "\\cos 30^\\circ" } ],
+        distractors: ["\\sin\\theta", "\\tfrac12", "m", "v^2"],
+        result: {
+          expression:   "W=F\\cdot d\\cdot\\cos\\theta",
+          substitution: "W=(50)\\cdot(8.0)\\cdot\\cos 30^\\circ=400\\cdot0.866",
+          answer:       "W=346.4\\ \\text{J}"
+        },
+        mcq: { options: ["346.4\\ \\text{J}", "400\\ \\text{J}", "200\\ \\text{J}", "692.8\\ \\text{J}"], correct: 0,
+          why: "W = F d cosθ = 50·8·cos30° = 400·0.866 = 346.4 J." }
+      },
+
+      /* A5 Q4 — kinetic energy */
+      {
+        id: "a5q4-ke", concept: "Kinetic Energy", fromAssignment: "From Assignment 5, Q4",
+        prompt: '<b>From Assignment 5, Q4.</b> A <b>1200 kg</b> car at <b>25 m/s</b>. ' +
+                '<span class="ask">Find \\(KE=\\tfrac12 m v^2\\).</span>',
+        inventory: inv("ke", "ke", "fnet", "fma", "pmv", "fric"),
+        answerEqId: "ke", dockedTex: "KE=\\tfrac12\\,m\\,v^2", lhs: "KE", joiner: "\\cdot",
+        terms: [ { symbol: "\\tfrac12", sub: "\\tfrac12" }, { symbol: "m", sub: "(1200)" }, { symbol: "v^2", sub: "(25)^2" } ],
+        distractors: ["v", "a", "\\cos\\theta", "r"],
+        result: {
+          expression:   "KE=\\tfrac12\\cdot m\\cdot v^2",
+          substitution: "KE=\\tfrac12\\cdot1200\\cdot625",
+          answer:       "KE=375000\\ \\text{J}\\ (=375\\ \\text{kJ})"
+        },
+        mcq: { options: ["375000\\ \\text{J}", "15000\\ \\text{J}", "750000\\ \\text{J}", "30000\\ \\text{J}"], correct: 0,
+          why: "KE = ½ m v² = ½·1200·625 = 375000 J = 375 kJ." }
+      },
+
+      /* A5 Q5 — work-energy theorem */
+      {
+        id: "a5q5-work-energy", concept: "Work-Energy Theorem", fromAssignment: "From Assignment 5, Q5",
+        prompt: '<b>From Assignment 5, Q5.</b> A <b>3.0 kg</b> block from <b>2.0 m/s</b> to <b>8.0 m/s</b>. ' +
+                '<span class="ask">Find \\(W_{net}=\\tfrac12 m v_f^2-\\tfrac12 m v_i^2\\).</span>',
+        inventory: inv("ke", "ke", "wfd", "fnet", "pmv", "fma").map(c => {
+          if (c.id === "ke") return { id: "wke", tex: "W_{net}=\\Delta KE", label: "energy principle", relevant: true };
+          return c;
+        }),
+        answerEqId: "wke", dockedTex: "W_{net}=\\tfrac12 m v_f^2-\\tfrac12 m v_i^2", lhs: "W_{net}", joiner: "",
+        terms: [ { symbol: "\\tfrac12 m v_f^2", sub: "\\tfrac12(3)(8)^2" },
+                 { symbol: "-\\tfrac12 m v_i^2", sub: "-\\tfrac12(3)(2)^2" } ],
+        distractors: ["+\\tfrac12 m v_i^2", "\\tfrac12 m (v_f-v_i)^2", "m(v_f-v_i)", "Fd\\cos\\theta"],
+        result: {
+          expression:   "W_{net}=\\tfrac12 m v_f^2-\\tfrac12 m v_i^2",
+          substitution: "W_{net}=\\tfrac12(3)(64)-\\tfrac12(3)(4)=\\tfrac12(3)(60)",
+          answer:       "W_{net}=90\\ \\text{J}"
+        },
+        mcq: { options: ["90\\ \\text{J}", "108\\ \\text{J}", "54\\ \\text{J}", "30\\ \\text{J}"], correct: 0,
+          why: "W_net = ½ m(v_f²−v_i²) = ½·3·(64−4) = ½·3·60 = 90 J." }
+      },
+
+      /* A5 combo — braking distance via work-energy + friction */
+      {
+        id: "a5q6-braking-energy", concept: "Work-Energy + Friction", fromAssignment: "From Assignment 5, combo",
+        prompt: '<b>From Assignment 5, combo.</b> A <b>1500 kg</b> car at <b>30 m/s</b> brakes (\\(\\mu_k=0.70\\)). ' +
+                '<span class="ask">Find \\(d=\\dfrac{v^2}{2\\mu_k g}\\) (mass cancels).</span>',
+        inventory: inv("ke", "ke", "wfd", "fnet", "pmv", "fma").map(c => {
+          if (c.id === "ke") return { id: "brake", tex: "d=\\dfrac{v^2}{2\\mu_k g}", label: "energy → distance", relevant: true };
+          return c;
+        }),
+        answerEqId: "brake", dockedTex: "d=\\dfrac{v^{2}}{2\\,\\mu_k\\,g}", lhs: "d", joiner: "",
+        terms: [ { symbol: "\\dfrac{v^{2}}{2\\,\\mu_k\\,g}", sub: "\\dfrac{(30)^2}{2(0.70)(9.8)}" } ],
+        distractors: ["\\dfrac{v}{2\\,\\mu_k\\,g}", "\\dfrac{m v^{2}}{2\\,\\mu_k\\,g}", "\\dfrac{v^{2}}{\\mu_k\\,g}", "2\\,\\mu_k\\,g\\,v^{2}"],
+        result: {
+          expression:   "d=\\dfrac{v^{2}}{2\\,\\mu_k\\,g}",
+          substitution: "d=\\dfrac{900}{2(0.70)(9.8)}=\\dfrac{900}{13.72}",
+          answer:       "d=65.6\\ \\text{m}"
+        },
+        mcq: { options: ["65.6\\ \\text{m}", "32.8\\ \\text{m}", "131.2\\ \\text{m}", "45.9\\ \\text{m}"], correct: 0,
+          why: "½mv²=μ_k mg d ⇒ d=v²/(2μ_k g)=900/13.72=65.6 m." }
+      },
+
+      /* A5 combo — force from changing velocity */
+      {
+        id: "a5q7-force-from-dv", concept: "Forces from Motion", fromAssignment: "From Assignment 5, combo",
+        prompt: '<b>From Assignment 5, combo.</b> A <b>2.0 kg</b> puck from \\(\\vec v_i=\\langle 1,2,0\\rangle\\) to ' +
+                '\\(\\vec v_f=\\langle 7,-2,0\\rangle\\) m/s over <b>3.0 s</b>. ' +
+                '<span class="ask">Find \\(\\vec F=m\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}\\).</span>',
+        inventory: inv("fnet", "fnet", "ke", "wfd", "pmv", "fma").map(c => {
+          if (c.id === "fnet") return { id: "fdv", tex: "\\vec F=m\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}", label: "force from Δv", relevant: true };
+          return c;
+        }),
+        answerEqId: "fdv", dockedTex: "\\vec F=m\\,\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}", lhs: "\\vec F", joiner: "\\cdot",
+        terms: [ { symbol: "m", sub: "(2.0)" },
+                 { symbol: "\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}", sub: "\\dfrac{\\langle 7,-2,0\\rangle-\\langle 1,2,0\\rangle}{3.0}" } ],
+        distractors: ["\\dfrac{\\Delta t}{\\vec v_f-\\vec v_i}", "(\\vec v_f-\\vec v_i)", "\\tfrac12", "\\dfrac{\\vec v_f+\\vec v_i}{\\Delta t}"],
+        result: {
+          expression:   "\\vec F=m\\cdot\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}",
+          substitution: "\\vec F=(2.0)\\cdot\\dfrac{\\langle 6,-4,0\\rangle}{3.0}=(2.0)\\langle 2,-1.33,0\\rangle",
+          answer:       "\\vec F=\\langle 4,\\ -2.67,\\ 0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: ["\\langle 4, -2.67, 0\\rangle\\ \\text{N}", "\\langle 2, -1.33, 0\\rangle\\ \\text{N}",
+                    "\\langle 12, -8, 0\\rangle\\ \\text{N}", "\\langle 16, 0, 0\\rangle\\ \\text{N}"],
+          correct: 0,
+          why: "a=(v_f−v_i)/Δt=⟨6,-4,0⟩/3=⟨2,-1.33,0⟩; F=m a=2·⟨2,-1.33,0⟩=⟨4,-2.67,0⟩ N."
+        }
+      }
+    ]
+
+  };
+
+  /* ============================================================
+     MOCK MIDTERM  —  20 MCQ (Weeks 1-3). Each authored as a
+     drag-build object too, so it plays in the same engine.
+     ============================================================ */
+  const EXAM_MOCK = [
+
+    /* Mock Q1 — SI prefix conversion */
+    {
+      id: "mockq1-prefix", concept: "SI Prefixes", fromAssignment: "Mock Midterm, Q1",
+      prompt: '<b>Mock Midterm, Q1.</b> A power plant outputs <b>4.2 GW</b>. Convert to watts (\\(G=10^9\\)). ' +
+              '<span class="ask">Find \\(P=4.2\\times10^9\\) W.</span>',
+      inventory: inv("pmv", "pmv", "vavg", "fma", "ke", "grav"),
+      answerEqId: "pmv", dockedTex: "P=4.2\\times10^{9}\\ \\text{W}", lhs: "P", joiner: "\\cdot",
+      terms: [ { symbol: "4.2", sub: "4.2" }, { symbol: "10^9", sub: "10^9" } ],
+      distractors: ["10^6", "10^{-9}", "10^{12}", "\\tfrac12"],
+      result: { expression: "P=4.2\\times10^9", substitution: "P=4.2\\times10^9", answer: "P=4.2\\times10^{9}\\ \\text{W}" },
+      mcq: { options: ["4.2\\times10^{9}\\ \\text{W}", "4.2\\times10^{6}\\ \\text{W}", "4.2\\times10^{12}\\ \\text{W}", "4.2\\times10^{-9}\\ \\text{W}"],
+        correct: 0, why: "G = 10⁹, so 4.2 GW = 4.2×10⁹ W." }
+    },
+
+    /* Mock Q2 — speed conversion */
+    {
+      id: "mockq2-speed", concept: "Unit Conversion", fromAssignment: "Mock Midterm, Q2",
+      prompt: '<b>Mock Midterm, Q2.</b> A car at <b>90 km/h</b> (1 m/s = 3.6 km/h). ' +
+              '<span class="ask">Find \\(v=\\dfrac{90}{3.6}\\) m/s.</span>',
+      inventory: inv("vavg", "vavg", "pmv", "fma", "ke", "grav"),
+      answerEqId: "vavg", dockedTex: "v=\\dfrac{90}{3.6}", lhs: "v", joiner: "",
+      terms: [ { symbol: "\\dfrac{90}{3.6}", sub: "\\dfrac{90}{3.6}" } ],
+      distractors: ["90\\times3.6", "\\dfrac{3.6}{90}", "90", "\\tfrac12"],
+      result: { expression: "v=\\dfrac{90}{3.6}", substitution: "v=\\dfrac{90}{3.6}", answer: "v=25\\ \\text{m/s}" },
+      mcq: { options: ["25\\ \\text{m/s}", "15\\ \\text{m/s}", "324\\ \\text{m/s}", "0.025\\ \\text{m/s}"],
+        correct: 0, why: "v = 90/3.6 = 25 m/s." }
+    },
+
+    /* Mock Q3 — vector magnitude */
+    {
+      id: "mockq3-mag", concept: "Vectors", fromAssignment: "Mock Midterm, Q3",
+      prompt: '<b>Mock Midterm, Q3.</b> \\(\\vec A=\\langle 3,-4,12\\rangle\\) m. ' +
+              '<span class="ask">Find \\(|\\vec A|=\\sqrt{A_x^2+A_y^2+A_z^2}\\).</span>',
+      inventory: inv("mag", "mag", "unit", "pmv", "vavg", "ke"),
+      answerEqId: "mag", dockedTex: "|\\vec A|=\\sqrt{A_x^2+A_y^2+A_z^2}", lhs: "|\\vec A|", joiner: "",
+      terms: [ { symbol: "\\sqrt{A_x^2+A_y^2+A_z^2}", sub: "\\sqrt{9+16+144}" } ],
+      distractors: ["A_x+A_y+A_z", "\\sqrt{A_x+A_y+A_z}", "A_x^2+A_y^2+A_z^2", "\\tfrac12"],
+      result: { expression: "|\\vec A|=\\sqrt{A_x^2+A_y^2+A_z^2}", substitution: "|\\vec A|=\\sqrt{9+16+144}=\\sqrt{169}", answer: "|\\vec A|=13\\ \\text{m}" },
+      mcq: { options: ["13\\ \\text{m}", "11\\ \\text{m}", "12\\ \\text{m}", "19\\ \\text{m}"], correct: 0,
+        why: "|A| = √(9+16+144) = √169 = 13 m." }
+    },
+
+    /* Mock Q4 — unit vector */
+    {
+      id: "mockq4-unit", concept: "Vectors", fromAssignment: "Mock Midterm, Q4",
+      prompt: '<b>Mock Midterm, Q4.</b> \\(\\vec B=\\langle 6,0,-8\\rangle\\). ' +
+              '<span class="ask">Find \\(\\hat B=\\dfrac{\\vec B}{|\\vec B|}\\).</span>',
+      inventory: inv("unit", "unit", "mag", "pmv", "vavg", "ke"),
+      answerEqId: "unit", dockedTex: "\\hat B=\\dfrac{\\vec B}{|\\vec B|}", lhs: "\\hat B", joiner: "",
+      terms: [ { symbol: "\\dfrac{\\vec B}{|\\vec B|}", sub: "\\dfrac{\\langle 6,0,-8\\rangle}{10}" } ],
+      distractors: ["|\\vec B|", "\\vec B\\,|\\vec B|", "\\tfrac12", "\\Delta t"],
+      result: { expression: "\\hat B=\\dfrac{\\vec B}{|\\vec B|}", substitution: "\\hat B=\\dfrac{\\langle 6,0,-8\\rangle}{\\sqrt{36+64}}=\\dfrac{\\langle 6,0,-8\\rangle}{10}", answer: "\\hat B=\\langle 0.6,\\ 0,\\ -0.8\\rangle" },
+      mcq: { options: ["\\langle 0.6, 0, -0.8\\rangle", "\\langle 0.75, 0, -1.0\\rangle", "\\langle 1, 0, -1\\rangle", "\\langle 6, 0, -8\\rangle"], correct: 0,
+        why: "|B| = √(36+64) = 10; B̂ = ⟨6,0,-8⟩/10 = ⟨0.6,0,-0.8⟩." }
+    },
+
+    /* Mock Q5 — displacement */
+    {
+      id: "mockq5-disp", concept: "Vectors", fromAssignment: "Mock Midterm, Q5",
+      prompt: '<b>Mock Midterm, Q5.</b> \\(\\vec r_i=\\langle 2,5,-1\\rangle\\), \\(\\vec r_f=\\langle 7,1,3\\rangle\\) m. ' +
+              '<span class="ask">Find \\(\\Delta\\vec r=\\vec r_f-\\vec r_i\\).</span>',
+      inventory: inv("disp", "disp", "unit", "pmv", "vavg", "ke"),
+      answerEqId: "disp", dockedTex: "\\Delta\\vec r=\\vec r_f-\\vec r_i", lhs: "\\Delta\\vec r", joiner: "",
+      terms: [ { symbol: "\\vec r_f", sub: "\\langle 7,1,3\\rangle" }, { symbol: "-\\vec r_i", sub: "-\\langle 2,5,-1\\rangle" } ],
+      distractors: ["\\vec r_i-\\vec r_f", "\\vec r_f+\\vec r_i", "\\tfrac12", "|\\vec r|"],
+      result: { expression: "\\Delta\\vec r=\\vec r_f-\\vec r_i", substitution: "\\Delta\\vec r=\\langle 7,1,3\\rangle-\\langle 2,5,-1\\rangle", answer: "\\Delta\\vec r=\\langle 5,\\ -4,\\ 4\\rangle\\ \\text{m}" },
+      mcq: { options: ["\\langle 5, -4, 4\\rangle\\ \\text{m}", "\\langle 9, 6, 2\\rangle\\ \\text{m}", "\\langle -5, 4, -4\\rangle\\ \\text{m}", "\\langle 5, 4, 4\\rangle\\ \\text{m}"], correct: 0,
+        why: "Δr = ⟨7-2, 1-5, 3-(-1)⟩ = ⟨5,-4,4⟩ m." }
+    },
+
+    /* Mock Q6 — direction cosines */
+    {
+      id: "mockq6-dircos", concept: "Direction Cosines", fromAssignment: "Mock Midterm, Q6",
+      prompt: '<b>Mock Midterm, Q6.</b> A <b>10 m</b> rod from origin, angles 60°,60°,45°. ' +
+              '<span class="ask">Find \\(\\vec r=L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle\\).</span>',
+      inventory: inv("disp", "disp", "unit", "pmv", "vavg", "ke"),
+      answerEqId: "disp", dockedTex: "\\vec r=L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle", lhs: "\\vec r", joiner: "\\cdot",
+      terms: [ { symbol: "L", sub: "(10)" }, { symbol: "\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle", sub: "\\langle\\cos60^\\circ,\\cos60^\\circ,\\cos45^\\circ\\rangle" } ],
+      distractors: ["\\dfrac{1}{L}", "L^2", "\\langle\\sin,\\sin,\\sin\\rangle", "\\tfrac12"],
+      result: { expression: "\\vec r=L\\langle\\cos\\theta_x,\\cos\\theta_y,\\cos\\theta_z\\rangle", substitution: "\\vec r=10\\langle 0.5,0.5,0.707\\rangle", answer: "\\vec r=\\langle 5.0,\\ 5.0,\\ 7.07\\rangle\\ \\text{m}" },
+      mcq: { options: ["\\langle 5.0, 5.0, 7.07\\rangle\\ \\text{m}", "\\langle 10, 10, 10\\rangle\\ \\text{m}", "\\langle 7.07, 7.07, 5.0\\rangle\\ \\text{m}", "\\langle 3.33, 3.33, 3.33\\rangle\\ \\text{m}"], correct: 0,
+        why: "r = 10⟨cos60°,cos60°,cos45°⟩ = 10⟨0.5,0.5,0.707⟩ = ⟨5,5,7.07⟩ m." }
+    },
+
+    /* Mock Q7 — average velocity magnitude */
+    {
+      id: "mockq7-vavg", concept: "Velocity", fromAssignment: "Mock Midterm, Q7",
+      prompt: '<b>Mock Midterm, Q7.</b> Walk 12 m in 4 s (+x), then 9 m in 3 s (+y). ' +
+              '<span class="ask">Find \\(|\\vec v|=\\dfrac{|\\Delta\\vec r|}{\\Delta t}\\).</span>',
+      inventory: inv("vavg", "vavg", "disp", "pmv", "mag", "ke"),
+      answerEqId: "vavg", dockedTex: "|\\vec v|=\\dfrac{|\\langle 12,9,0\\rangle|}{\\Delta t}", lhs: "|\\vec v|", joiner: "",
+      terms: [ { symbol: "\\dfrac{|\\langle 12,9,0\\rangle|}{\\Delta t}", sub: "\\dfrac{\\sqrt{144+81}}{7}" } ],
+      distractors: ["\\Delta\\vec r\\,\\Delta t", "\\dfrac{\\Delta t}{\\Delta r}", "\\tfrac12", "m\\vec v"],
+      result: { expression: "|\\vec v|=\\dfrac{\\sqrt{12^2+9^2}}{4+3}", substitution: "|\\vec v|=\\dfrac{\\sqrt{225}}{7}=\\dfrac{15}{7}", answer: "|\\vec v|=2.14\\ \\text{m/s}" },
+      mcq: { options: ["2.14\\ \\text{m/s}", "3.0\\ \\text{m/s}", "4.5\\ \\text{m/s}", "15\\ \\text{m/s}"], correct: 0,
+        why: "Δr=⟨12,9,0⟩, Δt=7 s; |v|=√(144+81)/7=15/7=2.14 m/s." }
+    },
+
+    /* Mock Q8 — momentum from speed */
+    {
+      id: "mockq8-p", concept: "Momentum", fromAssignment: "Mock Midterm, Q8",
+      prompt: '<b>Mock Midterm, Q8.</b> A <b>0.250 kg</b> ball at <b>18 m/s</b>. ' +
+              '<span class="ask">Find \\(|\\vec p|=m|\\vec v|\\).</span>',
+      inventory: inv("pmv", "pmv", "ke", "vavg", "dp", "fma"),
+      answerEqId: "pmv", dockedTex: "|\\vec p|=m\\,|\\vec v|", lhs: "|\\vec p|", joiner: "\\cdot",
+      terms: [ { symbol: "m", sub: "(0.250)" }, { symbol: "|\\vec v|", sub: "(18)" } ],
+      distractors: ["\\tfrac12", "v^2", "a", "\\Delta t"],
+      result: { expression: "|\\vec p|=m\\cdot|\\vec v|", substitution: "|\\vec p|=(0.250)\\cdot(18)", answer: "|\\vec p|=4.50\\ \\text{kg·m/s}" },
+      mcq: { options: ["4.50\\ \\text{kg·m/s}", "0.014\\ \\text{kg·m/s}", "72\\ \\text{kg·m/s}", "81\\ \\text{kg·m/s}"], correct: 0,
+        why: "|p| = m|v| = 0.250·18 = 4.50 kg·m/s." }
+    },
+
+    /* Mock Q9 — change in momentum on rebound */
+    {
+      id: "mockq9-dp", concept: "Δ Momentum", fromAssignment: "Mock Midterm, Q9",
+      prompt: '<b>Mock Midterm, Q9.</b> A <b>0.060 kg</b> ball from \\(\\langle 50,0,0\\rangle\\) to \\(\\langle -40,0,0\\rangle\\) m/s. ' +
+              '<span class="ask">Find \\(|\\Delta\\vec p|=m|\\vec v_f-\\vec v_i|\\).</span>',
+      inventory: inv("dp", "dp", "pmv", "imp", "vavg", "ke"),
+      answerEqId: "dp", dockedTex: "|\\Delta\\vec p|=m\\,|\\vec v_f-\\vec v_i|", lhs: "|\\Delta\\vec p|", joiner: "\\cdot",
+      terms: [ { symbol: "m", sub: "(0.060)" }, { symbol: "|\\vec v_f-\\vec v_i|", sub: "|{-40}-50|" } ],
+      distractors: ["|\\vec v_f+\\vec v_i|", "\\tfrac12", "v^2", "\\Delta t"],
+      result: { expression: "|\\Delta\\vec p|=m\\cdot|\\vec v_f-\\vec v_i|", substitution: "|\\Delta\\vec p|=(0.060)\\cdot|{-90}|=(0.060)(90)", answer: "|\\Delta\\vec p|=5.4\\ \\text{kg·m/s}" },
+      mcq: { options: ["5.4\\ \\text{kg·m/s}", "0.60\\ \\text{kg·m/s}", "0.54\\ \\text{kg·m/s}", "3.0\\ \\text{kg·m/s}"], correct: 0,
+        why: "Δp = 0.060·(-40-50) = 0.060·(-90) = -5.4; |Δp| = 5.4 kg·m/s." }
+    },
+
+    /* Mock Q10 — relativistic gamma */
+    {
+      id: "mockq10-gamma", concept: "Relativistic γ", fromAssignment: "Mock Midterm, Q10",
+      prompt: '<b>Mock Midterm, Q10.</b> A particle at \\(v=0.80c\\). ' +
+              '<span class="ask">Find \\(\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}\\).</span>',
+      inventory: inv("gamma", "gamma", "relp", "pmv", "ke", "vavg"),
+      answerEqId: "gamma", dockedTex: "\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}", lhs: "\\gamma", joiner: "",
+      terms: [ { symbol: "\\dfrac{1}{\\sqrt{1-(v/c)^2}}", sub: "\\dfrac{1}{\\sqrt{1-0.80^2}}" } ],
+      distractors: ["\\sqrt{1-(v/c)^2}", "1-(v/c)^2", "\\dfrac{v}{c}", "\\tfrac12"],
+      result: { expression: "\\gamma=\\dfrac{1}{\\sqrt{1-(v/c)^2}}", substitution: "\\gamma=\\dfrac{1}{\\sqrt{1-0.64}}=\\dfrac{1}{\\sqrt{0.36}}=\\dfrac{1}{0.6}", answer: "\\gamma=1.67" },
+      mcq: { options: ["1.67", "0.60", "1.25", "5.00"], correct: 0,
+        why: "γ = 1/√(1−0.64) = 1/√0.36 = 1/0.6 = 1.67." }
+    },
+
+    /* Mock Q11 — Newton's 1st law (conceptual) */
+    {
+      id: "mockq11-n1", concept: "Newton's 1st Law", fromAssignment: "Mock Midterm, Q11",
+      prompt: '<b>Mock Midterm, Q11.</b> A spaceship at 5000 m/s shuts off engines, far from all bodies. ' +
+              'By Newton\'s 1st law (\\(\\vec F_{net}=0\\Rightarrow\\Delta\\vec p=0\\)): ' +
+              '<span class="ask">What happens? Confirm \\(\\vec F_{net}=0\\).</span>',
+      inventory: inv("fnet", "fnet", "imp", "pmv", "fma", "ke"),
+      answerEqId: "fnet", dockedTex: "\\vec F_{net}=0\\Rightarrow\\Delta\\vec p=0", lhs: "\\Delta\\vec p", joiner: "\\cdot",
+      terms: [ { symbol: "\\vec F_{net}", sub: "(0)" }, { symbol: "\\Delta t", sub: "(\\Delta t)" } ],
+      distractors: ["m\\vec g", "-\\vec p", "\\mu_k N", "\\tfrac12"],
+      result: { expression: "\\Delta\\vec p=\\vec F_{net}\\Delta t", substitution: "\\Delta\\vec p=0\\cdot\\Delta t", answer: "\\Delta\\vec p=0\\Rightarrow\\text{constant velocity, straight line}" },
+      mcq: { options: ["Speed stays 5000 m/s, straight line forever", "It slows down and stops", "It curves into orbit", "Its velocity reverses"], correct: 0,
+        why: "F_net = 0 ⇒ Δp = 0 ⇒ velocity (magnitude and direction) unchanged." }
+    },
+
+    /* Mock Q12 — iterative momentum update */
+    {
+      id: "mockq12-pupdate", concept: "Momentum Update", fromAssignment: "Mock Midterm, Q12",
+      prompt: '<b>Mock Midterm, Q12.</b> \\(\\vec p_i=\\langle 10,0,0\\rangle\\), force \\(\\langle -4,6,0\\rangle\\) N, \\(\\Delta t=2.0\\) s. ' +
+              '<span class="ask">Find \\(\\vec p_f=\\vec p_i+\\vec F\\Delta t\\).</span>',
+      inventory: inv("pf", "pf", "imp", "pmv", "fma", "ke"),
+      answerEqId: "pf", dockedTex: "\\vec p_f=\\vec p_i+\\vec F\\Delta t", lhs: "\\vec p_f", joiner: "",
+      terms: [ { symbol: "\\vec p_i", sub: "\\langle 10,0,0\\rangle" }, { symbol: "+\\vec F\\Delta t", sub: "+\\langle -4,6,0\\rangle(2.0)" } ],
+      distractors: ["-\\vec F\\Delta t", "\\dfrac{\\vec F}{\\Delta t}", "m\\vec a", "\\tfrac12"],
+      result: { expression: "\\vec p_f=\\vec p_i+\\vec F\\Delta t", substitution: "\\vec p_f=\\langle 10,0,0\\rangle+\\langle -8,12,0\\rangle", answer: "\\vec p_f=\\langle 2,\\ 12,\\ 0\\rangle\\ \\text{kg·m/s}" },
+      mcq: { options: ["\\langle 2, 12, 0\\rangle\\ \\text{kg·m/s}", "\\langle 6, 6, 0\\rangle\\ \\text{kg·m/s}", "\\langle -4, 6, 0\\rangle\\ \\text{kg·m/s}", "\\langle 18, -12, 0\\rangle\\ \\text{kg·m/s}"], correct: 0,
+        why: "p_f = ⟨10,0,0⟩ + ⟨-4,6,0⟩·2 = ⟨2,12,0⟩ kg·m/s." }
+    },
+
+    /* Mock Q13 — position update from momentum */
+    {
+      id: "mockq13-pos", concept: "Position Update", fromAssignment: "Mock Midterm, Q13",
+      prompt: '<b>Mock Midterm, Q13.</b> A <b>0.5 kg</b> block, \\(\\vec p=\\langle 2,0,0\\rangle\\) kg·m/s, after <b>3 s</b>. ' +
+              '<span class="ask">Find \\(\\Delta\\vec r=\\dfrac{\\vec p}{m}\\Delta t\\).</span>',
+      inventory: inv("rf", "rf", "pmv", "vavg", "accel", "ke"),
+      answerEqId: "rf", dockedTex: "\\Delta\\vec r=\\dfrac{\\vec p}{m}\\,\\Delta t", lhs: "\\Delta\\vec r", joiner: "\\cdot",
+      terms: [ { symbol: "\\dfrac{\\vec p}{m}", sub: "\\dfrac{\\langle 2,0,0\\rangle}{0.5}" }, { symbol: "\\Delta t", sub: "(3)" } ],
+      distractors: ["m\\vec p", "\\dfrac{m}{\\vec p}", "\\tfrac12\\Delta t^2", "\\vec p\\,\\Delta t"],
+      result: { expression: "\\Delta\\vec r=\\dfrac{\\vec p}{m}\\cdot\\Delta t", substitution: "\\Delta\\vec r=\\langle 4,0,0\\rangle\\cdot3", answer: "\\Delta\\vec r=\\langle 12,\\ 0,\\ 0\\rangle\\ \\text{m}" },
+      mcq: { options: ["\\langle 12, 0, 0\\rangle\\ \\text{m}", "\\langle 3, 0, 0\\rangle\\ \\text{m}", "\\langle 6, 0, 0\\rangle\\ \\text{m}", "\\langle 1, 0, 0\\rangle\\ \\text{m}"], correct: 0,
+        why: "v = p/m = ⟨4,0,0⟩; Δr = v·Δt = ⟨12,0,0⟩ m." }
+    },
+
+    /* Mock Q14 — spring force */
+    {
+      id: "mockq14-spring", concept: "Spring", fromAssignment: "Mock Midterm, Q14",
+      prompt: '<b>Mock Midterm, Q14.</b> Spring relaxed 20 cm, \\(k=50\\) N/m, stretched to 35 cm. ' +
+              '<span class="ask">Find \\(|F_s|=k|s|\\), \\(s=0.35-0.20\\).</span>',
+      inventory: inv("spring", "spring", "grav", "fma", "pmv", "ke"),
+      answerEqId: "spring", dockedTex: "|F_s|=k\\,|s|", lhs: "|F_s|", joiner: "\\cdot",
+      terms: [ { symbol: "k", sub: "(50)" }, { symbol: "|s|", sub: "(0.15)" } ],
+      distractors: ["\\dfrac{1}{k}", "k\\,L", "\\tfrac12", "m\\,g"],
+      result: { expression: "|F_s|=k\\cdot|s|", substitution: "|F_s|=(50)\\cdot(0.35-0.20)=(50)(0.15)", answer: "|F_s|=7.5\\ \\text{N}" },
+      mcq: { options: ["7.5\\ \\text{N}", "10\\ \\text{N}", "17.5\\ \\text{N}", "0.30\\ \\text{N}"], correct: 0,
+        why: "s = 0.35 − 0.20 = 0.15 m; |F_s| = k|s| = 50·0.15 = 7.5 N." }
+    },
+
+    /* Mock Q15 — net force → acceleration magnitude */
+    {
+      id: "mockq15-accel", concept: "Net Force", fromAssignment: "Mock Midterm, Q15",
+      prompt: '<b>Mock Midterm, Q15.</b> A <b>1.0 kg</b> object: \\(\\langle 4,3,0\\rangle\\), \\(\\langle -2,5,0\\rangle\\), ' +
+              '\\(\\langle 0,-2,6\\rangle\\) N. ' +
+              '<span class="ask">Find \\(|a|=\\dfrac{|\\vec F_{net}|}{m}\\).</span>',
+      inventory: inv("fma", "fma", "fnet", "pmv", "ke", "grav"),
+      answerEqId: "fma", dockedTex: "|a|=\\dfrac{|\\vec F_{net}|}{m}", lhs: "|a|", joiner: "",
+      terms: [ { symbol: "\\dfrac{|\\vec F_{net}|}{m}", sub: "\\dfrac{\\sqrt{2^2+6^2+6^2}}{1.0}" } ],
+      distractors: ["m\\,|\\vec F|", "\\dfrac{m}{|\\vec F|}", "\\tfrac12", "|\\vec F|^2"],
+      result: { expression: "|a|=\\dfrac{|\\vec F_{net}|}{m}", substitution: "\\vec F_{net}=\\langle 2,6,6\\rangle;\\ |a|=\\dfrac{\\sqrt{4+36+36}}{1.0}=\\sqrt{76}", answer: "|a|=8.72\\ \\text{m/s}^2\\ (\\approx10)" },
+      mcq: { options: ["\\approx 10\\ \\text{m/s}^2\\ (8.72)", "6\\ \\text{m/s}^2", "2\\ \\text{m/s}^2", "14\\ \\text{m/s}^2"], correct: 0,
+        why: "F_net = ⟨2,6,6⟩; |F| = √76 ≈ 8.72; a = 8.72/1 ≈ 8.72 (closest option ≈ 10)." }
+    },
+
+    /* Mock Q16 — gravity between two masses */
+    {
+      id: "mockq16-grav", concept: "Gravity", fromAssignment: "Mock Midterm, Q16",
+      prompt: '<b>Mock Midterm, Q16.</b> Two <b>5.0 kg</b> masses, <b>0.50 m</b> apart (\\(G=6.674\\times10^{-11}\\)). ' +
+              '<span class="ask">Find \\(F=\\dfrac{Gm_1m_2}{r^2}\\).</span>',
+      inventory: inv("grav", "grav", "coul", "gsurf", "pmv", "ke"),
+      answerEqId: "grav", dockedTex: "F=\\dfrac{G\\,m_1 m_2}{r^2}", lhs: "F", joiner: "",
+      terms: [ { symbol: "\\dfrac{G\\,m_1 m_2}{r^2}", sub: "\\dfrac{(6.674\\times10^{-11})(5)(5)}{0.50^2}" } ],
+      distractors: ["\\dfrac{Gm_1m_2}{r}", "k\\dfrac{q_1q_2}{r^2}", "\\dfrac{Gm_1m_2}{r^3}", "\\tfrac12"],
+      result: { expression: "F=\\dfrac{G\\,m_1 m_2}{r^2}", substitution: "F=\\dfrac{(6.674\\times10^{-11})(25)}{0.25}", answer: "F=6.67\\times10^{-9}\\ \\text{N}" },
+      mcq: { options: ["6.67\\times10^{-9}\\ \\text{N}", "6.67\\times10^{-8}\\ \\text{N}", "3.34\\times10^{-9}\\ \\text{N}", "1.34\\times10^{-8}\\ \\text{N}"], correct: 0,
+        why: "F = 6.674e-11·25/0.25 = 1.669e-9/0.25 = 6.67×10⁻⁹ N." }
+    },
+
+    /* Mock Q17 — surface gravity */
+    {
+      id: "mockq17-gsurf", concept: "Surface Gravity", fromAssignment: "Mock Midterm, Q17",
+      prompt: '<b>Mock Midterm, Q17.</b> Planet \\(M=6.0\\times10^{23}\\) kg, \\(R=3.0\\times10^{6}\\) m. ' +
+              '<span class="ask">Find \\(g=\\dfrac{GM}{R^2}\\).</span>',
+      inventory: inv("gsurf", "gsurf", "grav", "coul", "pmv", "ke"),
+      answerEqId: "gsurf", dockedTex: "g=\\dfrac{G\\,M}{R^2}", lhs: "g", joiner: "",
+      terms: [ { symbol: "\\dfrac{G\\,M}{R^2}", sub: "\\dfrac{(6.674\\times10^{-11})(6.0\\times10^{23})}{(3.0\\times10^{6})^2}" } ],
+      distractors: ["\\dfrac{GM}{R}", "\\dfrac{GMm}{R^2}", "\\dfrac{GM}{R^3}", "\\tfrac12"],
+      result: { expression: "g=\\dfrac{G\\,M}{R^2}", substitution: "g=\\dfrac{4.00\\times10^{13}}{9.0\\times10^{12}}", answer: "g=4.45\\ \\text{m/s}^2" },
+      mcq: { options: ["4.45\\ \\text{m/s}^2", "0.45\\ \\text{m/s}^2", "9.81\\ \\text{m/s}^2", "22.2\\ \\text{m/s}^2"], correct: 0,
+        why: "g = GM/R² = 6.674e-11·6e23/(3e6)² = 4.00e13/9.0e12 = 4.45 m/s²." }
+    },
+
+    /* Mock Q18 — Newton's 3rd law gravity (conceptual) */
+    {
+      id: "mockq18-n3", concept: "Newton's 3rd Law", fromAssignment: "Mock Midterm, Q18",
+      prompt: '<b>Mock Midterm, Q18.</b> A 50 kg person on Earth; Earth pulls with \\(F_1\\). ' +
+              'By Newton\'s 3rd law (\\(\\vec F_{A\\to B}=-\\vec F_{B\\to A}\\)): ' +
+              '<span class="ask">What force does the person exert on Earth?</span>',
+      inventory: inv("grav", "grav", "coul", "gsurf", "pmv", "ke"),
+      answerEqId: "grav", dockedTex: "\\vec F_{P\\to E}=-\\vec F_{E\\to P}", lhs: "\\vec F_{P\\to E}", joiner: "",
+      terms: [ { symbol: "-\\vec F_{E\\to P}", sub: "-F_1\\ (\\text{magnitude }F_1,\\ \\text{up})" } ],
+      distractors: ["\\dfrac{F_1}{M_E}", "0", "9.8\\times50", "\\tfrac12 F_1"],
+      result: { expression: "\\vec F_{P\\to E}=-\\vec F_{E\\to P}", substitution: "|\\vec F_{P\\to E}|=F_1", answer: "Same magnitude }F_1\\text{, opposite (upward) direction" },
+      mcq: { options: ["Same magnitude F₁, directed upward (away from person)", "Zero — person too small", "F₁/M_Earth, upward", "9.8·50 N, sideways"], correct: 0,
+        why: "Newton's 3rd: F_{A→B} = −F_{B→A}; same |F|, opposite direction. Earth's acceleration is tiny (huge mass)." }
+    },
+
+    /* Mock Q19 — Coulomb force */
+    {
+      id: "mockq19-coulomb", concept: "Coulomb", fromAssignment: "Mock Midterm, Q19",
+      prompt: '<b>Mock Midterm, Q19.</b> \\(+2.0\\,\\mu C\\) and \\(-3.0\\,\\mu C\\), <b>0.30 m</b> apart ' +
+              '(\\(k=8.99\\times10^{9}\\)). ' +
+              '<span class="ask">Find \\(|F|=\\dfrac{k|q_1q_2|}{r^2}\\).</span>',
+      inventory: inv("coul", "coul", "grav", "gsurf", "pmv", "ke"),
+      answerEqId: "coul", dockedTex: "|F|=\\dfrac{k|q_1 q_2|}{r^2}", lhs: "|F|", joiner: "",
+      terms: [ { symbol: "\\dfrac{k|q_1 q_2|}{r^2}", sub: "\\dfrac{(8.99\\times10^{9})(2\\times10^{-6})(3\\times10^{-6})}{0.30^2}" } ],
+      distractors: ["\\dfrac{kq_1q_2}{r}", "\\dfrac{Gq_1q_2}{r^2}", "\\dfrac{k|q_1q_2|}{r^3}", "\\tfrac12"],
+      result: { expression: "|F|=\\dfrac{k|q_1 q_2|}{r^2}", substitution: "|F|=\\dfrac{(8.99\\times10^{9})(6\\times10^{-12})}{0.09}=\\dfrac{0.05394}{0.09}", answer: "|F|=0.60\\ \\text{N}" },
+      mcq: { options: ["0.60\\ \\text{N}", "0.30\\ \\text{N}", "0.20\\ \\text{N}", "0.067\\ \\text{N}"], correct: 0,
+        why: "|F| = k|q₁q₂|/r² = 8.99e9·6e-12/0.09 = 0.05394/0.09 = 0.60 N." }
+    },
+
+    /* Mock Q20 — electric vs gravitational ratio (conceptual) */
+    {
+      id: "mockq20-ratio", concept: "Electric vs Gravity", fromAssignment: "Mock Midterm, Q20",
+      prompt: '<b>Mock Midterm, Q20.</b> Two protons: \\(\\dfrac{F_e}{F_g}=\\dfrac{k e^2}{G m_p^2}\\) ' +
+              '(\\(k=8.99\\times10^{9}\\), \\(e=1.6\\times10^{-19}\\), \\(m_p=1.67\\times10^{-27}\\)). ' +
+              '<span class="ask">How many times stronger is the electric force?</span>',
+      inventory: inv("coul", "coul", "grav", "gsurf", "pmv", "ke"),
+      answerEqId: "coul", dockedTex: "\\dfrac{F_e}{F_g}=\\dfrac{k e^2}{G m_p^2}", lhs: "\\dfrac{F_e}{F_g}", joiner: "",
+      terms: [ { symbol: "\\dfrac{k e^2}{G m_p^2}", sub: "\\dfrac{(8.99\\times10^{9})(1.6\\times10^{-19})^2}{(6.674\\times10^{-11})(1.67\\times10^{-27})^2}" } ],
+      distractors: ["\\dfrac{G m_p^2}{k e^2}", "\\dfrac{k e}{G m_p}", "\\dfrac{e^2}{m_p^2}", "\\tfrac12"],
+      result: { expression: "\\dfrac{F_e}{F_g}=\\dfrac{k e^2}{G m_p^2}", substitution: "=\\dfrac{(8.99\\times10^{9})(2.56\\times10^{-38})}{(6.674\\times10^{-11})(2.79\\times10^{-54})}=\\dfrac{2.30\\times10^{-28}}{1.86\\times10^{-64}}", answer: "\\dfrac{F_e}{F_g}\\approx1.24\\times10^{36}" },
+      mcq: { options: ["\\approx10^{36}", "\\approx10^{6}", "\\approx1", "\\approx10^{-36}"], correct: 0,
+        why: "F_e/F_g = k e²/(G m_p²) = 2.30e-28/1.86e-64 ≈ 1.24×10³⁶." }
+    }
+  ];
+
+  /* expose globally (and as CommonJS if loaded under node) */
+  root.ASSIGN_FULL = ASSIGN_FULL;
+  root.EXAM_MOCK   = EXAM_MOCK;
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { ASSIGN_FULL: ASSIGN_FULL, EXAM_MOCK: EXAM_MOCK };
+  }
+
+})(typeof window !== "undefined" ? window : this);
+
+</script>
+
+<!-- ===================== TEACH CH1-3 DATA (inlined) — window.TEACH_CH123 + window.TEACH_CH123_QUIZ ===================== -->
+<script>
+"use strict";
+window.TEACH_CH123 = [
+
+  /* ---------- 1. SI UNITS (Ch 1) ---------- */
+  {
+    id: "si-units",
+    title: "SI Units",
+    concept: "Measurement",
+    kicker: "CH 1 · CONCEPT 1",
+    analogy: "If a friend says \"walk 5,\" you'd ask <b>5 what?</b> Steps? Metres? Miles? A number alone is useless — you also need the <b>agreed unit</b>. Science fixes the units so everyone on Earth means the same thing.",
+    body: [
+      "Every measurement is two parts: a <b>number</b> and an <b>agreed unit</b>. \"5\" is a number; \"5 metres\" is a measurement.",
+      "The three you'll use most: <span class='term'>metre (m)</span> for length, <span class='term'>kilogram (kg)</span> for mass, <span class='term'>second (s)</span> for time.",
+      "<b>Prefixes</b> just scale the unit: <b>kilo</b> = ×1000 (1 km = 1000 m), <b>centi</b> = ÷100 (1 cm = 0.01 m), <b>milli</b> = ÷1000 (1 ms = 0.001 s).",
+      "To <b>convert</b>, multiply by 1 written cleverly: 250 cm × (1 m / 100 cm) = 2.5 m. The cm cancel.",
+      "Keep units glued to your numbers and they'll catch your mistakes for you. You've got this!"
+    ],
+    equationLabel: "A MEASUREMENT",
+    equationTex: "\\( \\text{quantity} = \\text{number} \\times \\text{unit} \\)",
+    terms: [
+      { sym: "m",  def: "metre — the SI unit of length." },
+      { sym: "kg", def: "kilogram — the SI unit of mass." },
+      { sym: "s",  def: "second — the SI unit of time." },
+      { sym: "prefix", def: "kilo (×1000), centi (÷100), milli (÷1000) rescale a unit." }
+    ],
+    animFn: "VectorAnims.si",
+    quizPack: "TEACH_CH123_QUIZ.siUnits"
+  },
+
+  /* ---------- 2. VECTORS (Ch 1) — centerpiece ---------- */
+  {
+    id: "vectors",
+    title: "Vectors",
+    concept: "Vectors",
+    kicker: "CH 1 · CONCEPT 2",
+    analogy: "Tell someone \"drive 5 km\" and they could end up anywhere on a 5 km circle. Tell them \"5 km <b>north</b>\" and there's exactly one spot. That extra <b>direction</b> is what makes something a <b>vector</b> instead of a plain number.",
+    body: [
+      "A <span class='term'>scalar</span> is just a size: temperature, mass, time. A <span class='term'>vector</span> has size <b>and</b> direction: displacement, velocity, force.",
+      "We write a vector by its <b>components</b> ⟨x, y, z⟩ — how far it reaches along each axis.",
+      "<b>Magnitude (length)</b> comes from <span class='term'>Pythagoras</span>: |v| = √(x²+y²+z²). The animation shows the legs x and y and the diagonal they make.",
+      "A <span class='term'>unit vector</span> Â = A / |A| keeps the <b>direction</b> but shrinks the length to exactly 1.",
+      "Think of a unit vector as a <b>signpost</b>: it points the way without telling you how far. Multiply it by any length to travel that way."
+    ],
+    equationLabel: "MAGNITUDE · UNIT VECTOR",
+    equationTex: "\\( |\\vec v| = \\sqrt{x^2+y^2+z^2} \\qquad \\hat A = \\dfrac{\\vec A}{|\\vec A|} \\)",
+    terms: [
+      { sym: "⟨x,y,z⟩", def: "the vector's components along each axis." },
+      { sym: "|v⃗|", def: "magnitude — the vector's length, via Pythagoras." },
+      { sym: "Â", def: "unit vector — same direction, length exactly 1." }
+    ],
+    animFn: ["VectorAnims.magnitude", "VectorAnims.unitVector"],
+    quizPack: "ASSIGN_1_2_3.a1"
+  },
+
+  /* ---------- 3. VELOCITY & MOMENTUM (Ch 1) ---------- */
+  {
+    id: "velocity-momentum",
+    title: "Velocity & Momentum",
+    concept: "Velocity / Momentum",
+    kicker: "CH 1 · CONCEPT 3",
+    analogy: "A speedometer reading \"60\" is <b>speed</b> — just a number. Add \"60, heading east\" and now it's <b>velocity</b>, a vector. And a heavy truck at that velocity is far harder to stop than a bike: that's <b>momentum</b>.",
+    body: [
+      "<span class='term'>Speed</span> is how fast (a scalar). <span class='term'>Velocity</span> v⃗ is how fast <b>and which way</b> (a vector).",
+      "Velocity = displacement over time: v⃗ = Δr⃗ / Δt. Δr⃗ is the change in position; Δt is the time it took.",
+      "<span class='term'>Momentum</span> p⃗ = m·v⃗ — mass times velocity. It's a vector pointing the same way as the velocity.",
+      "More mass <b>or</b> more speed → more momentum, so more \"oomph\" to stop. The arrow in the animation grows with the speed.",
+      "Units: velocity in m/s, momentum in kg·m/s. Keep them attached and you're golden."
+    ],
+    equationLabel: "VELOCITY & MOMENTUM",
+    equationTex: "\\( \\vec v = \\dfrac{\\Delta \\vec r}{\\Delta t} \\qquad \\vec p = m\\,\\vec v \\)",
+    terms: [
+      { sym: "v⃗", def: "velocity — displacement per unit time (a vector)." },
+      { sym: "Δr⃗", def: "displacement — change in position." },
+      { sym: "Δt", def: "elapsed time." },
+      { sym: "p⃗", def: "momentum = mass × velocity, in kg·m/s." }
+    ],
+    animFn: "PhysicsAnims.momentum",
+    quizPack: "ASSIGN_1_2_3.a1"
+  },
+
+  /* ---------- 4. GRAVITATIONAL FORCE (Ch 3) ---------- */
+  {
+    id: "gravity",
+    title: "Gravitational Force",
+    concept: "Gravitation",
+    kicker: "CH 3 · CONCEPT 4",
+    analogy: "Drop your phone and it falls — Earth is pulling it. <b>Every</b> mass pulls every other mass the same way; you just only notice it when one of them is planet-sized. It's always a <b>pull</b>, never a push.",
+    body: [
+      "<b>Newton's law of gravity:</b> F = G·m₁·m₂ / r². Two masses, the distance between them, and a constant G.",
+      "It is <b>always attractive</b> — both objects get pulled toward each other along the line joining them.",
+      "The <b>r²</b> on the bottom is the key: double the distance and the force drops to a <b>quarter</b>. That's the magnitude r from Pythagoras — the same √ idea as the Vectors slide.",
+      "<span class='term'>Weight</span> is just gravity near a planet's surface: weight = m·g, where g ≈ 9.8 m/s² on Earth.",
+      "Bigger masses → stronger pull; bigger distance → much weaker pull. The animation shows the arrow shrinking as r grows."
+    ],
+    equationLabel: "NEWTON'S GRAVITY",
+    equationTex: "\\( F = \\dfrac{G\\,m_1 m_2}{r^2} \\qquad W = m g \\)",
+    terms: [
+      { sym: "F", def: "gravitational force (newtons, N)." },
+      { sym: "G", def: "gravitational constant, 6.674×10⁻¹¹." },
+      { sym: "m₁,m₂", def: "the two masses (kg)." },
+      { sym: "r", def: "distance between their centres (the vector magnitude)." },
+      { sym: "g", def: "surface gravity, ≈ 9.8 m/s² on Earth." }
+    ],
+    animFn: "VectorAnims.magnitude",
+    quizPack: "ASSIGN_1_2_3.a2"
+  },
+
+  /* ---------- 5. ELECTRIC FORCE (Ch 3) ---------- */
+  {
+    id: "electric-force",
+    title: "Electric Force",
+    concept: "Electric Force",
+    kicker: "CH 3 · CONCEPT 5",
+    analogy: "Rub a balloon on your hair and it sticks to a wall — invisible <b>charge</b> is pulling. Two north magnet ends shove apart; a north and south snap together. Charges do the same: <b>like repels, opposite attracts</b>.",
+    body: [
+      "<b>Coulomb's law:</b> F = k·q₁·q₂ / r². Two charges, the distance between them, and a constant k.",
+      "<b>Like charges repel</b> (push apart), <b>opposite charges attract</b> (pull together).",
+      "Look closely: F = k·q₁q₂ / r² has the <b>exact same 1/r² shape</b> as gravity F = G·m₁m₂ / r². Charge swaps in for mass; k swaps in for G.",
+      "So the same rule of thumb applies: double the distance → a <b>quarter</b> of the force.",
+      "k = 9×10⁹ is large, so even tiny charges can push hard — which is why static shocks feel so sharp!"
+    ],
+    equationLabel: "COULOMB'S LAW",
+    equationTex: "\\( F = \\dfrac{k\\,q_1 q_2}{r^2} \\)",
+    terms: [
+      { sym: "F", def: "electric (Coulomb) force in newtons." },
+      { sym: "k", def: "Coulomb constant, 9×10⁹." },
+      { sym: "q₁,q₂", def: "the two charges (coulombs, C)." },
+      { sym: "r", def: "distance between the charges." }
+    ],
+    animFn: "VectorAnims.coulomb",
+    quizPack: "ASSIGN_1_2_3.a3"
+  }
+];
+
+window.TEACH_CH123_QUIZ = {
+  siUnits: [
+    { id:"si-convert-1", concept:"SI Units",
+      prompt:"How many metres is <b>250 cm</b>?",
+      options:["2.5 m","25 m","0.25 m","2500 m"], correct:0,
+      why:"1 cm = 0.01 m, so 250 cm × (1 m / 100 cm) = 2.5 m." },
+    { id:"si-prefix-1", concept:"SI Units",
+      prompt:"Which is the SI base unit of <b>mass</b>?",
+      options:["kilogram (kg)","gram (g)","newton (N)","metre (m)"], correct:0,
+      why:"The SI base unit of mass is the kilogram, not the gram." },
+    { id:"si-prefix-2", concept:"SI Units",
+      prompt:"<b>3 km</b> equals how many metres?",
+      options:["3000 m","300 m","30 m","0.003 m"], correct:0,
+      why:"kilo = ×1000, so 3 km = 3 × 1000 = 3000 m." }
+  ]
+};
+
+</script>
+
 <!-- ===================== PRACTICE ENGINE (inlined) ===================== -->
 <script>
 /* ================================================================
@@ -4008,6 +6071,79 @@ const CONCEPTS = [
   }
 ];
 
+/* ===================== CH 1-3 CONCEPTS (from TEACH_CH123) =====================
+   Build new Learn concepts from window.TEACH_CH123, mapping each slide's animFn
+   (namespaced anim) + quizPack to a runtime QUESTION_BANK key. Then splice them
+   into CONCEPTS in the full course order and renumber. */
+(function(){
+  const TC = window.TEACH_CH123 || [];
+  const SIQ = (window.TEACH_CH123_QUIZ && window.TEACH_CH123_QUIZ.siUnits) || [];
+  const A123 = window.ASSIGN_1_2_3 || {};
+  if(!window.QUESTION_BANK) window.QUESTION_BANK = {};
+  const QB = window.QUESTION_BANK;
+
+  /* normalize an SI-units MCQ (no solver inventory) into the solver MCQ schema */
+  function normSI(q){
+    return { id:q.id, concept:q.concept, prompt:q.prompt,
+             mcq:{ options:q.options, correct:q.correct, why:q.why } };
+  }
+  /* register the question pack for a teach slide; returns the bankKey used */
+  function packFor(slide){
+    const key = "ch123_"+slide.id.replace(/[^a-z0-9]/gi,"_");
+    let list = [];
+    const pk = slide.quizPack;
+    if(pk === "TEACH_CH123_QUIZ.siUnits"){
+      list = SIQ.map(normSI);
+    } else if(typeof pk === "string" && pk.indexOf("ASSIGN_1_2_3.")===0){
+      const sub = pk.split(".")[1];
+      list = (A123[sub] || []).slice();
+    }
+    QB[key] = list;
+    return key;
+  }
+  /* convert a TEACH_CH123 slide into a CONCEPTS-style object */
+  function toConcept(slide){
+    const lead = (slide.terms||[]).map(t=>"<b>"+t.sym+"</b> — "+t.def).join("  ·  ");
+    return {
+      title: slide.title.toUpperCase(),
+      anim: slide.animFn,                    // string or array, namespaced
+      bankKey: packFor(slide),
+      teach:{
+        kicker: slide.kicker,
+        head: slide.title,
+        analogy: slide.analogy,
+        lead: lead || ("Key idea: "+slide.title+"."),
+        eqlabel: slide.equationLabel,
+        eq: slide.equationTex,
+        beats: slide.body.slice()
+      }
+    };
+  }
+  const byId = {};
+  TC.forEach(s=>{ byId[s.id] = toConcept(s); });
+
+  /* full course order: SI → Vectors → Velocity&Momentum → [Momentum] →
+     Gravity → Electric → [Collisions → Impulse → Friction → Free-Body → Energy] */
+  const ordered = [];
+  if(byId["si-units"])          ordered.push(byId["si-units"]);
+  if(byId["vectors"])           ordered.push(byId["vectors"]);
+  if(byId["velocity-momentum"]) ordered.push(byId["velocity-momentum"]);
+  ordered.push(CONCEPTS[0]);                       // existing Momentum
+  if(byId["gravity"])           ordered.push(byId["gravity"]);
+  if(byId["electric-force"])    ordered.push(byId["electric-force"]);
+  ordered.push(CONCEPTS[1], CONCEPTS[2], CONCEPTS[3], CONCEPTS[4], CONCEPTS[5]);
+
+  /* renumber + fix kickers for every concept */
+  const total = ordered.length;
+  ordered.forEach((c,i)=>{
+    c.n = i+1;
+    if(c.teach) c.teach.kicker = "CONCEPT "+(i+1)+" / "+total;
+  });
+  /* replace CONCEPTS contents in place (preserve the const binding) */
+  CONCEPTS.length = 0;
+  ordered.forEach(c=>CONCEPTS.push(c));
+})();
+
 /* ===================== BUILD STEP LIST ===================== */
 const STEPS = [{type:"welcome"}];
 CONCEPTS.forEach(c=>{ STEPS.push({type:"teach", c}); STEPS.push({type:"quiz", c}); });
@@ -4021,10 +6157,12 @@ function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(
 
 function teachHTML(c){
   const t=c.teach;
-  return `<div class="panel teach" data-anim="${c.anim}">
+  const anims = Array.isArray(c.anim) ? c.anim : [c.anim];
+  const frames = anims.map(()=>`<div class="anim-frame anim anim2"><canvas class="teach-canvas"></canvas></div>`).join("");
+  return `<div class="panel teach" data-anim='${JSON.stringify(anims)}'>
     <div class="kicker anim anim1">${t.kicker}</div>
     <h1 class="head anim anim2">${t.head}</h1>
-    <div class="anim-frame anim anim2"><canvas class="teach-canvas"></canvas></div>
+    ${frames}
     <div class="analogy anim anim2">${t.analogy}</div>
     <p class="lead anim anim2">${t.lead}</p>
     <div class="eqcard anim-eq"><span class="eqlabel">${t.eqlabel}</span>${t.eq}${t.eqExtra||""}</div>
@@ -4032,9 +6170,18 @@ function teachHTML(c){
   </div>`;
 }
 
+/* resolve "Namespace.fn" (or bare "fn" → PhysicsAnims) to a controller factory */
+function resolveAnim(name){
+  if(typeof name!=="string") return null;
+  let ns="PhysicsAnims", fn=name;
+  if(name.indexOf(".")>=0){ const parts=name.split("."); ns=parts[0]; fn=parts[1]; }
+  const reg = window[ns];
+  return (reg && reg[fn]) ? reg[fn] : null;
+}
+
 function quizHTML(c){
   return `<div class="panel quiz" data-concept="${c.n}" data-bankkey="${c.bankKey}">
-    <div class="kicker">CONCEPT ${c.n} / 6 — QUIZ</div>
+    <div class="kicker">CONCEPT ${c.n} / ${CONCEPTS.length} — QUIZ</div>
     <h2 class="head">${c.title}: Build the Solution</h2>
     <div class="solver-mount"></div>
   </div>`;
@@ -4044,11 +6191,13 @@ function welcomeHTML(){
   return `<div class="panel"><div class="center-card">
     <div class="bigemoji">⚡</div>
     <h1 class="head">PHYSICS ARCADE</h1>
-    <div class="kicker" style="margin-bottom:14px">CH 4 &amp; 5 — BEGINNER MODE</div>
-    <p class="lead">A bite-size, swipe-through tour of momentum, collisions, impulse, friction, free-body diagrams, and energy. We <b>teach</b> one idea, then you <b>build the equation</b> to solve a quick problem (or tap Multiple Choice).</p>
+    <div class="kicker" style="margin-bottom:14px">CH 1–6 — BEGINNER MODE</div>
+    <p class="lead">A bite-size, swipe-through tour from SI units and vectors all the way to energy. We <b>teach</b> one idea, then you <b>build the equation</b> to solve a quick problem (or tap Multiple Choice).</p>
     <ul class="menu-list beats" style="display:inline-block">
-      <li>1 · Momentum</li><li>2 · Collisions</li><li>3 · Impulse</li>
-      <li>4 · Friction</li><li>5 · Free-body diagrams</li><li>6 · Energy &amp; work</li>
+      <li>1 · SI Units</li><li>2 · Vectors</li><li>3 · Velocity &amp; Momentum</li>
+      <li>4 · Momentum</li><li>5 · Gravity</li><li>6 · Electric Force</li>
+      <li>7 · Collisions</li><li>8 · Impulse</li><li>9 · Friction</li>
+      <li>10 · Free-body diagrams</li><li>11 · Energy &amp; work</li>
     </ul>
     <p class="lead" style="font-size:14px;color:var(--dim)">Tap <b>💡 TIPS</b> anytime for formula help. Use <b>← BACK / NEXT →</b> below to move.</p>
     <button class="btn big magenta nextLocal">START →</button>
@@ -4060,13 +6209,13 @@ function doneHTML(){
   return `<div class="panel"><div class="center-card">
     <div class="bigemoji">🏆</div>
     <h1 class="head">YOU DID IT!</h1>
-    <p class="lead">You walked through all six core ideas of Chapters 4 &amp; 5. Momentum, collisions, impulse, friction, free-body diagrams, and energy — all unlocked.</p>
+    <p class="lead">You walked through the core ideas of Chapters 1–6 — from SI units and vectors to gravity, electric force, collisions, impulse, friction, free-body diagrams, and energy.</p>
     <ul class="beats" style="text-align:left;max-width:380px;margin:0 auto 16px">
-      <li>p = mv · momentum is mass × velocity</li>
-      <li>Momentum is conserved in every collision</li>
-      <li>F·Δt = Δp · more time, less force (airbags)</li>
-      <li>f = μN · static grips, kinetic slides</li>
-      <li>ΣF = ma · draw every force first</li>
+      <li>|v⃗| = √(x²+y²+z²) · Â = A/|A| · vectors</li>
+      <li>v⃗ = Δr⃗/Δt · p = mv · velocity &amp; momentum</li>
+      <li>F = Gm₁m₂/r² · F = kq₁q₂/r² · the 1/r² laws</li>
+      <li>Σp conserved · F·Δt = Δp · collisions &amp; impulse</li>
+      <li>f = μN · ΣF = ma · friction &amp; free-body</li>
       <li>W = Fd, KE = ½mv² · energy of motion</li>
     </ul>
     <button class="btn big magenta" id="reviewBtn">↻ REVIEW FROM START</button>
@@ -4152,16 +6301,22 @@ function mountSolver(panel){
 }
 
 /* ===================== TEACH ANIMATION LIFECYCLE ===================== */
-let activeAnim=null;
+let activeAnims=[];
+function stopActiveAnims(){ activeAnims.forEach(a=>{ try{ a && a.stop(); }catch(_){} }); activeAnims=[]; }
 function updateAnim(panel){
-  if(activeAnim){ try{ activeAnim.stop(); }catch(_){} activeAnim=null; }
+  stopActiveAnims();
   if(!panel.classList.contains('teach')) return;
-  const name=panel.dataset.anim;
-  const fn=window.PhysicsAnims && window.PhysicsAnims[name];
-  const canvas=panel.querySelector('.teach-canvas');
-  if(fn && canvas){
-    requestAnimationFrame(()=>{ if(panel.classList.contains('active')){ try{ activeAnim=fn(canvas); }catch(_){} } });
-  }
+  let names=[];
+  try{ names=JSON.parse(panel.dataset.anim); }catch(_){ names=panel.dataset.anim?[panel.dataset.anim]:[]; }
+  if(!Array.isArray(names)) names=[names];
+  const canvases=panel.querySelectorAll('.teach-canvas');
+  names.forEach((name,i)=>{
+    const fn=resolveAnim(name);
+    const canvas=canvases[i];
+    if(fn && canvas){
+      requestAnimationFrame(()=>{ if(panel.classList.contains('active')){ try{ activeAnims.push(fn(canvas)); }catch(_){} } });
+    }
+  });
 }
 
 const solvedSteps = new Set();
@@ -4312,13 +6467,17 @@ const Solver = (function(){
     stageS="equation"; termIndex=0; workLine=subLine=null; vbeatDone=false;
     refreshQNav();
     els.prompt.innerHTML=Q.prompt; mjTypeset(els.prompt);
-    els.modeToggle.style.display = hideMode ? "none" : "";
+    /* MCQ-only questions (no drag-build inventory, e.g. SI-units pack) force MCQ mode */
+    const mcqOnly = !Array.isArray(Q.inventory) || !Q.inventory.length;
+    els.modeToggle.style.display = (hideMode||mcqOnly) ? "none" : "";
+    if(mcqOnly) mode="mcq";
     buildInventory(); resetAnswerArea(); buildMCQ();
     setMode(mode);
   }
 
   function buildInventory(){
     els.inventory.innerHTML="";
+    if(!Array.isArray(Q.inventory)) return;
     Q.inventory.forEach(eq=>{
       const card=document.createElement("div");
       card.className="eq-card "+(eq.relevant?"glow":"dim");
@@ -4468,6 +6627,7 @@ const Solver = (function(){
   /* ---- MCQ ---- */
   function buildMCQ(){
     els.mcqOptions.innerHTML="";
+    if(!Q.mcq || !Array.isArray(Q.mcq.options)) return;
     const keys=["A","B","C","D"];
     Q.mcq.options.forEach((opt,i)=>{
       const row=document.createElement("div"); row.className="slv-mcq-opt";
@@ -4618,15 +6778,19 @@ const ModeApp = (function(){
   }
 
   /* ---- ASSIGNMENTS MENU ---- */
+  /* full question banks: A1≈10, A2≈8, A3≈6, A4≈8, A5≈7 (window.ASSIGN_FULL),
+     with the smaller inlined packs as a fallback so the menu never empties. */
+  const AF   = window.ASSIGN_FULL || {};
   const A123 = window.ASSIGN_1_2_3 || {};
   const A45  = window.ASSIGN_4_5 || {};
+  const aset = (k, fb)=> (AF[k] && AF[k].length) ? AF[k] : (fb||[]);
   function assignmentList(){
     return [
-      { key:"a1", label:"A1", title:"Ch 1 — Interactions & Motion", set:A123.a1||[] },
-      { key:"a2", label:"A2", title:"Ch 2-3 — Forces, Momentum & Gravity", set:A123.a2||[] },
-      { key:"a3", label:"A3", title:"Ch 3 — Electric Force, Weight, Collisions", set:A123.a3||[] },
-      { key:"a4", label:"A4", title:"Ch 4 — Collisions & Friction", set:A45.a4||[], distinct:true },
-      { key:"a5", label:"A5", title:"Ch 5-6 — Forces, Circular Motion & Energy", set:A45.a5||[], distinct:true }
+      { key:"a1", label:"A1", title:"Ch 1 — Interactions & Motion", set:aset("a1",A123.a1) },
+      { key:"a2", label:"A2", title:"Ch 2 — Momentum, Forces, Springs & Gravity", set:aset("a2",A123.a2) },
+      { key:"a3", label:"A3", title:"Ch 3 — Gravity, Coulomb & Conservation", set:aset("a3",A123.a3) },
+      { key:"a4", label:"A4", title:"Ch 4 — Collisions & Friction", set:aset("a4",A45.a4), distinct:true },
+      { key:"a5", label:"A5", title:"Ch 5-6 — Forces, Circular Motion & Energy", set:aset("a5",A45.a5), distinct:true }
     ];
   }
   function buildAssignMenu(){
@@ -4743,30 +6907,22 @@ const ModeApp = (function(){
     if(again) again.addEventListener('click',()=>{ runner.idx=0; runner.questions.forEach(q=>{q.__recorded=false;}); enterRunner(); });
   }
 
-  /* ---- EXAM ---- */
+  /* ---- EXAM ---- (the 20-question mock midterm from window.EXAM_MOCK) */
   function buildExamSet(){
-    const QB=window.QUESTION_BANK||{};
-    const pick=(arr,n)=> (arr||[]).slice(0,n);
+    const mock = window.EXAM_MOCK;
+    if(Array.isArray(mock) && mock.length) return mock.slice();
+    /* fallback: small mixed set if the mock bank failed to load */
     const set=[];
-    // pull a mixed set across assignments + question bank
-    (A123.a1||[]).slice(0,1).forEach(q=>set.push(q));
-    (A123.a2||[]).slice(0,1).forEach(q=>set.push(q));
-    (A123.a3||[]).slice(0,1).forEach(q=>set.push(q));
-    (A45.a4||[]).slice(0,2).forEach(q=>set.push(q));
-    (A45.a5||[]).slice(0,2).forEach(q=>set.push(q));
-    pick(QB.momentum,1).forEach(q=>set.push(q));
-    pick(QB.energy,1).forEach(q=>set.push(q));
-    // a vector-add problem (via loadVector)
-    set.splice(Math.min(3,set.length),0,{ __vector:true, id:"exam-vector", concept:"Vectors",
-      vector:{ prompt:'<b>Exam — Vectors.</b> Add the 3-D vectors <span class="va">A</span> and <span class="va">B</span> component-wise to find the resultant <span class="va">R</span>.',
-        vectors:[{label:'A',comps:[44,14,-19]},{label:'B',comps:[23,-5,-28]}], op:'add', answer:[67,9,-47] } });
+    (AF.a1||A123.a1||[]).slice(0,2).forEach(q=>set.push(q));
+    (AF.a2||A123.a2||[]).slice(0,2).forEach(q=>set.push(q));
+    (AF.a3||A123.a3||[]).slice(0,2).forEach(q=>set.push(q));
     return set;
   }
   function goExam(){
     parkSolver(); parkVector();
     const eng = window.PracticeEngine ? new PracticeEngine({ storageKey:"lucy_exam_v1" }) : null;
     if(eng) eng.resetProgress();
-    runner={ questions:buildExamSet(), idx:0, title:"📝 EXAM — Mixed Set", scored:true, eng, results:[] };
+    runner={ questions:buildExamSet(), idx:0, title:"📝 EXAM — Mock Midterm (20 Q)", scored:true, eng, results:[] };
     refreshRunnerScore();
     enterRunner();
   }
@@ -4774,9 +6930,10 @@ const ModeApp = (function(){
   /* ---- PRACTICE ---- */
   let pracEng=null, pracQ=null;
   function buildPracticePool(){
-    const QB=window.QUESTION_BANK||{}, pool=[];
-    const add=(arr)=> (arr||[]).forEach(q=>{ if(q && q.id) pool.push(q); });
+    const QB=window.QUESTION_BANK||{}, pool=[], seen={};
+    const add=(arr)=> (arr||[]).forEach(q=>{ if(q && q.id && !seen[q.id] && Array.isArray(q.inventory)){ seen[q.id]=1; pool.push(q); } });
     Object.keys(QB).forEach(k=> add(QB[k]));
+    ["a1","a2","a3","a4","a5"].forEach(k=> add(AF[k]));
     ["a1","a2","a3"].forEach(k=> add(A123[k]));
     ["a4","a5"].forEach(k=> add(A45[k]));
     return pool;
