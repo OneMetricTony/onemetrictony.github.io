@@ -158,14 +158,10 @@ header.title p{
 }
 
 /* ============ LAYOUT ============ */
+/* tips moved into an off-canvas drawer, so the main layout is a single column */
 .layout{
-  display:grid;
-  grid-template-columns: 1fr 320px;
-  gap:18px;
+  display:block;
   max-width:1280px; margin:18px auto; padding:0 14px 60px;
-}
-@media (max-width:900px){
-  .layout{ grid-template-columns:1fr; }
 }
 
 /* generic panel */
@@ -410,7 +406,54 @@ header.title p{
 #completeBtn{ display:none; }
 #completeBtn.show{ display:inline-block; }
 
-/* ============ TIPS SIDEBAR ============ */
+/* ============ TIPS — SLIDE-IN DRAWER ============ */
+/* floating toggle button (always visible, bottom-right) */
+.tips-toggle{
+  position:fixed; right:18px; bottom:18px; z-index:8000;
+  font-family:'Press Start 2P', monospace; font-size:10px;
+  padding:14px 16px; border-radius:8px; cursor:pointer;
+  color:#021a0c; background:var(--yellow);
+  border:3px solid #000;
+  box-shadow:0 4px 0 #8a7a1a, 0 0 16px rgba(255,225,77,.6);
+  letter-spacing:1px; min-height:48px;
+  transition:transform .08s, box-shadow .08s, filter .12s;
+}
+.tips-toggle:hover{ filter:brightness(1.12); }
+.tips-toggle:active{ transform:translateY(4px); box-shadow:0 0 0 #8a7a1a; }
+
+/* dimmed backdrop behind the drawer */
+.tips-backdrop{
+  position:fixed; inset:0; z-index:8500;
+  background:rgba(4,4,12,.6); backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  opacity:0; pointer-events:none; transition:opacity .35s ease;
+}
+.tips-backdrop.open{ opacity:1; pointer-events:auto; }
+
+/* the off-canvas drawer itself — hidden off-screen to the right by default */
+.tips-drawer{
+  position:fixed; top:0; right:0; z-index:8600;
+  width:360px; max-width:90vw; height:100vh; height:100dvh;
+  margin:0; border-radius:0;
+  border:none; border-left:3px solid var(--magenta);
+  box-shadow:-8px 0 28px rgba(255,61,240,.35), inset 0 0 0 2px #000;
+  overflow-y:auto; padding:18px 16px 28px;
+  transform:translateX(100%);
+  transition:transform .38s cubic-bezier(.4,0,.2,1);
+}
+.tips-drawer.open{ transform:translateX(0); }
+.tips-close{
+  position:absolute; top:12px; right:12px;
+  width:40px; height:40px; line-height:36px; text-align:center;
+  font-size:26px; cursor:pointer;
+  color:var(--magenta); background:#0a0a18;
+  border:2px solid var(--magenta); border-radius:6px;
+  box-shadow:0 0 10px rgba(255,61,240,.4);
+  transition:filter .12s, transform .08s;
+}
+.tips-close:hover{ filter:brightness(1.3); }
+.tips-close:active{ transform:scale(.92); }
+
 #tips .tipgroup{ margin-bottom:18px; }
 #tips .tipgroup:last-child{ margin-bottom:0; }
 #tips h4{
@@ -433,7 +476,9 @@ header.title p{
   content:"▸"; position:absolute; left:0; top:0; color:var(--c);
   text-shadow:0 0 6px var(--c);
 }
-.tips-scroll{ max-height:560px; overflow-y:auto; padding-right:8px; }
+/* drawer body scrolls with the drawer itself; keep header clear of close btn */
+.tips-scroll{ padding-right:8px; }
+#tips h2{ padding-right:48px; }
 .tips-scroll::-webkit-scrollbar{ width:10px; }
 .tips-scroll::-webkit-scrollbar-track{ background:#06060f; }
 .tips-scroll::-webkit-scrollbar-thumb{ background:#2a2a55; border-radius:5px; border:2px solid #06060f;}
@@ -737,6 +782,96 @@ footer{
   color:#021a0c; background:var(--green); padding:3px 6px; border-radius:3px;
   margin-left:8px; vertical-align:middle; box-shadow:0 0 8px var(--green);
 }
+
+/* =================================================================
+   PHONE-FRIENDLY / RESPONSIVE  (tested mentally at ~375px wide)
+   ================================================================= */
+@media (max-width:768px){
+  /* never let the page itself scroll sideways */
+  html,body{ overflow-x:hidden; }
+
+  header.title{ padding:14px 8px 6px; }
+  header.title p{ font-size:7px; }
+
+  /* ---- HOTBAR becomes a horizontally-scrollable strip ---- */
+  .hotbar-wrap{ padding:8px 0 10px; }
+  .hotbar-label{ font-size:6.5px; padding:0 10px; line-height:1.6; }
+  .hotbar{
+    flex-wrap:nowrap;                 /* single row, no layout-breaking wrap */
+    justify-content:flex-start;
+    overflow-x:auto;                  /* scroll the row instead */
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+    gap:10px; padding:6px 12px 10px;
+  }
+  .hotbar::-webkit-scrollbar{ height:6px; }
+  .hotbar::-webkit-scrollbar-thumb{ background:var(--magenta); border-radius:3px; }
+  .slot{
+    flex:0 0 auto;                    /* keep each slot its own size, don't squash */
+    width:120px; min-height:80px;     /* touch-friendly */
+    scroll-snap-align:start;
+  }
+  /* tooltips would overflow the narrow strip — disable on touch */
+  .slot .tip{ display:none; }
+
+  .xp-wrap{ gap:8px; padding:0 12px; }
+  .xp-label,.xp-pct{ font-size:6px; }
+
+  /* ---- main content: single column, comfortable padding ---- */
+  .layout{ margin:14px auto; padding:0 10px 48px; }
+  .panel{ padding:14px 12px; }
+  .panel h2{ font-size:9px; line-height:1.6; }
+
+  .intro-card{ padding:16px 14px; }
+  .intro-card h2{ font-size:10px; }
+  .intro-card p{ font-size:14px; }
+  .intro-cta{ flex-direction:column; }
+  .intro-cta .gbtn{ width:100%; text-align:center; }
+
+  .lesson-card h3{ font-size:9px; }
+  .lesson-card p,.qbox .qtext,.answer{ font-size:14px; }
+  /* buttons stack & give big tap targets */
+  .btnrow{ gap:8px; }
+  .btnrow .gbtn{ flex:1 1 100%; text-align:center; min-height:46px; }
+  .gbtn{ font-size:8px; padding:13px 12px; }
+
+  /* concept web stacks (already does at 780px) and SVG stays inside */
+  .cw-layout{ grid-template-columns:1fr; }
+  .cw-caption{ min-height:0; }
+
+  /* flashcards: single comfortable column (keep 3D flip intact) */
+  .flash-grid{ grid-template-columns:1fr; }
+  .card{ height:170px; }
+  .card-face{ font-size:13px; }
+
+  /* ---- SLIDE DECK: readable, no horizontal overflow ---- */
+  .slide{ padding:48px 16px; min-height:100vh; min-height:100dvh; }
+  .slide-inner{ max-width:100%; }
+  .slide-title{ font-size:clamp(12px,4.6vw,18px); margin-bottom:18px; }
+  .slide-step{ font-size:7px; margin-bottom:14px; }
+  .slide-analogy{ font-size:clamp(13px,3.8vw,15px); }
+  .slide-eq{ font-size:clamp(15px,4.6vw,18px); padding:12px 14px; max-width:100%; overflow-x:auto; }
+  .slide-eq .eq-label{ font-size:6.5px; }
+  .slide-bullets li{ font-size:clamp(13px,3.6vw,15px); padding-left:22px; }
+
+  /* drawer toggle sits above any bottom content */
+  .tips-toggle{ right:12px; bottom:12px; font-size:9px; padding:12px 13px; }
+}
+
+@media (max-width:480px){
+  header.title h1{ font-size:clamp(11px,5.2vw,16px); }
+  .slot{ width:108px; min-height:74px; }
+  .slot .eq{ font-size:12px; }
+  .panel{ padding:12px 10px; }
+  .lesson-card{ padding:12px 12px; }
+  .qbox{ padding:12px 12px; }
+  .slide{ padding:40px 12px; }
+  .slide-title{ font-size:clamp(11px,5vw,16px); }
+  .slide-eq{ font-size:clamp(13px,5vw,16px); }
+  /* drawer takes nearly the whole width on small phones */
+  .tips-drawer{ width:90vw; padding:16px 12px 24px; }
+  #tips li{ font-size:12px; }
+}
 </style>
 </head>
 <body>
@@ -844,13 +979,16 @@ footer{
     </section>
   </div>
 
-  <!-- ============ TIPS SIDEBAR ============ -->
-  <aside class="panel" id="tips">
-    <h2>📝 TIPS BY PROBLEM TYPE</h2>
-    <div class="tips-scroll" id="tipsScroll"></div>
-  </aside>
-
 </div>
+
+<!-- ============ TIPS — SLIDE-IN DRAWER FROM RIGHT ============ -->
+<button class="tips-toggle" id="tipsToggle" aria-label="Open tips" aria-expanded="false">💡 TIPS</button>
+<div class="tips-backdrop" id="tipsBackdrop"></div>
+<aside class="panel tips-drawer" id="tips" role="dialog" aria-label="Tips by problem type" aria-hidden="true">
+  <button class="tips-close" id="tipsClose" aria-label="Close tips">×</button>
+  <h2>📝 TIPS BY PROBLEM TYPE</h2>
+  <div class="tips-scroll" id="tipsScroll"></div>
+</aside>
 
 <!-- ============ CONCEPT WEB ============ -->
 <div style="max-width:1280px; margin:0 auto; padding:0 14px 0;">
@@ -1219,6 +1357,31 @@ TIPS.forEach(g=>{
   wrap.innerHTML = `<h4>${g.head}</h4><ul>${g.items.map(t=>`<li>${t}</li>`).join('')}</ul>`;
   tipsScroll.appendChild(wrap);
 });
+
+// ---- TIPS DRAWER (slide-in from the right) ----
+(function(){
+  const drawer   = document.getElementById('tips');
+  const backdrop = document.getElementById('tipsBackdrop');
+  const toggle   = document.getElementById('tipsToggle');
+  const closeBtn = document.getElementById('tipsClose');
+  function openDrawer(){
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    toggle.setAttribute('aria-expanded','true');
+    drawer.setAttribute('aria-hidden','false');
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    drawer.setAttribute('aria-hidden','true');
+  }
+  toggle.addEventListener('click', ()=> drawer.classList.contains('open') ? closeDrawer() : openDrawer());
+  closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  // Esc closes the drawer (does not interfere with the 1-9 hotbar keys)
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+})();
 
 // ---- FLASHCARDS ----
 const flashGrid=document.getElementById('flashGrid');
