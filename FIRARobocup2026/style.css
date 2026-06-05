@@ -323,7 +323,7 @@ h1,h2,h3,h4 {
   clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 .tier-card .angled-btn { margin-top: auto; }
-/* featured tier — amber, layered plate, asymmetric lift */
+/* featured tier — white, layered plate, asymmetric lift */
 .tier-card--featured {
   border-color: var(--c-accent-2);
   box-shadow: 0 0 0 1px rgba(255,255,255,.5), var(--shadow);
