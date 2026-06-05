@@ -10,7 +10,7 @@
     @media (max-width: 760px) {
       .nav.nav--open .nav__links { display: flex; }
     }
-    .hero__emblem { width: 88px; height: 88px; margin-bottom: 1.2rem; filter: drop-shadow(0 0 18px rgba(39,224,255,.35)); }
+    .hero__emblem { width: auto; height: 64px; padding: 11px 18px; margin-bottom: 1.4rem; filter: drop-shadow(0 0 22px rgba(240,57,78,.5)); }
     .chips-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
     .panel-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 1.5rem; }
     .panel-grid .hud-panel { display: flex; flex-direction: column; }
@@ -26,7 +26,7 @@
 <body>
 
   <nav class="nav">
-    <a class="nav__brand" href="index.html"><img src="assets/emblem.svg" alt="" width="30" height="30"> FIRA · 2026</a>
+    <a class="nav__brand" href="index.html"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
       <a class="nav__link" href="index.html" aria-current="page">Home</a>
@@ -41,7 +41,7 @@
   <!-- ============ HERO ============ -->
   <header class="hero">
     <div class="container hero__inner">
-      <img class="hero__emblem" src="assets/emblem.svg" alt="FIRA RoboWorld Cup 2026 emblem">
+      <img class="hero__emblem brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI &amp; Robotics Academy">
       <p class="eyebrow">FIRA ROBOWORLD CUP 2026 · MARKHAM, CANADA</p>
       <h1>A Robotics World <span>Championship</span> Comes to Canada</h1>
       <p>The FIRA RoboWorld Cup lands in Markham, Ontario for the first time ever — a global stage where the world's elite student and research robotics teams compete. Partner with us and put your brand at the heart of the future of robotics and AI.</p>
@@ -110,7 +110,7 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__inner">
-        <div class="footer__brand"><img src="assets/emblem.svg" alt=""> FIRA · 2026</div>
+        <div class="footer__brand"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</div>
         <div class="footer__cols">
           <div>
             <h4>Navigate</h4>

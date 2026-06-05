@@ -2,24 +2,24 @@
   <!-- Angular sci-fi background motif: layered chamfered plates + diagonal hatching -->
   <defs>
     <pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="22" stroke="#27e0ff" stroke-width="1" stroke-opacity="0.06"/>
+      <line x1="0" y1="0" x2="0" y2="22" stroke="#f0394e" stroke-width="1" stroke-opacity="0.06"/>
     </pattern>
   </defs>
   <rect width="1200" height="600" fill="url(#hatch)"/>
   <!-- Large parallelogram plate -->
-  <polygon points="-50,420 420,300 380,600 -50,600" fill="#27e0ff" fill-opacity="0.04"/>
+  <polygon points="-50,420 420,300 380,600 -50,600" fill="#f0394e" fill-opacity="0.05"/>
   <!-- Trapezoid plate -->
-  <polygon points="760,0 1250,0 1250,260 900,180" fill="#ffb02e" fill-opacity="0.035"/>
+  <polygon points="760,0 1250,0 1250,260 900,180" fill="#ffffff" fill-opacity="0.035"/>
   <!-- Thin diagonal accent lines -->
-  <g stroke="#27e0ff" stroke-opacity="0.12" stroke-width="1.5">
+  <g stroke="#f0394e" stroke-opacity="0.14" stroke-width="1.5">
     <line x1="0" y1="120" x2="300" y2="40"/>
     <line x1="900" y1="560" x2="1200" y2="470"/>
   </g>
-  <g stroke="#ffb02e" stroke-opacity="0.10" stroke-width="1.5">
+  <g stroke="#ffffff" stroke-opacity="0.10" stroke-width="1.5">
     <line x1="1100" y1="600" x2="1200" y2="540"/>
   </g>
   <!-- Corner bracket notch top-left -->
-  <path d="M40,40 L40,90 M40,40 L100,40" stroke="#27e0ff" stroke-opacity="0.25" stroke-width="2" fill="none"/>
+  <path d="M40,40 L40,90 M40,40 L100,40" stroke="#f0394e" stroke-opacity="0.28" stroke-width="2" fill="none"/>
   <!-- Corner bracket notch bottom-right -->
-  <path d="M1160,560 L1160,510 M1160,560 L1100,560" stroke="#27e0ff" stroke-opacity="0.25" stroke-width="2" fill="none"/>
+  <path d="M1160,560 L1160,510 M1160,560 L1100,560" stroke="#f0394e" stroke-opacity="0.28" stroke-width="2" fill="none"/>
 </svg>

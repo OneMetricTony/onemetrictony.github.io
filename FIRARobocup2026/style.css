@@ -1,6 +1,7 @@
 /* =============================================================
    KAVOSH — FIRA RoboCup 2026  ·  Design System
    Angular military-sci-fi geometry (Halo-2-inspired GEOMETRY only).
+   KAVOSH brand recolor: deep red field + crimson + white.
    Self-contained shared stylesheet. @import or inline this file.
    ============================================================= */
 
@@ -8,21 +9,21 @@
 
 /* ---------- 1. PALETTE & TOKENS ------------------------------ */
 :root {
-  /* Base — deep charcoal / near-black */
-  --c-bg:        #0b0f14;   /* page background        */
-  --c-bg-2:      #10161c;   /* raised panel fill      */
-  --c-bg-3:      #161e26;   /* elevated / hover       */
-  --c-line:      #243240;   /* hairline borders       */
+  /* Base — KAVOSH deep red / near-black warm field */
+  --c-bg:        #190707;   /* page background        */
+  --c-bg-2:      #2a0a0a;   /* raised panel fill (red-900-ish) */
+  --c-bg-3:      #3a1414;   /* elevated / hover       */
+  --c-line:      #5e2a2a;   /* hairline borders (muted red) */
 
-  /* Accent — electric cyan (primary) + amber (secondary) */
-  --c-accent:    #27e0ff;   /* primary tech accent    */
-  --c-accent-dk: #0a8fb0;   /* accent shade           */
-  --c-accent-2:  #ffb02e;   /* secondary accent (amber)*/
+  /* Accent — KAVOSH crimson (primary) + white (secondary) */
+  --c-accent:    #f0394e;   /* primary crimson accent */
+  --c-accent-dk: #c8102e;   /* KAVOSH brand crimson (shade) */
+  --c-accent-2:  #ffffff;   /* secondary accent (white)*/
 
-  /* Text — crisp white / grey */
-  --c-text:      #eef4f8;   /* primary text           */
-  --c-text-dim:  #9fb0bd;   /* secondary text         */
-  --c-text-mute: #5d6e7b;   /* muted / captions       */
+  /* Text — crisp white / warm light red-grey */
+  --c-text:      #fdf3f3;   /* primary text           */
+  --c-text-dim:  #e6bcbc;   /* secondary text         */
+  --c-text-mute: #b07e7e;   /* muted / captions       */
 
   /* Typography */
   --font-head: 'Chakra Petch', 'Segoe UI', sans-serif; /* condensed techy */
@@ -35,7 +36,7 @@
   --maxw:    1180px;
 
   /* FX */
-  --glow:   0 0 0 1px rgba(39,224,255,.35), 0 0 18px rgba(39,224,255,.18);
+  --glow:   0 0 0 1px rgba(240,57,78,.40), 0 0 18px rgba(240,57,78,.20);
   --shadow: 0 8px 30px rgba(0,0,0,.45);
   --ease:   cubic-bezier(.2,.7,.3,1);
 }
@@ -52,9 +53,9 @@ body {
   -webkit-font-smoothing: antialiased;
   /* subtle angular background motif */
   background-image:
-    repeating-linear-gradient(45deg, rgba(39,224,255,.022) 0 2px, transparent 2px 24px),
-    radial-gradient(120% 80% at 100% 0%, rgba(255,176,46,.04), transparent 60%),
-    radial-gradient(120% 90% at 0% 100%, rgba(39,224,255,.05), transparent 55%);
+    repeating-linear-gradient(45deg, rgba(248,113,113,.030) 0 2px, transparent 2px 24px),
+    radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.035), transparent 60%),
+    radial-gradient(120% 90% at 0% 100%, rgba(200,16,46,.12), transparent 55%);
   background-attachment: fixed;
 }
 img, svg { max-width: 100%; display: block; }
@@ -102,7 +103,17 @@ h1,h2,h3,h4 {
   letter-spacing: .14em; text-transform: uppercase;
   color: var(--c-text); font-size: 1.05rem;
 }
-.nav__brand img { width: 34px; height: 34px; }
+.nav__brand img { width: auto; height: 26px; }
+
+/* KAVOSH logo sits on a white chamfered chip so the red wordmark +
+   black phoenix stay crisp on the dark red field (white+red brand). */
+.brand-logo {
+  background: #fff;
+  padding: 5px 9px;
+  box-sizing: content-box;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px),
+    calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
 .nav__links {
   display: flex; gap: .25rem; margin-left: auto;
   list-style: none; padding: 0;
@@ -134,7 +145,7 @@ h1,h2,h3,h4 {
   position: relative; overflow: hidden;
   padding: clamp(3rem, 9vw, 7rem) 0;
   background:
-    linear-gradient(135deg, rgba(39,224,255,.06), transparent 45%),
+    linear-gradient(135deg, rgba(200,16,46,.12), transparent 45%),
     url('assets/motif.svg') center/cover no-repeat,
     var(--c-bg-2);
   border-bottom: 1px solid var(--c-line);
@@ -155,7 +166,7 @@ h1,h2,h3,h4 {
 .hero::after {
   content: ""; position: absolute; right: -6%; top: -10%;
   width: 46%; height: 130%;
-  background: linear-gradient(160deg, rgba(255,176,46,.10), transparent 60%);
+  background: linear-gradient(160deg, rgba(255,255,255,.07), transparent 60%);
   clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
   pointer-events: none;
 }
@@ -303,7 +314,7 @@ h1,h2,h3,h4 {
 /* featured tier — amber, layered plate, asymmetric lift */
 .tier-card--featured {
   border-color: var(--c-accent-2);
-  box-shadow: 0 0 0 1px rgba(255,176,46,.4), var(--shadow);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.5), var(--shadow);
 }
 .tier-card--featured .tier-card__tier,
 .tier-card--featured li::before { color: var(--c-accent-2); }
@@ -330,7 +341,7 @@ h1,h2,h3,h4 {
 }
 .footer__brand { display: flex; align-items: center; gap: .6rem;
   font-family: var(--font-head); letter-spacing: .12em; text-transform: uppercase; }
-.footer__brand img { width: 40px; }
+.footer__brand img { width: auto; height: 34px; }
 .footer__cols { display: flex; gap: 2.5rem; flex-wrap: wrap; }
 .footer h4 { font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: var(--c-text-dim); }
 .footer a { display: block; color: var(--c-text-dim); font-size: .88rem; padding: .15rem 0; }
