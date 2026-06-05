@@ -14,7 +14,7 @@
   window.MathJax = {
     tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$']] },
     svg: { fontCache: 'global' },
-    startup: { ready: () => { MathJax.startup.defaultReady(); window.MJReady = true; } }
+    startup: { ready: () => { MathJax.startup.defaultReady(); window.MJReady = true; window.__mjReady = true; } }
   };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
@@ -125,6 +125,12 @@ ul.beats li b{ color:var(--yellow); }
   overflow-x:auto; }
 .eqcard .eqlabel{ font-family:'Press Start 2P',monospace; font-size:7px; color:var(--magenta);
   display:block; margin-bottom:10px; letter-spacing:1px; }
+.coltypes{ display:flex; gap:7px; margin-top:14px; justify-content:center; }
+.coltype{ flex:1 1 0; min-width:0; background:rgba(33,230,255,.05); border:1px solid #23234a;
+  border-radius:9px; padding:8px 5px 9px; text-align:center; }
+.coltype .ce{ font-size:20px; display:block; line-height:1; margin-bottom:3px; }
+.coltype b{ display:block; font-size:11px; color:var(--cyan); }
+.coltype small{ display:block; font-size:9.5px; color:var(--dim); line-height:1.3; margin-top:2px; }
 
 /* ============ TEACH ENTRANCE ANIMATIONS ============ */
 .panel.teach.active .anim{ animation:slideUp .55s cubic-bezier(.2,.7,.2,1) both; }
@@ -219,6 +225,8 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
 .nav-btn.next{ border-color:var(--green); color:var(--green); box-shadow:0 0 12px rgba(57,255,136,.35); }
 .nav-btn.back{ border-color:var(--cyan); color:var(--cyan); }
 .nav-btn:disabled{ opacity:.3; cursor:default; pointer-events:none; }
+.nav-btn.next.locked{ border-color:#3a3a55; color:var(--dim); box-shadow:none; }
+.nav-btn.next.locked::after{ content:" 🔒"; }
 
 /* ============ TIPS FAB + DRAWER ============ */
 .tips-fab{ position:fixed; z-index:700;
@@ -444,6 +452,62 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   font-size:.72rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
 .slv-btn:active{ border-color:var(--cyan); color:var(--cyan); box-shadow:var(--glow-cyan); }
 
+/* ---- rendered-math neon glow (MathJax SVG) ---- */
+.slv .mjx-glow svg{ filter:drop-shadow(0 0 3px #00f0ff) drop-shadow(0 0 8px #00f0ff80); }
+.slv .mjx-glow{ color:#fff; }
+.slv .mjx-good svg{ filter:drop-shadow(0 0 4px #37ff8b) drop-shadow(0 0 12px #37ff8b80); }
+.slv .mjx-mag svg{ filter:drop-shadow(0 0 3px #ff37e6) drop-shadow(0 0 9px #ff37e680); }
+.slv-drag-ghost .mjx-glow svg{ filter:none; }
+
+/* keep chips/cards COMPACT on phone — small mjx font */
+.slv mjx-container{ font-size:88% !important; }
+.slv .eq-card mjx-container{ font-size:80% !important; }
+.slv .chip mjx-container, .slv .term-slot mjx-container{ font-size:84% !important; }
+.slv .docked-eq mjx-container{ font-size:96% !important; }
+.slv .eq-card{ min-width:74px; padding:9px 9px; }
+.slv .eq-card .lbl{ margin-top:4px; }
+.slv .chip{ padding:7px 11px; min-height:38px; }
+.slv .docked-eq{ font-size:1rem; }
+.slv .work-line{ font-size:.98rem; align-items:center; }
+.slv .work-line.sub-line{ font-size:.9rem; }
+.slv .term-slot{ display:inline-flex; align-items:center; justify-content:center; min-width:30px; min-height:30px; }
+.slv .final-answer{ font-size:1.15rem; }
+
+/* ---- MCQ inside shared solver block ---- */
+.slv-mcq{ display:none; flex-direction:column; gap:10px; margin-top:6px; }
+.slv-mcq.show{ display:flex; }
+.slv-mcq-opt{ background:var(--chip); border:1.5px solid #33336e; border-radius:12px;
+  padding:12px 14px; font-size:1rem; color:var(--ink); cursor:pointer;
+  display:flex; align-items:center; gap:10px; transition:all .2s; min-height:50px; }
+.slv-mcq-opt .key{ flex:0 0 auto; width:24px; height:24px; border-radius:50%;
+  border:1.5px solid #33336e; display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; color:var(--muted); }
+.slv-mcq-opt:active{ transform:scale(.98); }
+.slv-mcq-opt.correct{ border-color:var(--good); box-shadow:var(--glow-good); background:#0b1a12; }
+.slv-mcq-opt.correct .key{ border-color:var(--good); color:var(--good); }
+.slv-mcq-opt.wrong{ border-color:var(--bad); box-shadow:0 0 14px #ff4d6d70; background:#1a0b12; animation:slvshake .4s; }
+.slv-mcq-opt.wrong .key{ border-color:var(--bad); color:var(--bad); }
+.slv-mcq-opt.locked{ pointer-events:none; }
+.slv-mcq-opt.dimmed{ opacity:.4; }
+
+/* question pager dots */
+.slv-qnav{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:4px 0 2px; }
+.slv-qnav .qdot{ width:auto; min-width:26px; height:26px; padding:0 8px; border-radius:13px;
+  border:1.5px solid #33336e; background:transparent; color:var(--muted);
+  font-size:.62rem; cursor:pointer; transition:all .2s; }
+.slv-qnav .qdot.active{ border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 8px rgba(33,230,255,.4); }
+.slv-qnav .qtag{ font-size:.58rem; color:var(--green); letter-spacing:.5px; margin-left:auto; opacity:.85; }
+
+/* momentum vector teaching-beat overlay (rendered inside answer area) */
+.slv-vbeat{ margin:4px 0 10px; padding:10px 12px; border-radius:12px;
+  background:rgba(255,61,240,.07); border:1px solid rgba(255,61,240,.3);
+  animation:slvdropIn .35s ease; }
+.slv-vbeat .vrow{ text-align:center; margin:4px 0; }
+.slv-vbeat .vtxt{ font-size:.82rem; line-height:1.5; color:var(--ink); margin:8px 2px 4px; }
+.slv-vbeat .vtxt b{ color:var(--magenta); }
+.slv-vbeat .collapse{ animation:slvcollapse .5s ease forwards; }
+@keyframes slvcollapse{ from{ opacity:1; transform:scale(1);} to{ opacity:.25; transform:scale(.82);} }
+
 @media (prefers-reduced-motion: reduce){
   .panel{ transition:opacity .2s ease; transform:none !important; }
   .panel.teach.active .anim,.panel.teach.active .anim-eq,
@@ -524,13 +588,24 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
 
 <!-- ===================== SHARED SOLVER BLOCK (scoped under .slv) ===================== -->
 <div class="slv" id="solverBlock" hidden>
+  <div class="slv-qnav" id="slv-qnav"></div>
+  <div class="mode-toggle" id="slv-modeToggle">
+    <button class="mode-btn on" data-mode="build">BUILD IT</button>
+    <button class="mode-btn" data-mode="mcq">MULTIPLE CHOICE</button>
+  </div>
   <div class="slv-prompt" id="slv-prompt"></div>
-  <div class="slv-section-label">Equation Inventory</div>
-  <div class="slv-inventory" id="slv-inventory"></div>
-  <div class="slv-section-label">Answer Area</div>
-  <div class="slv-answer-area empty-hint" id="slv-answerArea">Drag the glowing equation here ↓</div>
-  <div class="slv-section-label" id="slv-bankLabel" style="opacity:0;">Formula Term Bank</div>
-  <div class="slv-term-bank" id="slv-termBank"></div>
+  <div id="slv-buildMode">
+    <div class="slv-section-label">Equation Inventory</div>
+    <div class="slv-inventory" id="slv-inventory"></div>
+    <div class="slv-section-label">Answer Area</div>
+    <div class="slv-answer-area empty-hint" id="slv-answerArea">Drag the glowing equation here ↓</div>
+    <div class="slv-section-label" id="slv-bankLabel" style="opacity:0;">Formula Term Bank</div>
+    <div class="slv-term-bank" id="slv-termBank"></div>
+  </div>
+  <div class="slv-mcq" id="slv-mcqWrap">
+    <div class="slv-section-label">Pick the answer</div>
+    <div id="slv-mcqOptions"></div>
+  </div>
   <div class="slv-toolbar"><button class="slv-btn" id="slv-resetBtn">↺ Reset</button></div>
 </div>
 <div class="slv-cue" id="slv-cue"></div>
@@ -880,11 +955,603 @@ window.PhysicsAnims = {
 })();
 </script>
 
+<!-- ===================== QUESTION BANK (inlined) ===================== -->
+<script>
+/* ================================================================
+   QUESTION BANK  —  CPCS110 Physics, Ch 4 & 5 Study App
+   ----------------------------------------------------------------
+   Standalone data module. No imports. Consumed by solver-quiz.html.
+
+   Each question object follows the solver-quiz.html DATA SCHEMA exactly:
+   {
+     id, concept,                               // ids / short concept label
+     fromAssignment,                            // (optional) "From Assignment N" label
+     prompt:    HTML string,                    // word problem (\\( ... \\) inline LaTeX)
+     inventory: [ {id, tex, label, relevant} ], // equation cards (LaTeX tex)
+     answerEqId:string,                         // correct card to drag down
+     dockedTex: LaTeX,                          // headline equation when docked
+     lhs:       LaTeX,                          // generalized left-hand symbol
+     joiner:    LaTeX between terms ("" product, "+" sum, "\\cdot" dot),
+     terms: [ {symbol(LaTeX), sub(LaTeX)} ],    // ORDERED right-hand terms
+     distractors:[ LaTeX, ... ],                // wrong chips (snap back)
+     result: { expression, substitution, answer }, // LaTeX final lines (FINAL = numbers)
+     mcq: { options:[LaTeX x4], correct:index, why:"one-line reason" }
+   }
+
+   Collisions are staged as conservation of momentum:
+     P_i = P_f  ->  m1 v1 + m2 v2 = m1 v1' + m2 v2'   (primes = finals)
+   The final substitution line replaces ALL variables with numbers.
+
+   Export shape:
+     window.QUESTION_BANK = {
+       momentum:   [...],
+       collisions: [...],
+       impulse:    [...],
+       friction:   [...],
+       forces:     [...],
+       energy:     [...]
+     }
+   ================================================================ */
+
+(function (root) {
+
+  const QUESTION_BANK = {
+
+    /* ============================================================
+       MOMENTUM   ( p = m v )
+       ============================================================ */
+    momentum: [
+
+      /* ---- warm-up ---- */
+      {
+        id: "mom-warmup-1", concept: "Momentum",
+        prompt: 'A <b>2 kg</b> ball moves right at <b>4 m/s</b>. ' +
+                '<span class="ask">Find its momentum \\(\\vec p\\).</span>',
+        inventory: [
+          { id: "pmv",  tex: "\\vec p = m\\vec v",    label: "momentum",   relevant: true  },
+          { id: "fma",  tex: "F = ma",                label: "newton 2nd", relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",        label: "impulse",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",  relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",          label: "friction",   relevant: false }
+        ],
+        answerEqId: "pmv", dockedTex: "\\vec p = m\\,\\vec v", lhs: "\\vec p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m",       sub: "(2\\,\\text{kg})" },
+          { symbol: "\\vec v", sub: "(4\\,\\tfrac{m}{s})" }
+        ],
+        distractors: ["a", "\\tfrac12", "\\mu_k", "g"],
+        result: {
+          expression:   "\\vec p = m\\cdot \\vec v",
+          substitution: "\\vec p = (2\\,\\text{kg})\\cdot(4\\,\\tfrac{m}{s})",
+          answer:       "\\vec p = 8\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["8\\ \\text{kg·m/s}", "6\\ \\text{kg·m/s}", "2\\ \\text{kg·m/s}", "16\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "p = m v = (2)(4) = 8 kg·m/s."
+        }
+      },
+
+      /* ---- warm-up ---- */
+      {
+        id: "mom-warmup-2", concept: "Momentum",
+        prompt: 'A <b>1500 kg</b> car cruises at <b>20 m/s</b>. ' +
+                '<span class="ask">Find the magnitude of its momentum \\(p\\).</span>',
+        inventory: [
+          { id: "pmv",  tex: "\\vec p = m\\vec v",    label: "momentum",   relevant: true  },
+          { id: "fma",  tex: "F = ma",                label: "newton 2nd", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",  relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",        label: "impulse",    relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",          label: "friction",   relevant: false }
+        ],
+        answerEqId: "pmv", dockedTex: "p = m\\,v", lhs: "p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m", sub: "(1500\\,\\text{kg})" },
+          { symbol: "v", sub: "(20\\,\\tfrac{m}{s})" }
+        ],
+        distractors: ["a", "\\tfrac12", "\\mu_k", "g"],
+        result: {
+          expression:   "p = m\\cdot v",
+          substitution: "p = (1500\\,\\text{kg})\\cdot(20\\,\\tfrac{m}{s})",
+          answer:       "p = 30000\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["30000\\ \\text{kg·m/s}", "1520\\ \\text{kg·m/s}", "75\\ \\text{kg·m/s}", "3000\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "p = m v = (1500)(20) = 30000 kg·m/s."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 1 (Q11) ---- */
+      {
+        id: "mom-a1q11", concept: "Momentum", fromAssignment: "From Assignment 1",
+        prompt: '<b>From Assignment 1 (Q11).</b> A baseball of mass <b>m = 0.146 kg</b> is ' +
+                'thrown at <b>33.5 m/s</b>. ' +
+                '<span class="ask">Find the magnitude of its momentum \\(p\\).</span>',
+        inventory: [
+          { id: "pmv",  tex: "\\vec p = m\\vec v",    label: "momentum",   relevant: true  },
+          { id: "fma",  tex: "F = ma",                label: "newton 2nd", relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",        label: "impulse",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",  relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",          label: "friction",   relevant: false }
+        ],
+        answerEqId: "pmv", dockedTex: "p = m\\,v", lhs: "p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m", sub: "(0.146\\,\\text{kg})" },
+          { symbol: "v", sub: "(33.5\\,\\tfrac{m}{s})" }
+        ],
+        distractors: ["a", "\\tfrac12", "\\mu_k", "g"],
+        result: {
+          expression:   "p = m\\cdot v",
+          substitution: "p = (0.146\\,\\text{kg})\\cdot(33.5\\,\\tfrac{m}{s})",
+          answer:       "p = 4.89\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["4.89\\ \\text{kg·m/s}", "33.6\\ \\text{kg·m/s}", "0.146\\ \\text{kg·m/s}", "229\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "p = m v = (0.146)(33.5) = 4.89 kg·m/s."
+        }
+      }
+    ],
+
+    /* ============================================================
+       COLLISIONS   ( P_i = P_f , inelastic stick-together )
+       Staged: m1 v1 + m2 v2 = (m1 + m2) v'
+       ============================================================ */
+    collisions: [
+
+      /* ---- warm-up (1-D) ---- */
+      {
+        id: "col-warmup-1", concept: "Collisions",
+        prompt: 'A <b>2 kg</b> cart at <b>3 m/s</b> hits a stationary <b>1 kg</b> cart and they ' +
+                'stick together. <span class="ask">Use \\(\\vec P_i=\\vec P_f\\) to find the common velocity \\(v\'\\).</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",        label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",           label: "momentum",     relevant: false },
+          { id: "fma",  tex: "F=ma",                       label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",          label: "kinetic E",    relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",               label: "impulse",      relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(2)(3)}{2+1}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(1)(0)}{2+1}" }
+        ],
+        distractors: ["\\tfrac12 mv^2", "\\mu_k N", "-m_2\\vec v_2", "g"],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v' = \\dfrac{(2)(3)+(1)(0)}{2+1}",
+          answer:       "\\vec v' = 2\\ \\text{m/s}"
+        },
+        mcq: {
+          options: ["2\\ \\text{m/s}", "3\\ \\text{m/s}", "1.5\\ \\text{m/s}", "6\\ \\text{m/s}"],
+          correct: 0,
+          why: "v' = (m1v1+m2v2)/(m1+m2) = (6+0)/3 = 2 m/s."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 3 (Q6) — equal-mass 3-D stick ---- */
+      {
+        id: "col-a3q6", concept: "Collisions", fromAssignment: "From Assignment 3",
+        prompt: '<b>From Assignment 3 (Q6).</b> Two clay lumps, <b>50 g each</b>, with velocities ' +
+                '\\(\\vec v_1=\\langle 2,6,-9\\rangle\\) and \\(\\vec v_2=\\langle -3,0,-6\\rangle\\) m/s, ' +
+                'collide and <b>stick</b>. <span class="ask">Find the final velocity \\(\\vec v\'\\). ' +
+                '(Equal masses \\(\\Rightarrow\\) the average.)</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",        label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",           label: "momentum",     relevant: false },
+          { id: "fma",  tex: "F=ma",                       label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",          label: "kinetic E",    relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",               label: "impulse",      relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(0.05)\\langle 2,6,-9\\rangle}{0.05+0.05}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(0.05)\\langle -3,0,-6\\rangle}{0.05+0.05}" }
+        ],
+        distractors: ["\\tfrac12 mv^2", "\\mu_k N", "-m_2\\vec v_2", "g"],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v' = \\dfrac{(0.05)\\langle 2,6,-9\\rangle+(0.05)\\langle -3,0,-6\\rangle}{0.05+0.05}",
+          answer:       "\\vec v' = \\langle -0.5,\\ 3,\\ -7.5\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle -0.5, 3, -7.5\\rangle\\ \\text{m/s}",
+            "\\langle -1, 6, -15\\rangle\\ \\text{m/s}",
+            "\\langle 5, 6, -3\\rangle\\ \\text{m/s}",
+            "\\langle -0.5, 3, 7.5\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "Equal masses: v' = (v1+v2)/2 = (⟨2,6,-9⟩+⟨-3,0,-6⟩)/2 = ⟨-0.5,3,-7.5⟩."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 4 (Q1) — unequal-mass 2-D stick ---- */
+      {
+        id: "col-a4q1", concept: "Collisions", fromAssignment: "From Assignment 4",
+        prompt: '<b>From Assignment 4 (Q1).</b> Two rocks collide and <b>stick</b>: a <b>23 kg</b> rock ' +
+                'at \\(\\langle 11,-23,0\\rangle\\) and a <b>43 kg</b> rock at \\(\\langle 28,6,0\\rangle\\) m/s. ' +
+                '<span class="ask">Find the final velocity \\(\\vec v\'\\).</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",        label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",           label: "momentum",     relevant: false },
+          { id: "fma",  tex: "F=ma",                       label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",          label: "kinetic E",    relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",               label: "impulse",      relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(23)\\langle 11,-23,0\\rangle}{23+43}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(43)\\langle 28,6,0\\rangle}{23+43}" }
+        ],
+        distractors: ["\\tfrac12 mv^2", "\\mu_k N", "-m_2\\vec v_2", "g"],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v' = \\dfrac{(23)\\langle 11,-23,0\\rangle+(43)\\langle 28,6,0\\rangle}{23+43}",
+          answer:       "\\vec v' = \\langle 22.08,\\ -4.11,\\ 0\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 22.08, -4.11, 0\\rangle\\ \\text{m/s}",
+            "\\langle 39, -17, 0\\rangle\\ \\text{m/s}",
+            "\\langle 19.5, -8.5, 0\\rangle\\ \\text{m/s}",
+            "\\langle 22.08, 4.11, 0\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "v' = (23⟨11,-23,0⟩+43⟨28,6,0⟩)/66 = ⟨1457,-271,0⟩/66 = ⟨22.08,-4.11,0⟩."
+        }
+      }
+    ],
+
+    /* ============================================================
+       IMPULSE   ( J = F Δt = Δp = m Δv )
+       ============================================================ */
+    impulse: [
+
+      /* ---- warm-up ---- */
+      {
+        id: "imp-warmup-1", concept: "Impulse",
+        prompt: 'A force of <b>5 N</b> pushes a box for <b>3 s</b>. ' +
+                '<span class="ask">Find the impulse \\(J\\) (= change in momentum).</span>',
+        inventory: [
+          { id: "imp",  tex: "J=F\\Delta t=\\Delta p", label: "impulse",    relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",            label: "friction",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "imp", dockedTex: "J = F\\,\\Delta t", lhs: "J", joiner: "\\cdot",
+        terms: [
+          { symbol: "F",          sub: "(5\\,\\text{N})" },
+          { symbol: "\\Delta t",  sub: "(3\\,\\text{s})" }
+        ],
+        distractors: ["m", "\\vec v", "\\mu_k", "\\tfrac12"],
+        result: {
+          expression:   "J = F\\cdot \\Delta t",
+          substitution: "J = (5\\,\\text{N})\\cdot(3\\,\\text{s})",
+          answer:       "J = 15\\ \\text{N·s}"
+        },
+        mcq: {
+          options: ["15\\ \\text{N·s}", "8\\ \\text{N·s}", "1.67\\ \\text{N·s}", "5\\ \\text{N·s}"],
+          correct: 0,
+          why: "J = F Δt = (5)(3) = 15 N·s."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 1 (Q14) — Δp = m(v_f - v_i) ---- */
+      {
+        id: "imp-a1q14", concept: "Impulse", fromAssignment: "From Assignment 1",
+        prompt: '<b>From Assignment 1 (Q14).</b> A <b>57 g</b> (0.057 kg) tennis ball hits a wall; its ' +
+                'x-velocity changes from <b>+64 m/s</b> to <b>-58 m/s</b>. ' +
+                '<span class="ask">Find the change in momentum \\(\\Delta p = m(v_f - v_i)\\).</span>',
+        inventory: [
+          { id: "dp",   tex: "\\Delta p = m(v_f-v_i)", label: "Δ momentum", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",            label: "friction",   relevant: false }
+        ],
+        answerEqId: "dp", dockedTex: "\\Delta p = m\\,(v_f - v_i)", lhs: "\\Delta p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m",            sub: "(0.057\\,\\text{kg})" },
+          { symbol: "(v_f - v_i)",  sub: "(-58 - 64)\\,\\tfrac{m}{s}" }
+        ],
+        distractors: ["\\Delta t", "\\mu_k", "\\tfrac12", "a"],
+        result: {
+          expression:   "\\Delta p = m\\cdot (v_f - v_i)",
+          substitution: "\\Delta p = (0.057\\,\\text{kg})\\cdot(-58 - 64)\\,\\tfrac{m}{s}",
+          answer:       "\\Delta p = -6.95\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["-6.95\\ \\text{kg·m/s}", "0.34\\ \\text{kg·m/s}", "-3.31\\ \\text{kg·m/s}", "6.95\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "Δp = m(v_f - v_i) = 0.057(-58 - 64) = 0.057(-122) = -6.95 kg·m/s."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 2 (Q9) — J = F Δt = Δp ---- */
+      {
+        id: "imp-a2q9", concept: "Impulse", fromAssignment: "From Assignment 2",
+        prompt: '<b>From Assignment 2 (Q9).</b> A bat strikes a <b>0.145 kg</b> baseball, reversing it ' +
+                'from \\(+z\\) to \\(-z\\). Contact lasts <b>1.2 ms</b> with average force <b>1.35×10⁴ N</b>. ' +
+                '<span class="ask">Find the impulse \\(J = F\\,\\Delta t\\) (= \\(\\Delta p\\)).</span>',
+        inventory: [
+          { id: "imp",  tex: "J=F\\Delta t=\\Delta p", label: "impulse",    relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",            label: "friction",   relevant: false }
+        ],
+        answerEqId: "imp", dockedTex: "J = F\\,\\Delta t", lhs: "J", joiner: "\\cdot",
+        terms: [
+          { symbol: "F",          sub: "(1.35\\times10^4\\,\\text{N})" },
+          { symbol: "\\Delta t",  sub: "(1.2\\times10^{-3}\\,\\text{s})" }
+        ],
+        distractors: ["m", "\\vec v", "\\mu_k", "\\tfrac12"],
+        result: {
+          expression:   "J = F\\cdot \\Delta t",
+          substitution: "J = (1.35\\times10^4\\,\\text{N})\\cdot(1.2\\times10^{-3}\\,\\text{s})",
+          answer:       "J = 16.2\\ \\text{N·s}"
+        },
+        mcq: {
+          options: ["16.2\\ \\text{N·s}", "162\\ \\text{N·s}", "1.62\\ \\text{N·s}", "11250\\ \\text{N·s}"],
+          correct: 0,
+          why: "J = F Δt = (1.35e4)(1.2e-3) = 16.2 N·s (= magnitude of Δp)."
+        }
+      }
+    ],
+
+    /* ============================================================
+       FRICTION   ( f = μ N )
+       ============================================================ */
+    friction: [
+
+      /* ---- warm-up (kinetic) ---- */
+      {
+        id: "fric-warmup-1", concept: "Friction",
+        prompt: 'A box presses on the floor with normal force <b>20 N</b>; the kinetic friction ' +
+                'coefficient is <b>0.3</b>. <span class="ask">Find the friction force \\(f_k\\).</span>',
+        inventory: [
+          { id: "fric", tex: "f_k=\\mu_k N",      label: "friction",   relevant: true  },
+          { id: "fma",  tex: "F=ma",              label: "newton 2nd", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",  label: "momentum",   relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",      label: "impulse",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2", label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "fric", dockedTex: "f_k = \\mu_k\\,N", lhs: "f_k", joiner: "\\cdot",
+        terms: [
+          { symbol: "\\mu_k", sub: "(0.3)" },
+          { symbol: "N",      sub: "(20\\,\\text{N})" }
+        ],
+        distractors: ["m", "a", "\\tfrac12", "\\vec v"],
+        result: {
+          expression:   "f_k = \\mu_k\\cdot N",
+          substitution: "f_k = (0.3)\\cdot(20\\,\\text{N})",
+          answer:       "f_k = 6\\ \\text{N}"
+        },
+        mcq: {
+          options: ["6\\ \\text{N}", "60\\ \\text{N}", "0.015\\ \\text{N}", "20.3\\ \\text{N}"],
+          correct: 0,
+          why: "f_k = μ_k N = (0.3)(20) = 6 N."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 4 (Q5) part a — μ_s ---- */
+      {
+        id: "fric-a4q5-mus", concept: "Friction", fromAssignment: "From Assignment 4",
+        prompt: '<b>From Assignment 4 (Q5a).</b> A <b>4.2 kg</b> block stays still until the push exceeds ' +
+                '<b>20.6 N</b>. At the verge of slipping \\(f_s=\\mu_s N\\) with \\(N=mg\\). ' +
+                '<span class="ask">Find the coefficient of static friction \\(\\mu_s = \\dfrac{20.6}{mg}\\).</span>',
+        inventory: [
+          { id: "musN", tex: "f_s=\\mu_s N=\\mu_s mg", label: "static friction", relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k N",           label: "kinetic friction", relevant: false },
+          { id: "fma",  tex: "F=ma",                   label: "newton 2nd",  relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",       label: "momentum",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",   relevant: false }
+        ],
+        answerEqId: "musN", dockedTex: "\\mu_s = \\dfrac{f_s}{m\\,g}", lhs: "\\mu_s", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{f_s}{m\\,g}", sub: "\\dfrac{20.6}{(4.2)(9.8)}" }
+        ],
+        distractors: ["m\\,g", "\\mu_k", "\\tfrac12", "N"],
+        result: {
+          expression:   "\\mu_s = \\dfrac{f_s}{m\\,g}",
+          substitution: "\\mu_s = \\dfrac{20.6}{(4.2)(9.8)} = \\dfrac{20.6}{41.16}",
+          answer:       "\\mu_s = 0.50"
+        },
+        mcq: {
+          options: ["0.50", "4.90", "0.33", "0.21"],
+          correct: 0,
+          why: "μ_s = 20.6/(m g) = 20.6/(4.2·9.8) = 20.6/41.16 = 0.50."
+        }
+      },
+
+      /* ---- FROM ASSIGNMENT 4 (Q5) part b — μ_k ---- */
+      {
+        id: "fric-a4q5-muk", concept: "Friction", fromAssignment: "From Assignment 4",
+        prompt: '<b>From Assignment 4 (Q5b).</b> The same <b>4.2 kg</b> block then slides at ' +
+                '<b>constant speed</b> under a <b>13.6 N</b> push, so \\(f_k=13.6\\,\\text{N}=\\mu_k mg\\). ' +
+                '<span class="ask">Find the coefficient of kinetic friction \\(\\mu_k = \\dfrac{13.6}{mg}\\).</span>',
+        inventory: [
+          { id: "fric", tex: "f_k=\\mu_k N=\\mu_k mg", label: "kinetic friction", relevant: true  },
+          { id: "musN", tex: "f_s=\\mu_s N",           label: "static friction",  relevant: false },
+          { id: "fma",  tex: "F=ma",                   label: "newton 2nd",  relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",       label: "momentum",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",   relevant: false }
+        ],
+        answerEqId: "fric", dockedTex: "\\mu_k = \\dfrac{f_k}{m\\,g}", lhs: "\\mu_k", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{f_k}{m\\,g}", sub: "\\dfrac{13.6}{(4.2)(9.8)}" }
+        ],
+        distractors: ["m\\,g", "\\mu_s", "\\tfrac12", "N"],
+        result: {
+          expression:   "\\mu_k = \\dfrac{f_k}{m\\,g}",
+          substitution: "\\mu_k = \\dfrac{13.6}{(4.2)(9.8)} = \\dfrac{13.6}{41.16}",
+          answer:       "\\mu_k = 0.33"
+        },
+        mcq: {
+          options: ["0.33", "0.50", "3.23", "0.66"],
+          correct: 0,
+          why: "μ_k = 13.6/(m g) = 13.6/(4.2·9.8) = 13.6/41.16 = 0.33."
+        }
+      }
+    ],
+
+    /* ============================================================
+       FORCES / FBD   ( F = m a )
+       ============================================================ */
+    forces: [
+
+      /* ---- warm-up ---- */
+      {
+        id: "force-warmup-1", concept: "Forces/FBD",
+        prompt: 'A net force accelerates a <b>4 kg</b> block at <b>3 m/s²</b>. ' +
+                '<span class="ask">Find the net force \\(F\\).</span>',
+        inventory: [
+          { id: "fma",  tex: "F=ma",              label: "newton 2nd", relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k N",      label: "friction",   relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",  label: "momentum",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2", label: "kinetic E",  relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",      label: "impulse",    relevant: false }
+        ],
+        answerEqId: "fma", dockedTex: "F = m\\,a", lhs: "F", joiner: "\\cdot",
+        terms: [
+          { symbol: "m", sub: "(4\\,\\text{kg})" },
+          { symbol: "a", sub: "(3\\,\\tfrac{m}{s^2})" }
+        ],
+        distractors: ["\\vec v", "\\mu_k", "\\Delta t", "\\tfrac12"],
+        result: {
+          expression:   "F = m\\cdot a",
+          substitution: "F = (4\\,\\text{kg})\\cdot(3\\,\\tfrac{m}{s^2})",
+          answer:       "F = 12\\ \\text{N}"
+        },
+        mcq: {
+          options: ["12\\ \\text{N}", "7\\ \\text{N}", "1.33\\ \\text{N}", "4\\ \\text{N}"],
+          correct: 0,
+          why: "F = m a = (4)(3) = 12 N."
+        }
+      },
+
+      /* ---- warm-up (weight, F = m g) ---- */
+      {
+        id: "force-warmup-2", concept: "Forces/FBD",
+        prompt: 'A <b>10 kg</b> mass hangs at rest. <span class="ask">Find its weight ' +
+                '\\(W = m g\\) (use \\(g = 9.8\\ \\text{m/s}^2\\)).</span>',
+        inventory: [
+          { id: "wmg",  tex: "W = m g",           label: "weight",     relevant: true  },
+          { id: "fma",  tex: "F=ma",              label: "newton 2nd", relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",      label: "friction",   relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",  label: "momentum",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2", label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "wmg", dockedTex: "W = m\\,g", lhs: "W", joiner: "\\cdot",
+        terms: [
+          { symbol: "m", sub: "(10\\,\\text{kg})" },
+          { symbol: "g", sub: "(9.8\\,\\tfrac{m}{s^2})" }
+        ],
+        distractors: ["a", "\\mu_k", "\\Delta t", "\\tfrac12"],
+        result: {
+          expression:   "W = m\\cdot g",
+          substitution: "W = (10\\,\\text{kg})\\cdot(9.8\\,\\tfrac{m}{s^2})",
+          answer:       "W = 98\\ \\text{N}"
+        },
+        mcq: {
+          options: ["98\\ \\text{N}", "10\\ \\text{N}", "9.8\\ \\text{N}", "1.02\\ \\text{N}"],
+          correct: 0,
+          why: "W = m g = (10)(9.8) = 98 N."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ENERGY   ( KE = ½ m v² )
+       ============================================================ */
+    energy: [
+
+      /* ---- warm-up ---- */
+      {
+        id: "energy-warmup-1", concept: "Energy",
+        prompt: 'A <b>2 kg</b> ball moves at <b>3 m/s</b>. ' +
+                '<span class="ask">Find its kinetic energy \\(KE\\).</span>',
+        inventory: [
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2", label: "kinetic E",  relevant: true  },
+          { id: "fma",  tex: "F=ma",              label: "newton 2nd", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",  label: "momentum",   relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",      label: "friction",   relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",      label: "impulse",    relevant: false }
+        ],
+        answerEqId: "ke", dockedTex: "KE = \\tfrac12\\,m\\,v^2", lhs: "KE", joiner: "\\cdot",
+        terms: [
+          { symbol: "\\tfrac12", sub: "\\tfrac12" },
+          { symbol: "m",         sub: "(2\\,\\text{kg})" },
+          { symbol: "v^2",       sub: "(3\\,\\tfrac{m}{s})^2" }
+        ],
+        distractors: ["a", "\\mu_k", "\\Delta t", "\\vec p"],
+        result: {
+          expression:   "KE = \\tfrac12\\cdot m\\cdot v^2",
+          substitution: "KE = \\tfrac12\\cdot(2\\,\\text{kg})\\cdot(3\\,\\tfrac{m}{s})^2",
+          answer:       "KE = 9\\ \\text{J}"
+        },
+        mcq: {
+          options: ["9\\ \\text{J}", "6\\ \\text{J}", "18\\ \\text{J}", "3\\ \\text{J}"],
+          correct: 0,
+          why: "KE = ½ m v² = ½(2)(3²) = ½(2)(9) = 9 J."
+        }
+      },
+
+      /* ---- warm-up (work, W = F d) ---- */
+      {
+        id: "energy-warmup-2", concept: "Energy",
+        prompt: 'A constant force of <b>10 N</b> pushes a crate <b>5 m</b> along its direction. ' +
+                '<span class="ask">Find the work done \\(W = F\\,d\\).</span>',
+        inventory: [
+          { id: "wfd",  tex: "W = F\\,d",         label: "work",       relevant: true  },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2", label: "kinetic E",  relevant: false },
+          { id: "fma",  tex: "F=ma",              label: "newton 2nd", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",  label: "momentum",   relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",      label: "impulse",    relevant: false }
+        ],
+        answerEqId: "wfd", dockedTex: "W = F\\,d", lhs: "W", joiner: "\\cdot",
+        terms: [
+          { symbol: "F", sub: "(10\\,\\text{N})" },
+          { symbol: "d", sub: "(5\\,\\text{m})" }
+        ],
+        distractors: ["m", "\\tfrac12", "v^2", "\\mu_k"],
+        result: {
+          expression:   "W = F\\cdot d",
+          substitution: "W = (10\\,\\text{N})\\cdot(5\\,\\text{m})",
+          answer:       "W = 50\\ \\text{J}"
+        },
+        mcq: {
+          options: ["50\\ \\text{J}", "15\\ \\text{J}", "2\\ \\text{J}", "100\\ \\text{J}"],
+          correct: 0,
+          why: "W = F d = (10)(5) = 50 J."
+        }
+      }
+    ]
+
+  };
+
+  /* expose globally (and as CommonJS if loaded under node) */
+  root.QUESTION_BANK = QUESTION_BANK;
+  if (typeof module !== "undefined" && module.exports) module.exports = QUESTION_BANK;
+
+})(typeof window !== "undefined" ? window : this);
+
+</script>
+
 <script>
 /* ===================== CONTENT MODEL ===================== */
 const CONCEPTS = [
   {
-    n:1, title:"MOMENTUM", anim:"momentum",
+    n:1, title:"MOMENTUM", anim:"momentum", bankKey:"momentum",
     teach:{
       kicker:"CONCEPT 1 / 6",
       head:"Momentum",
@@ -925,14 +1592,19 @@ const CONCEPTS = [
     }
   },
   {
-    n:2, title:"COLLISIONS", anim:"collisions",
+    n:2, title:"COLLISIONS", anim:"collisions", bankKey:"collisions",
     teach:{
       kicker:"CONCEPT 2 / 6",
       head:"Collisions",
       analogy:"Two pool balls click and bounce apart — barely any energy lost. Two cars crunch together and crumple — lots of energy lost. Both are <b>collisions</b>, but they behave differently.",
       lead:"In <span class='term'>elastic</span> collisions objects bounce and kinetic energy is conserved. In <span class='term'>inelastic</span> collisions some energy turns to heat/sound/dents — and in a perfectly inelastic one, objects stick together.",
       eqlabel:"MOMENTUM IS ALWAYS CONSERVED",
-      eq:"\\( m_1v_1 + m_2v_2 = m_1v_1' + m_2v_2' \\)",
+      eq:"\\( \\sum p_i = \\sum p_f \\)",
+      eqExtra:`<div class="coltypes">
+        <div class="coltype"><span class="ce">🎾</span><b>Elastic</b><small>bounces · KE kept</small></div>
+        <div class="coltype"><span class="ce">🩹</span><b>Inelastic</b><small>clay/cars stick · KE lost</small></div>
+        <div class="coltype"><span class="ce">💣</span><b>Explosion</b><small>one→many · KE gained</small></div>
+      </div>`,
       beats:[
         "<b>Key rule:</b> total momentum BEFORE = total momentum AFTER, in every collision.",
         "<b>Elastic:</b> things bounce, kinetic energy is conserved (think pool balls).",
@@ -967,7 +1639,7 @@ const CONCEPTS = [
     }
   },
   {
-    n:3, title:"IMPULSE", anim:"impulse",
+    n:3, title:"IMPULSE", anim:"impulse", bankKey:"impulse",
     teach:{
       kicker:"CONCEPT 3 / 6",
       head:"Impulse & Airbags",
@@ -1009,7 +1681,7 @@ const CONCEPTS = [
     }
   },
   {
-    n:4, title:"FRICTION", anim:"friction",
+    n:4, title:"FRICTION", anim:"friction", bankKey:"friction",
     teach:{
       kicker:"CONCEPT 4 / 6",
       head:"Friction",
@@ -1051,7 +1723,7 @@ const CONCEPTS = [
     }
   },
   {
-    n:5, title:"FREE-BODY", anim:"freebody",
+    n:5, title:"FREE-BODY", anim:"freebody", bankKey:"forces",
     teach:{
       kicker:"CONCEPT 5 / 6",
       head:"Free-Body Diagrams",
@@ -1093,7 +1765,7 @@ const CONCEPTS = [
     }
   },
   {
-    n:6, title:"ENERGY", anim:"energy",
+    n:6, title:"ENERGY", anim:"energy", bankKey:"energy",
     teach:{
       kicker:"CONCEPT 6 / 6",
       head:"Energy & Work",
@@ -1155,38 +1827,16 @@ function teachHTML(c){
     <div class="anim-frame anim anim2"><canvas class="teach-canvas"></canvas></div>
     <div class="analogy anim anim2">${t.analogy}</div>
     <p class="lead anim anim2">${t.lead}</p>
-    <div class="eqcard anim-eq"><span class="eqlabel">${t.eqlabel}</span>${t.eq}</div>
+    <div class="eqcard anim-eq"><span class="eqlabel">${t.eqlabel}</span>${t.eq}${t.eqExtra||""}</div>
     <ul class="beats stagger">${t.beats.map(b=>`<li>${b}</li>`).join("")}</ul>
-    <button class="btn big magenta nextLocal">NEXT →</button>
   </div>`;
 }
 
 function quizHTML(c){
-  const q=c.quiz;
-  const opts=q.opts.map((o,i)=>`<button class="opt" data-ok="${o.ok}" data-why="${o.why.replace(/"/g,'&quot;')}" data-i="${i}">${o.t}</button>`).join("");
-  return `<div class="panel quiz" data-concept="${c.n}">
+  return `<div class="panel quiz" data-concept="${c.n}" data-bankkey="${c.bankKey}">
     <div class="kicker">CONCEPT ${c.n} / 6 — QUIZ</div>
-    <h2 class="head">${c.title}: Quick Check</h2>
-    <div class="mode-toggle">
-      <button class="mode-btn on" data-mode="mcq">MULTIPLE CHOICE</button>
-      <button class="mode-btn" data-mode="solver">BUILD THE EQUATION</button>
-    </div>
-    <div class="mcq-block">
-      <p class="qbox">${q.q}</p>
-      <div class="opts">${opts}</div>
-      <div class="feedback" data-fb></div>
-    </div>
-    <div class="solver-mount" hidden></div>
-    <div class="wb-wrap">
-      <div class="wb-bar">
-        <span class="wb-title">🖊 WHITEBOARD</span>
-        <button class="tool on" data-pen>PEN</button>
-        <button class="tool" data-eraser>ERASER</button>
-        <button class="tool" data-clear>CLEAR</button>
-      </div>
-      <div class="canvas-frame"><canvas></canvas></div>
-    </div>
-    <button class="btn big nextLocal">NEXT →</button>
+    <h2 class="head">${c.title}: Build the Solution</h2>
+    <div class="solver-mount"></div>
   </div>`;
 }
 
@@ -1195,7 +1845,7 @@ function welcomeHTML(){
     <div class="bigemoji">⚡</div>
     <h1 class="head">PHYSICS ARCADE</h1>
     <div class="kicker" style="margin-bottom:14px">CH 4 &amp; 5 — BEGINNER MODE</div>
-    <p class="lead">A bite-size, swipe-through tour of momentum, collisions, impulse, friction, free-body diagrams, and energy. We <b>teach</b> one idea, then you <b>try</b> a quick question with a whiteboard to scribble on.</p>
+    <p class="lead">A bite-size, swipe-through tour of momentum, collisions, impulse, friction, free-body diagrams, and energy. We <b>teach</b> one idea, then you <b>build the equation</b> to solve a quick problem (or tap Multiple Choice).</p>
     <ul class="menu-list beats" style="display:inline-block">
       <li>1 · Momentum</li><li>2 · Collisions</li><li>3 · Impulse</li>
       <li>4 · Friction</li><li>5 · Free-body diagrams</li><li>6 · Energy &amp; work</li>
@@ -1245,6 +1895,8 @@ const backBtn=document.getElementById('backBtn');
 const nextBtn=document.getElementById('nextBtn');
 
 function typeset(p){
+  /* quiz panels are typeset by the Solver's serialized mjQueue — skip to avoid races */
+  if(p.classList.contains('quiz')) return;
   if(window.MathJax && window.MathJax.typesetPromise && window.MJReady){
     window.MathJax.typesetPromise([p]).catch(()=>{});
   }
@@ -1272,24 +1924,31 @@ function show(idx, dir){
   next.style.opacity='1';
   next.scrollTop=0;
   cur=idx;
+  if(next.classList.contains('quiz')) mountSolver(next);
   updateChrome();
   typeset(next);
-  const cv=next.querySelector('.wb-wrap canvas');
-  if(cv && cv._fit) requestAnimationFrame(cv._fit);
   updateAnim(next);
 }
 
-/* reset a quiz panel back to MCQ mode (so the shared solver can move freely) */
+/* park the shared solver block back on <body> so the leaving panel is clean */
 function resetQuizMode(panel){
   if(!panel || !panel.classList.contains('quiz')) return;
-  const mount=panel.querySelector('.solver-mount');
-  if(mount && !mount.hidden){
-    mount.hidden=true;
-    const mcq=panel.querySelector('.mcq-block'); if(mcq) mcq.hidden=false;
-    panel.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on', b.dataset.mode==='mcq'));
-    const sb=document.getElementById('solverBlock');
-    if(sb){ sb.hidden=true; }   /* leave parented; next solver toggle re-appends */
+  const sb=document.getElementById('solverBlock');
+  if(sb && sb.parentNode && sb.parentNode!==document.body){
+    sb.hidden=true;
+    document.body.appendChild(sb);
   }
+}
+
+/* move the shared solver into this quiz panel and load its concept's bank */
+function mountSolver(panel){
+  const sb=document.getElementById('solverBlock');
+  const mount=panel.querySelector('.solver-mount');
+  if(!sb || !mount) return;
+  mount.appendChild(sb);
+  sb.hidden=false;
+  const step=+panel.dataset.step;
+  Solver.attach(panel.dataset.bankkey, step);
 }
 
 /* ===================== TEACH ANIMATION LIFECYCLE ===================== */
@@ -1305,12 +1964,23 @@ function updateAnim(panel){
   }
 }
 
+const solvedSteps = new Set();
+function quizLocked(){
+  const p=panels[cur];
+  return p && p.classList.contains('quiz') && !solvedSteps.has(cur);
+}
 function updateChrome(){
   const pct=N>1 ? (cur/(N-1))*100 : 100;
   progFill.style.width=pct+'%';
   stepLabel.textContent=`STEP ${cur+1} / ${N}`;
   backBtn.disabled = cur===0;
-  nextBtn.disabled = cur===N-1;
+  nextBtn.disabled = (cur===N-1) || quizLocked();
+  nextBtn.classList.toggle('locked', quizLocked());
+}
+/* called by the solver when the current quiz is solved */
+function markSolved(step){
+  solvedSteps.add(step);
+  if(step===cur) updateChrome();
 }
 
 backBtn.addEventListener('click', ()=>{ if(cur>0) show(cur-1,-1); });
@@ -1322,137 +1992,114 @@ stage.addEventListener('click', (e)=>{
   if(e.target.id==='reviewBtn'){ show(0,-1); return; }
 });
 
-/* ===================== QUIZ LOGIC ===================== */
-stage.addEventListener('click',(e)=>{
-  const opt=e.target.closest('.opt');
-  if(!opt) return;
-  const panel=opt.closest('.panel');
-  const ok = opt.dataset.ok==='true';
-  const fb = panel.querySelector('[data-fb]');
-  panel.querySelectorAll('.opt').forEach(o=>{
-    o.classList.add('lock');
-    if(o.dataset.ok==='true') o.classList.add('correct');
-  });
-  if(!ok) opt.classList.add('wrong');
-  fb.classList.add('show');
-  fb.innerHTML = ok
-    ? `<b class="ok">✓ Correct!</b> ${opt.dataset.why}`
-    : `<b class="no">✗ Not quite.</b> ${opt.dataset.why}`;
-  panel.dataset.answered='1';
-});
-
-/* ===================== WHITEBOARD ===================== */
-function initCanvas(panel){
-  const frame=panel.querySelector('.canvas-frame');
-  const cv=panel.querySelector('canvas');
-  if(!cv || cv._init) return;
-  cv._init=true;
-  const ctx=cv.getContext('2d');
-  let mode='pen';
-  let drawing=false, lastX=0, lastY=0;
-
-  function fit(){
-    const prev=document.createElement('canvas');
-    prev.width=cv.width; prev.height=cv.height;
-    if(cv.width>0) prev.getContext('2d').drawImage(cv,0,0);
-    const r=frame.getBoundingClientRect();
-    const dpr=window.devicePixelRatio||1;
-    cv.width=Math.max(1, Math.round(r.width*dpr));
-    cv.height=Math.max(1, Math.round(r.height*dpr));
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.lineCap='round'; ctx.lineJoin='round';
-    if(prev.width>1){
-      ctx.save(); ctx.setTransform(1,0,0,1,0,0);
-      ctx.drawImage(prev,0,0,prev.width,prev.height,0,0,cv.width,cv.height);
-      ctx.restore();
-    }
-  }
-  cv._fit=fit;
-  fit();
-
-  function pos(e){
-    const r=cv.getBoundingClientRect();
-    return { x:e.clientX-r.left, y:e.clientY-r.top };
-  }
-  function start(e){
-    drawing=true;
-    const p=pos(e); lastX=p.x; lastY=p.y;
-    stroke(p.x,p.y,p.x,p.y); // dot for taps
-    if(cv.setPointerCapture){ try{cv.setPointerCapture(e.pointerId);}catch(_){} }
-    e.preventDefault();
-  }
-  function move(e){
-    if(!drawing) return;
-    const p=pos(e);
-    stroke(lastX,lastY,p.x,p.y);
-    lastX=p.x; lastY=p.y;
-    e.preventDefault();
-  }
-  function end(){ drawing=false; }
-  function stroke(x0,y0,x1,y1){
-    ctx.beginPath();
-    if(mode==='eraser'){
-      ctx.globalCompositeOperation='destination-out';
-      ctx.lineWidth=26; ctx.strokeStyle='rgba(0,0,0,1)';
-      ctx.shadowBlur=0;
-    } else {
-      ctx.globalCompositeOperation='source-over';
-      ctx.lineWidth=3;
-      ctx.strokeStyle='#21e6ff';
-      ctx.shadowColor='#21e6ff'; ctx.shadowBlur=8;
-    }
-    ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
-    ctx.shadowBlur=0;
-  }
-
-  cv.addEventListener('pointerdown', start);
-  cv.addEventListener('pointermove', move);
-  cv.addEventListener('pointerup', end);
-  cv.addEventListener('pointercancel', end);
-  cv.addEventListener('pointerleave', end);
-
-  const penBtn=panel.querySelector('[data-pen]');
-  const eraBtn=panel.querySelector('[data-eraser]');
-  penBtn.addEventListener('click',()=>{ mode='pen'; penBtn.classList.add('on'); eraBtn.classList.remove('on'); });
-  eraBtn.addEventListener('click',()=>{ mode='eraser'; eraBtn.classList.add('on'); penBtn.classList.remove('on'); });
-  panel.querySelector('[data-clear]').addEventListener('click',()=>{
-    ctx.save(); ctx.setTransform(1,0,0,1,0,0);
-    ctx.clearRect(0,0,cv.width,cv.height); ctx.restore();
-  });
-}
-
-panels.forEach(p=>{ if(p.querySelector('.wb-wrap canvas')) initCanvas(p); });
-
-/* ===================== DRAG-TO-BUILD SOLVER (scoped) ===================== */
+/* ===================== DRAG-TO-BUILD SOLVER + MCQ (scoped under .slv) =====================
+   Better engine ported from components/solver-quiz.html:
+   - equations & chips rendered as LaTeX via MathJax (neon glow)
+   - serialized MathJax queue (mjQueue) to avoid SVG metric races
+   - vectors / joiners / final substitution-with-numbers line
+   - MCQ variant; question pager across a concept's QUESTION_BANK list
+   - reports solved-state up to markSolved(step) to unlock bottom NEXT
+*/
 const Solver = (function(){
   const els = {
     block:      document.getElementById('solverBlock'),
+    qnav:       document.getElementById('slv-qnav'),
+    modeToggle: document.getElementById('slv-modeToggle'),
     prompt:     document.getElementById('slv-prompt'),
+    buildMode:  document.getElementById('slv-buildMode'),
     inventory:  document.getElementById('slv-inventory'),
     answerArea: document.getElementById('slv-answerArea'),
     termBank:   document.getElementById('slv-termBank'),
     bankLabel:  document.getElementById('slv-bankLabel'),
+    mcqWrap:    document.getElementById('slv-mcqWrap'),
+    mcqOptions: document.getElementById('slv-mcqOptions'),
     cue:        document.getElementById('slv-cue'),
     resetBtn:   document.getElementById('slv-resetBtn')
   };
-  let Q=null, stageS="equation", termIndex=0, workLine=null, subLine=null, drag=null, cueTimer=null;
+  const BANK = window.QUESTION_BANK || {};
 
-  function loadQuestion(q){
-    Q=q; stageS="equation"; termIndex=0; workLine=subLine=null;
-    els.prompt.innerHTML=q.prompt;
+  let list=[], Q=null, qIndex=0, ownerStep=0;
+  let mode="build", stageS="equation", termIndex=0, workLine=null, subLine=null;
+  let drag=null, cueTimer=null, vbeatDone=false;
+
+  /* ---- serialized MathJax typeset (fixes NaN viewBox races) ---- */
+  let mjQueue = Promise.resolve();
+  function mjTypeset(node){
+    mjQueue = mjQueue.then(()=>{
+      /* skip detached / zero-size nodes — typesetting them yields NaN viewBox */
+      if(!node || !node.isConnected) return;
+      if(window.MathJax && MathJax.typesetPromise) return MathJax.typesetPromise([node]).catch(()=>{});
+    });
+    return mjQueue;
+  }
+  function mj(node,tex,glowClass){
+    node.classList.add("mjx-glow"); if(glowClass) node.classList.add(glowClass);
+    node.innerHTML = `\\(${tex}\\)`;
+    return mjTypeset(node);
+  }
+
+  /* ---- PUBLIC: attach to a concept (bankKey) for a given step ---- */
+  function attach(bankKey, step){
+    list = (BANK[bankKey] && BANK[bankKey].length) ? BANK[bankKey] : [];
+    ownerStep = step;
+    qIndex = 0;
+    if(!list.length){ els.prompt.textContent="No question available."; return; }
+    const go=()=>{ buildQNav(); loadQuestion(0); };
+    if(window.__mjReady || (window.MathJax && MathJax.typesetPromise)) go();
+    else { let tries=0; const t=setInterval(()=>{ if(window.__mjReady||(window.MathJax&&MathJax.typesetPromise)||tries++>80){ clearInterval(t); go(); } },60); }
+  }
+
+  function buildQNav(){
+    els.qnav.innerHTML="";
+    list.forEach((q,i)=>{
+      const b=document.createElement("button");
+      b.className="qdot"+(i===qIndex?" active":"");
+      b.textContent="Q"+(i+1);
+      b.addEventListener("click",()=>loadQuestion(i));
+      els.qnav.appendChild(b);
+    });
+    const cur=list[qIndex];
+    if(cur && cur.fromAssignment){
+      const tag=document.createElement("span"); tag.className="qtag"; tag.textContent="★ "+cur.fromAssignment;
+      els.qnav.appendChild(tag);
+    }
+  }
+  function refreshQNav(){
+    Array.prototype.forEach.call(els.qnav.querySelectorAll(".qdot"),(b,i)=>b.classList.toggle("active",i===qIndex));
+    const old=els.qnav.querySelector(".qtag"); if(old) old.remove();
+    const cur=list[qIndex];
+    if(cur && cur.fromAssignment){
+      const tag=document.createElement("span"); tag.className="qtag"; tag.textContent="★ "+cur.fromAssignment;
+      els.qnav.appendChild(tag);
+    }
+  }
+
+  function loadQuestion(i){
+    qIndex=Math.max(0,Math.min(list.length-1,i|0));
+    Q=list[qIndex];
+    stageS="equation"; termIndex=0; workLine=subLine=null; vbeatDone=false;
+    refreshQNav();
+    els.prompt.innerHTML=Q.prompt; mjTypeset(els.prompt);
+    buildInventory(); resetAnswerArea(); buildMCQ();
+    setMode(mode);
+  }
+
+  function buildInventory(){
     els.inventory.innerHTML="";
-    q.inventory.forEach(eq=>{
+    Q.inventory.forEach(eq=>{
       const card=document.createElement("div");
       card.className="eq-card "+(eq.relevant?"glow":"dim");
       card.dataset.eqId=eq.id;
-      card.innerHTML=`${eq.tex}<span class="lbl">${eq.label}</span>`;
+      const m=document.createElement("div"); mj(m,eq.tex); card.appendChild(m);
+      const lbl=document.createElement("span"); lbl.className="lbl"; lbl.textContent=eq.label; card.appendChild(lbl);
       makeEquationDraggable(card,eq);
       els.inventory.appendChild(card);
     });
+  }
+  function resetAnswerArea(){
     els.answerArea.className="slv-answer-area empty-hint";
     els.answerArea.textContent="Drag the glowing equation here ↓";
-    els.termBank.className="slv-term-bank";
-    els.termBank.innerHTML="";
+    els.termBank.className="slv-term-bank"; els.termBank.innerHTML="";
     els.bankLabel.style.opacity="0";
   }
   function buildTermBank(){
@@ -1461,27 +2108,28 @@ const Solver = (function(){
     els.termBank.innerHTML="";
     pool.forEach(item=>{
       const chip=document.createElement("div");
-      chip.className="chip"; chip.textContent=item.label;
-      chip.dataset.symbol=item.label; chip.dataset.correct=item.correct?"1":"0";
-      makeChipDraggable(chip); els.termBank.appendChild(chip);
+      chip.className="chip"; chip.dataset.symbol=item.label; chip.dataset.correct=item.correct?"1":"0";
+      mj(chip,item.label); makeChipDraggable(chip); els.termBank.appendChild(chip);
     });
     els.bankLabel.style.opacity="1";
     requestAnimationFrame(()=> els.termBank.classList.add("show"));
   }
+
+  /* ---- pointer drag (touch + mouse) ---- */
   function startDrag(e,sourceEl,kind,payload){
     e.preventDefault();
     if(sourceEl.setPointerCapture){ try{ sourceEl.setPointerCapture(e.pointerId); }catch(_){} }
     const ghost=document.createElement("div"); ghost.className="slv-drag-ghost";
-    ghost.textContent=sourceEl.dataset.symbol||payload.face||sourceEl.firstChild.textContent;
+    mj(ghost,payload.face);
     document.body.appendChild(ghost); moveGhost(ghost,e.clientX,e.clientY);
-    const onMove=(ev)=>{ moveGhost(ghost,ev.clientX,ev.clientY); highlightDropTarget(ev.clientX,ev.clientY,kind); ev.preventDefault(); };
+    const onMove=(ev)=>{ moveGhost(ghost,ev.clientX,ev.clientY); highlightDropTarget(ev.clientX,ev.clientY,kind); };
     const onUp=(ev)=>{ cleanupDrag(); handleDrop(ev.clientX,ev.clientY,kind,payload,sourceEl); };
     window.addEventListener("pointermove",onMove,{passive:false});
     window.addEventListener("pointerup",onUp);
     window.addEventListener("pointercancel",onUp);
     drag={ ghost,onMove,onUp };
   }
-  function moveGhost(ghost,x,y){ ghost.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(1.08)`; }
+  function moveGhost(g,x,y){ g.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(1.08)`; }
   function cleanupDrag(){
     if(!drag) return;
     window.removeEventListener("pointermove",drag.onMove);
@@ -1494,10 +2142,12 @@ const Solver = (function(){
     els.answerArea.classList.toggle("hint", isInside(target,x,y));
   }
   function makeEquationDraggable(card,eq){
-    card.addEventListener("pointerdown",(e)=>{ if(stageS!=="equation") return; startDrag(e,card,"equation",{eqId:eq.id,face:eq.tex}); });
+    card.addEventListener("pointerdown",(e)=>{ if(mode!=="build"||stageS!=="equation") return;
+      startDrag(e,card,"equation",{eqId:eq.id,face:eq.tex}); });
   }
   function makeChipDraggable(chip){
-    chip.addEventListener("pointerdown",(e)=>{ if(stageS!=="terms") return; if(chip.classList.contains("used")) return;
+    chip.addEventListener("pointerdown",(e)=>{ if(mode!=="build"||stageS!=="terms") return;
+      if(chip.classList.contains("used")) return;
       startDrag(e,chip,"term",{ symbol:chip.dataset.symbol, correct:chip.dataset.correct==="1", face:chip.dataset.symbol }); });
   }
   function handleDrop(x,y,kind,payload,sourceEl){
@@ -1513,39 +2163,111 @@ const Solver = (function(){
       else wrongDrop(sourceEl,"Wrong term — check the formula");
     }
   }
+
+  /* ---- P1 #4: momentum vector teaching beat (only on the simple p=mv vector card) ---- */
+  function maybeVectorBeat(after){
+    const isVecMomentum = Q && Q.answerEqId==="pmv" && /vec/.test(Q.lhs||"");
+    if(!isVecMomentum || vbeatDone){ after(); return; }
+    vbeatDone=true;
+    const box=document.createElement("div"); box.className="slv-vbeat";
+    const r1=document.createElement("div"); r1.className="vrow"; els.answerArea.appendChild(box); box.appendChild(r1);
+    mj(r1,"\\vec p = \\langle p_x,\\ p_y,\\ p_z\\rangle");
+    const txt=document.createElement("div"); txt.className="vtxt";
+    txt.innerHTML="Remember, a vector is really a <b>system of equations</b> — one per direction. But we're moving in <b>one dimension</b>, so we only need one component, so we can be lazy and write…";
+    box.appendChild(txt);
+    const r2=document.createElement("div"); r2.className="vrow"; box.appendChild(r2);
+    mj(r2,"p_x = m\\,v_x \\;\\Rightarrow\\; p = m v");
+    showCue("1-D ⇒ one component only",true);
+    setTimeout(()=>{
+      r1.classList.add("collapse");
+      setTimeout(()=>{ box.remove(); after(); }, 520);
+    }, 2300);
+  }
+
   function dockEquation(sourceEl){
     stageS="terms"; sourceEl.classList.add("docked-src");
     els.answerArea.className="slv-answer-area"; els.answerArea.innerHTML="";
-    const head=document.createElement("div"); head.className="docked-eq"; head.textContent=Q.dockedTex; els.answerArea.appendChild(head);
-    const lhs=Q.lhs||"p";
-    workLine=document.createElement("div"); workLine.className="work-line";
-    const lead=document.createElement("span"); lead.innerHTML=lhs+"&nbsp;";
-    const eqs=document.createElement("span"); eqs.className="eq-sign"; eqs.textContent="=";
-    workLine.appendChild(lead); workLine.appendChild(eqs);
-    Q.terms.forEach((t,i)=>{ const slot=document.createElement("span"); slot.className="term-slot"+(i===0?" next":""); slot.dataset.slot=i; slot.textContent=""; workLine.appendChild(slot); });
-    els.answerArea.appendChild(workLine);
-    subLine=document.createElement("div"); subLine.className="work-line sub-line";
-    const sLead=document.createElement("span"); sLead.innerHTML=lhs+"&nbsp;";
-    const sEq=document.createElement("span"); sEq.className="eq-sign"; sEq.textContent="=";
-    subLine.appendChild(sLead); subLine.appendChild(sEq);
-    Q.terms.forEach((t,i)=>{ const slot=document.createElement("span"); slot.className="term-slot"; slot.dataset.sub=i; slot.textContent=""; subLine.appendChild(slot); });
-    els.answerArea.appendChild(subLine);
+    const head=document.createElement("div"); head.className="docked-eq";
+    const hm=document.createElement("div"); mj(hm,Q.dockedTex); head.appendChild(hm);
+    els.answerArea.appendChild(head);
+    maybeVectorBeat(()=> buildWorkArea());
+  }
+  function buildWorkArea(){
+    const joiner=Q.joiner||"";
+    workLine=makeBuildLine(false,joiner); els.answerArea.appendChild(workLine);
+    subLine=makeBuildLine(true,joiner); subLine.classList.add("sub-line"); els.answerArea.appendChild(subLine);
     showCue("Nice! Now build the right side →",true); buildTermBank();
+  }
+  function makeBuildLine(isSub,joiner){
+    const line=document.createElement("div"); line.className="work-line";
+    const lead=document.createElement("span"); lead.className="lead-sym"; mj(lead,Q.lhs,isSub?"mjx-mag":null); line.appendChild(lead);
+    const eq=document.createElement("span"); eq.className="eq-sign"; eq.textContent="="; line.appendChild(eq);
+    Q.terms.forEach((t,i)=>{
+      if(i>0 && joiner){ const j=document.createElement("span"); j.className="eq-sign"; mj(j,joiner); line.appendChild(j); }
+      const slot=document.createElement("span");
+      slot.className="term-slot"+(!isSub && i===0?" next":"");
+      slot.dataset[isSub?"sub":"slot"]=i;
+      line.appendChild(slot);
+    });
+    return line;
   }
   function acceptTerm(chip,term){
     chip.classList.add("used");
-    const slot=workLine.querySelector(`[data-slot="${termIndex}"]`); slot.textContent=term.symbol; slot.classList.add("filled"); slot.classList.remove("next");
-    const sslot=subLine.querySelector(`[data-sub="${termIndex}"]`); sslot.textContent=term.sub; sslot.classList.add("filled");
+    const slot=workLine.querySelector(`[data-slot="${termIndex}"]`); mj(slot,term.symbol); slot.classList.add("filled"); slot.classList.remove("next");
+    const sslot=subLine.querySelector(`[data-sub="${termIndex}"]`); mj(sslot,term.sub,"mjx-mag"); sslot.classList.add("filled");
     termIndex++;
     const nextSlot=workLine.querySelector(`[data-slot="${termIndex}"]`); if(nextSlot) nextSlot.classList.add("next");
-    if(termIndex>=Q.terms.length) finish(); else showCue("✓ "+term.symbol+" placed",true);
+    if(termIndex>=Q.terms.length) finish(); else showCue("✓ placed",true);
   }
   function finish(){
     stageS="done";
-    const fa=document.createElement("div"); fa.className="final-answer"; fa.innerHTML=`<small>RESULT</small>${Q.result.answer}`;
+    const subFinal=document.createElement("div"); subFinal.className="work-line sub-line";
+    const sl=document.createElement("span"); mj(sl,Q.result.substitution,"mjx-mag"); subFinal.appendChild(sl);
+    els.answerArea.appendChild(subFinal);
+    const fa=document.createElement("div"); fa.className="final-answer";
+    const small=document.createElement("small"); small.textContent="RESULT"; fa.appendChild(small);
+    const ans=document.createElement("div"); mj(ans,Q.result.answer,"mjx-good"); fa.appendChild(ans);
     els.answerArea.appendChild(fa); requestAnimationFrame(()=> fa.classList.add("show"));
     showCue("🎉 Solved!",true); els.termBank.classList.remove("show");
+    if(window.markSolved) window.markSolved(ownerStep);
   }
+
+  /* ---- MCQ ---- */
+  function buildMCQ(){
+    els.mcqOptions.innerHTML="";
+    const keys=["A","B","C","D"];
+    Q.mcq.options.forEach((opt,i)=>{
+      const row=document.createElement("div"); row.className="slv-mcq-opt";
+      const k=document.createElement("span"); k.className="key"; k.textContent=keys[i];
+      const m=document.createElement("span"); mj(m,opt);
+      row.appendChild(k); row.appendChild(m);
+      row.addEventListener("click",()=>answerMCQ(row,i));
+      els.mcqOptions.appendChild(row);
+    });
+  }
+  function answerMCQ(row,i){
+    const all=els.mcqOptions.querySelectorAll(".slv-mcq-opt");
+    if(i===Q.mcq.correct){
+      row.classList.add("correct");
+      all.forEach(r=>{ r.classList.add("locked"); if(r!==row) r.classList.add("dimmed"); });
+      showCue("🎉 Correct!",true);
+      if(window.markSolved) window.markSolved(ownerStep);
+    } else {
+      row.classList.add("wrong","locked");
+      showCue("Try again",false);
+      setTimeout(()=>{ row.classList.remove("wrong","locked"); },700);
+    }
+  }
+
+  /* ---- mode toggle ---- */
+  function setMode(m){
+    mode=(m==="mcq")?"mcq":"build";
+    els.modeToggle.querySelectorAll(".mode-btn").forEach(b=>b.classList.toggle("on",b.dataset.mode===mode));
+    const isMcq=mode==="mcq";
+    els.buildMode.style.display=isMcq?"none":"";
+    els.mcqWrap.classList.toggle("show",isMcq);
+  }
+
   function wrongDrop(sourceEl,msg){
     sourceEl.classList.remove("shake"); void sourceEl.offsetWidth; sourceEl.classList.add("shake");
     setTimeout(()=> sourceEl.classList.remove("shake"),420); showCue(msg,false);
@@ -1556,43 +2278,14 @@ const Solver = (function(){
   }
   function isInside(el,x,y){ const r=el.getBoundingClientRect(); return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; }
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-  els.resetBtn.addEventListener("click",()=>{ if(Q) loadQuestion(Q); });
-  return { load:loadQuestion, el:els.block };
+
+  els.modeToggle.querySelectorAll(".mode-btn").forEach(b=>{
+    b.addEventListener("click",()=>setMode(b.dataset.mode));
+  });
+  els.resetBtn.addEventListener("click",()=>{ if(Q) loadQuestion(qIndex); });
+
+  return { attach };
 })();
-
-/* ===================== QUIZ MODE TOGGLE (MCQ / SOLVER) ===================== */
-stage.addEventListener('click',(e)=>{
-  const mb=e.target.closest('.mode-btn');
-  if(!mb) return;
-  const panel=mb.closest('.panel');
-  const mode=mb.dataset.mode;
-  panel.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on', b===mb));
-  const mcq=panel.querySelector('.mcq-block');
-  const mount=panel.querySelector('.solver-mount');
-  if(mode==='solver'){
-    mcq.hidden=true;
-    mount.hidden=false;
-    mount.appendChild(Solver.el);           // move shared solver block into this panel
-    Solver.el.hidden=false;
-    const ci=+panel.dataset.concept;
-    const q=CONCEPTS[ci-1].quiz.solver;
-    Solver.load(q);
-  } else {
-    mcq.hidden=false;
-    mount.hidden=true;
-    Solver.el.hidden=true;
-  }
-});
-
-/* refit visible canvas on resize */
-let rT;
-window.addEventListener('resize', ()=>{
-  clearTimeout(rT);
-  rT=setTimeout(()=>{
-    const cv=panels[cur].querySelector('canvas');
-    if(cv && cv._fit) cv._fit();
-  },120);
-});
 
 /* ===================== TIPS DRAWER ===================== */
 const drawer=document.getElementById('drawer');
