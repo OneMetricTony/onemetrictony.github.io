@@ -250,6 +250,200 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   font-family:'Press Start 2P',monospace; font-size:8px; letter-spacing:1px; }
 .tip code{ color:var(--green); font-weight:700; }
 
+/* ============ TEACH ANIMATION CANVAS ============ */
+.anim-frame{
+  position:relative; width:100%; height:170px; margin:2px 0 14px;
+  border:2px solid #2a2a55; border-radius:12px; overflow:hidden;
+  background:radial-gradient(120% 120% at 50% 0%, #0e0e1c, #07070f);
+  box-shadow:inset 0 0 24px rgba(33,230,255,.08);
+}
+.anim-frame canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+/* ============ TOP NAV (desktop bar / mobile drag-down) ============ */
+.appnav{
+  position:fixed; top:0; left:0; right:0; z-index:850;
+  padding-top:var(--sat);
+  background:linear-gradient(180deg,#0a0a1e,rgba(10,10,30,.92));
+  border-bottom:2px solid var(--cyan);
+  box-shadow:0 6px 20px rgba(0,0,0,.45);
+  transform:translateY(-100%);
+  transition:transform .34s cubic-bezier(.4,0,.2,1);
+}
+.appnav.open{ transform:translateY(0); }
+.appnav-handle{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  min-width:80px; min-height:30px; padding:5px 16px 6px;
+  background:linear-gradient(180deg,#0a0a1e,#0a0a18);
+  border:2px solid var(--cyan); border-top:none;
+  border-radius:0 0 14px 14px; cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.5);
+}
+.appnav-grip{ width:34px; height:4px; border-radius:3px; background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+.appnav-grip-label{ font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cyan); letter-spacing:1px; }
+.appnav-links{
+  display:flex; gap:10px; align-items:center; justify-content:center;
+  flex-wrap:wrap; padding:10px 12px;
+}
+.appnav-link{
+  font-family:'Press Start 2P',monospace; font-size:9px; letter-spacing:1px;
+  color:var(--ink); background:var(--panel2); border:2px solid #2a2a55;
+  border-radius:10px; padding:10px 12px; min-height:42px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:5px; text-decoration:none;
+  transition:transform .12s, border-color .15s, color .15s;
+}
+.appnav-link:active{ transform:scale(.96); }
+.appnav-link.current{ border-color:var(--magenta); color:var(--magenta); }
+#navConceptWeb{ border-color:var(--cyan); color:var(--cyan); }
+/* on wide screens: show as a normal always-visible bar */
+@media (min-width:720px){
+  .appnav{ transform:translateY(0); }
+  .appnav-handle{ display:none; }
+  .appnav-links{ justify-content:flex-end; }
+  .topbar{ top:calc(50px + var(--sat)); }
+  .tips-fab{ top:calc(var(--toph) + var(--sat) + 58px); }
+  .stage{ top:calc(var(--toph) + var(--sat) + 50px); }
+  :root{ --topnavh:50px; }
+}
+
+/* ============ CONCEPT WEB POPUP (cw- namespaced) ============ */
+.cw-overlay{
+  position:fixed; inset:0; z-index:9500;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+  background:rgba(4,4,16,.74); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  opacity:0; pointer-events:none; transition:opacity .22s ease;
+}
+.cw-overlay.cw-open{ opacity:1; pointer-events:auto; }
+.cw-modal{
+  position:relative; width:90vw; max-width:460px; max-height:88vh;
+  background:linear-gradient(160deg,#11112a,#0c0c1e);
+  border:1px solid rgba(0,240,255,.35); border-radius:20px;
+  box-shadow:0 0 0 1px rgba(177,75,255,.2),0 18px 60px rgba(0,0,0,.7),0 0 50px rgba(0,240,255,.18);
+  display:flex; flex-direction:column; overflow:hidden;
+  transform:scale(.86) translateY(14px); opacity:0;
+  transition:transform .26s cubic-bezier(.2,1.1,.3,1), opacity .26s ease;
+}
+.cw-overlay.cw-open .cw-modal{ transform:scale(1) translateY(0); opacity:1; }
+.cw-header{ flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:16px 18px 12px; border-bottom:1px solid #2a2a55; }
+.cw-title{ margin:0; font-size:18px; font-weight:800; letter-spacing:.5px;
+  background:linear-gradient(90deg,#00f0ff,#ff2bd6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.cw-sub{ margin:2px 0 0; font-size:11.5px; color:#6a6a9a; font-weight:500; }
+.cw-close{ margin-left:auto; flex:0 0 auto; width:38px; height:38px; border-radius:50%;
+  border:1px solid rgba(255,43,214,.5); background:rgba(255,43,214,.08); color:#ff2bd6;
+  font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.cw-close:active{ transform:scale(.9); }
+.cw-body{ flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 18px; }
+.cw-graphwrap{ position:relative; border:1px solid #2a2a55; border-radius:14px;
+  background:radial-gradient(circle at 50% 40%, #14143a 0%, #08081a 80%); overflow:hidden; }
+#cw-svg{ display:block; width:100%; height:auto; touch-action:manipulation; }
+.cw-edge-line{ stroke:#2a2a55; stroke-width:1.6; transition:stroke .2s,stroke-width .2s,opacity .2s; opacity:.55; }
+.cw-edge-line.cw-active{ stroke:#00f0ff; stroke-width:2.6; opacity:1; filter:drop-shadow(0 0 4px #00f0ff); }
+.cw-edge-line.cw-dim{ opacity:.12; }
+.cw-node-g{ cursor:pointer; }
+.cw-node-circle{ fill:#15153a; stroke:#b14bff; stroke-width:2; transition:stroke .2s,fill .2s,opacity .2s,filter .2s; }
+.cw-node-g.cw-active .cw-node-circle{ fill:#2a1450; stroke:#00f0ff; stroke-width:3; filter:drop-shadow(0 0 8px #00f0ff); }
+.cw-node-g.cw-neighbor .cw-node-circle{ stroke:#ff2bd6; filter:drop-shadow(0 0 6px #ff2bd6); }
+.cw-node-g.cw-dim{ opacity:.28; }
+.cw-node-label{ fill:#dfe3ff; font-size:8.5px; font-weight:700; text-anchor:middle; pointer-events:none;
+  paint-order:stroke; stroke:#08081a; stroke-width:2.4px; }
+.cw-node-formula{ fill:#ffcf3f; font-size:7.5px; font-weight:600; text-anchor:middle; pointer-events:none;
+  paint-order:stroke; stroke:#08081a; stroke-width:2px; }
+.cw-hint{ text-align:center; font-size:11px; color:#6a6a9a; margin:8px 0 4px; }
+.cw-info{ margin-top:12px; border:1px solid rgba(0,240,255,.25); border-radius:14px;
+  background:rgba(0,240,255,.04); padding:14px 16px; min-height:60px; }
+.cw-info-empty{ color:#6a6a9a; font-size:13px; line-height:1.5; }
+.cw-info-title{ font-size:15px; font-weight:800; color:#00f0ff; margin:0 0 2px;
+  display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.cw-info-formula{ font-size:12px; color:#ffcf3f; font-weight:700; }
+.cw-conn-list{ list-style:none; margin:10px 0 0; padding:0; }
+.cw-conn-list li{ padding:9px 11px; margin-bottom:7px; border-radius:10px;
+  background:rgba(177,75,255,.07); border-left:3px solid #b14bff; font-size:12.5px; line-height:1.45; }
+.cw-conn-target{ font-weight:800; color:#fff; }
+.cw-conn-rel{ display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.4px; color:#ff2bd6; margin:0 4px; }
+.cw-conn-why{ color:#c4c4e6; margin-top:3px; }
+.cw-arrow{ color:#6a6a9a; }
+
+/* ============ QUIZ MODE TOGGLE ============ */
+.mode-toggle{ display:flex; gap:8px; margin:2px 0 14px; }
+.mode-btn{ flex:1; min-height:42px; border-radius:10px; cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:8px; letter-spacing:.5px; line-height:1.4;
+  border:2px solid #2a2a55; background:var(--panel2); color:var(--dim); padding:8px;
+  transition:border-color .15s, color .15s, box-shadow .15s; }
+.mode-btn.on{ border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 10px rgba(33,230,255,.35); }
+
+/* ============ SOLVER (scoped under .slv) ============ */
+.slv{ --neon:#00f0ff; --neon2:#ff37e6; --good:#37ff8b; --bad:#ff4d6d;
+  --chip:#1d1d44; --chip-br:#33336e; --muted:#7b80b8;
+  --glow-cyan:0 0 6px #00f0ff, 0 0 16px #00f0ff80, 0 0 32px #00f0ff40;
+  --glow-good:0 0 8px #37ff8b, 0 0 22px #37ff8b80;
+  -webkit-user-select:none; user-select:none; margin:0 0 8px; }
+.slv-section-label{ font-size:.66rem; letter-spacing:2px; color:var(--cyan);
+  text-transform:uppercase; margin:16px 0 8px; opacity:.9; display:flex; align-items:center; gap:8px; }
+.slv-section-label::before{ content:""; width:18px; height:2px; background:var(--cyan); box-shadow:0 0 6px var(--cyan); }
+.slv-prompt{ background:linear-gradient(160deg,#171733,#11112a); border:1px solid #2c2c5c; border-radius:14px;
+  padding:13px 14px; font-size:.92rem; line-height:1.45; box-shadow:inset 0 0 24px #00f0ff10; }
+.slv-prompt .ask{ color:var(--cyan); font-weight:600; }
+.slv-inventory{ display:flex; gap:10px; overflow-x:auto; padding:6px 2px 10px; scrollbar-width:none; }
+.slv-inventory::-webkit-scrollbar{ display:none; }
+.slv .eq-card{ flex:0 0 auto; min-width:96px; background:var(--slv-chip,#1d1d44); border:1.5px solid #33336e;
+  border-radius:12px; padding:14px 12px; text-align:center; font-size:1rem; color:var(--ink);
+  transition:transform .12s, box-shadow .25s, opacity .25s, border-color .25s, background .25s;
+  cursor:grab; position:relative; touch-action:none; }
+.slv .eq-card.dim{ opacity:.3; filter:saturate(.4); }
+.slv .eq-card.glow{ border-color:var(--cyan); background:linear-gradient(160deg,#10314a,#141442);
+  box-shadow:var(--glow-cyan); animation:slvpulse 1.8s ease-in-out infinite; }
+@keyframes slvpulse{ 0%,100%{ box-shadow:0 0 4px #00f0ff,0 0 12px #00f0ff60; } 50%{ box-shadow:var(--glow-cyan); } }
+.slv .eq-card.docked-src{ opacity:.18; pointer-events:none; }
+.slv .eq-card .lbl{ display:block; font-size:.55rem; color:var(--muted); margin-top:6px; letter-spacing:1px; }
+@keyframes slvshake{ 0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-7px); } 40%{ transform:translateX(7px); } 60%{ transform:translateX(-5px); } 80%{ transform:translateX(5px); } }
+.slv .shake{ animation:slvshake .4s; }
+.slv-answer-area{ margin-top:6px; border:2px dashed #3a3a72; border-radius:14px;
+  background:linear-gradient(180deg,#0e0e24,#0b0b1c); min-height:120px; padding:14px;
+  transition:border-color .2s, box-shadow .2s, background .2s; }
+.slv-answer-area.hint{ border-color:var(--cyan); box-shadow:var(--glow-cyan); background:#0e1e2c; }
+.slv-answer-area.empty-hint{ display:flex; align-items:center; justify-content:center;
+  color:var(--muted); font-size:.85rem; text-align:center; min-height:120px; }
+.slv .docked-eq{ font-size:1.35rem; text-align:center; color:#fff; padding:6px 0 12px;
+  text-shadow:var(--glow-cyan); border-bottom:1px solid #ffffff14; margin-bottom:12px; animation:slvdropIn .35s ease; }
+@keyframes slvdropIn{ from{ transform:translateY(-14px) scale(.9); opacity:0; } to{ transform:none; opacity:1; } }
+.slv .work-line{ font-size:1.18rem; margin:10px 0; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px;
+  animation:slvdropIn .3s ease; line-height:1.5; }
+.slv .work-line .eq-sign{ color:var(--muted); margin:0 8px; }
+.slv .work-line.sub-line{ color:var(--cyan); font-size:1.05rem; }
+.slv .term-slot{ display:inline-block; min-width:30px; min-height:30px; border-bottom:2px solid #3a3a72;
+  margin:0 2px; text-align:center; color:#fff; transition:all .2s; padding:0 4px; }
+.slv .term-slot.filled{ border-bottom-color:var(--cyan); text-shadow:var(--glow-cyan); }
+.slv .term-slot.next{ border-bottom-color:var(--neon2); animation:slvpulse2 1.4s infinite; }
+@keyframes slvpulse2{ 0%,100%{ box-shadow:0 2px 0 -1px #ff37e600; } 50%{ box-shadow:0 6px 8px -4px #ff37e6; } }
+.slv .final-answer{ margin-top:16px; text-align:center; font-size:1.5rem; font-weight:700; color:var(--good);
+  text-shadow:var(--glow-good); opacity:0; transform:scale(.8); transition:opacity .5s, transform .5s; }
+.slv .final-answer.show{ opacity:1; transform:none; animation:slvcelebrate 2.5s ease infinite; }
+@keyframes slvcelebrate{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.4); } }
+.slv .final-answer small{ display:block; font-size:.6rem; letter-spacing:2px; color:var(--good); opacity:.8; font-weight:400; margin-bottom:4px; }
+.slv-term-bank{ display:flex; flex-wrap:wrap; gap:10px; padding:6px 2px; opacity:0; max-height:0; overflow:hidden;
+  transition:opacity .4s, max-height .4s; }
+.slv-term-bank.show{ opacity:1; max-height:400px; }
+.slv .chip{ background:linear-gradient(160deg,#23234f,#191938); border:1.5px solid #33336e; border-radius:12px;
+  padding:12px 16px; font-size:1.05rem; color:var(--ink); cursor:grab; box-shadow:0 2px 0 #00000050;
+  transition:transform .12s, box-shadow .2s, opacity .3s; position:relative; touch-action:none; }
+.slv .chip:active{ cursor:grabbing; }
+.slv .chip.used{ opacity:.2; pointer-events:none; text-decoration:line-through; }
+.slv-drag-ghost{ position:fixed; left:0; top:0; z-index:9999; pointer-events:none;
+  padding:12px 16px; border-radius:12px; font-size:1.1rem; color:#fff;
+  background:linear-gradient(160deg,#16486b,#1a1a44); border:1.5px solid var(--cyan);
+  box-shadow:var(--glow-cyan); transform:translate(-50%,-50%) scale(1.08); transition:none; will-change:transform; }
+.slv-cue{ position:fixed; left:50%; bottom:calc(var(--navh) + var(--sab) + 16px); transform:translateX(-50%) translateY(20px);
+  background:#1a0b18; border:1.5px solid var(--bad,#ff4d6d); color:var(--bad,#ff4d6d); padding:10px 18px; border-radius:30px;
+  font-size:.85rem; font-weight:600; box-shadow:0 0 18px #ff4d6d70; opacity:0; transition:opacity .25s, transform .25s;
+  pointer-events:none; z-index:10000; letter-spacing:.5px; }
+.slv-cue.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.slv-cue.ok{ border-color:#37ff8b; color:#37ff8b; background:#0b1a12; box-shadow:0 0 18px #37ff8b70; }
+.slv-toolbar{ display:flex; justify-content:flex-end; margin-top:18px; }
+.slv-btn{ background:transparent; border:1.5px solid #33336e; color:var(--muted); padding:8px 16px; border-radius:30px;
+  font-size:.72rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.slv-btn:active{ border-color:var(--cyan); color:var(--cyan); box-shadow:var(--glow-cyan); }
+
 @media (prefers-reduced-motion: reduce){
   .panel{ transition:opacity .2s ease; transform:none !important; }
   .panel.teach.active .anim,.panel.teach.active .anim-eq,
@@ -258,6 +452,18 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
 </style>
 </head>
 <body>
+
+<!-- ===================== TOP NAV (drag-down on mobile) ===================== -->
+<div class="appnav" id="appnav">
+  <button class="appnav-handle" id="appnavHandle" aria-label="Open menu" aria-expanded="false">
+    <span class="appnav-grip"></span><span class="appnav-grip-label">MENU</span>
+  </button>
+  <div class="appnav-links" id="appnavLinks">
+    <a class="appnav-link" href="/physics/cpcs110/">🏠 Home</a>
+    <a class="appnav-link current" href="arcade.html" aria-current="page">🕹 Arcade</a>
+    <button class="appnav-link" type="button" id="navConceptWeb">🔗 Concept Web</button>
+  </div>
+</div>
 
 <!-- TOP PROGRESS BAR -->
 <div class="topbar">
@@ -291,11 +497,394 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   <div class="tip"><b>FORMULA SHEET</b>p=mv · F·Δt=Δp · f=μN · W=Fd · KE=½mv² · ΣF=ma</div>
 </aside>
 
+<!-- ===================== CONCEPT WEB POPUP (cw- namespaced) ===================== -->
+<div class="cw-overlay" id="cw-overlay" role="dialog" aria-modal="true" aria-labelledby="cw-title" aria-hidden="true">
+  <div class="cw-modal" role="document">
+    <div class="cw-header">
+      <div>
+        <h2 class="cw-title" id="cw-title">⚡ Concept Web</h2>
+        <p class="cw-sub">Tap a node to see how the physics connects</p>
+      </div>
+      <button class="cw-close" aria-label="Close" onclick="closeConceptWeb()">&times;</button>
+    </div>
+    <div class="cw-body">
+      <div class="cw-graphwrap">
+        <svg id="cw-svg" viewBox="0 0 320 360" preserveAspectRatio="xMidYMid meet" aria-label="Physics concept graph"></svg>
+      </div>
+      <p class="cw-hint">Tap empty space to reset</p>
+      <div class="cw-info" id="cw-info">
+        <div class="cw-info-empty">
+          Tap any glowing node above to highlight its links and read <b>why</b> the
+          concepts connect. Try <b>Momentum</b> or <b>Newton's 2nd Law</b> to start.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SHARED SOLVER BLOCK (scoped under .slv) ===================== -->
+<div class="slv" id="solverBlock" hidden>
+  <div class="slv-prompt" id="slv-prompt"></div>
+  <div class="slv-section-label">Equation Inventory</div>
+  <div class="slv-inventory" id="slv-inventory"></div>
+  <div class="slv-section-label">Answer Area</div>
+  <div class="slv-answer-area empty-hint" id="slv-answerArea">Drag the glowing equation here ↓</div>
+  <div class="slv-section-label" id="slv-bankLabel" style="opacity:0;">Formula Term Bank</div>
+  <div class="slv-term-bank" id="slv-termBank"></div>
+  <div class="slv-toolbar"><button class="slv-btn" id="slv-resetBtn">↺ Reset</button></div>
+</div>
+<div class="slv-cue" id="slv-cue"></div>
+
+<!-- ===================== PHYSICS ANIMATION LIBRARY (namespaced) ===================== -->
+<script>
+"use strict";
+(function(){
+const COL = {
+  bg:'#07070f', neon:'#00f0ff', neon2:'#ff2bd6', neon3:'#9d4bff',
+  green:'#39ff7a', amber:'#ffd23f', red:'#ff4b6b', ink:'#e8e8ff', muted:'#8a8ab0',
+  ballA:'#00f0ff', ballB:'#ff2bd6'
+};
+function setupCanvas(canvas){
+  const ctx = canvas.getContext('2d');
+  let W=0,H=0,dpr=1;
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.max(1, Math.min(window.devicePixelRatio||1, 2.5));
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W*dpr);
+    canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  const ro = ('ResizeObserver' in window) ? new ResizeObserver(resize) : null;
+  if(ro) ro.observe(canvas); else window.addEventListener('resize', resize);
+  return { ctx, get W(){return W;}, get H(){return H;},
+    teardown(){ if(ro) ro.disconnect(); else window.removeEventListener('resize', resize); } };
+}
+function loop(env, cb){
+  let raf=0, running=true, t0=performance.now();
+  function frame(now){ if(!running) return; const t=(now-t0)/1000; cb(env.ctx, env.W, env.H, t); raf=requestAnimationFrame(frame); }
+  raf=requestAnimationFrame(frame);
+  return { stop(){ running=false; cancelAnimationFrame(raf); env.teardown(); } };
+}
+function clearBg(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  ctx.save(); ctx.strokeStyle='rgba(157,75,255,0.07)'; ctx.lineWidth=1;
+  const step=Math.max(24,W/14);
+  for(let x=0;x<=W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<=H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.restore();
+}
+function glowCircle(ctx,x,y,r,color){
+  ctx.save();
+  const g=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(0.25,color); g.addColorStop(1,color);
+  ctx.shadowColor=color; ctx.shadowBlur=r*1.2; ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+function arrow(ctx,x,y,dx,dy,color,width){
+  width=width||4; const len=Math.hypot(dx,dy); if(len<0.5) return;
+  const ux=dx/len, uy=dy/len, hx=x+dx, hy=y+dy;
+  const head=Math.min(14,Math.max(7,len*0.28));
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.lineCap='round';
+  ctx.shadowColor=color; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(hx-ux*head*0.6, hy-uy*head*0.6); ctx.stroke();
+  const ang=Math.atan2(uy,ux);
+  ctx.beginPath(); ctx.moveTo(hx,hy);
+  ctx.lineTo(hx-head*Math.cos(ang-0.4), hy-head*Math.sin(ang-0.4));
+  ctx.lineTo(hx-head*Math.cos(ang+0.4), hy-head*Math.sin(ang+0.4));
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function label(ctx,text,x,y,color,size,align){
+  ctx.save(); ctx.fillStyle=color||COL.ink;
+  ctx.font=`700 ${size||13}px -apple-system,system-ui,Segoe UI,sans-serif`;
+  ctx.textAlign=align||'center'; ctx.textBaseline='middle';
+  ctx.shadowColor=color||COL.ink; ctx.shadowBlur=6; ctx.fillText(text,x,y); ctx.restore();
+}
+function roundRect(ctx,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function animMomentum(canvas,opts){
+  opts=opts||{}; const env=setupCanvas(canvas); const mass=opts.mass||1; const color=opts.color||COL.ballA;
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    const r=Math.max(12,Math.min(W,H)*0.07); const cy=H*0.55;
+    const cycle=(t*0.35)%1; const x=-r+(W+2*r)*cycle;
+    const speed=0.6+0.4*Math.sin(t*1.6);
+    ctx.save(); ctx.strokeStyle='rgba(0,240,255,0.25)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(0,cy+r+6); ctx.lineTo(W,cy+r+6); ctx.stroke(); ctx.restore();
+    ctx.save(); for(let i=1;i<=4;i++){ ctx.globalAlpha=0.10*(5-i); glowCircle(ctx,x-i*10*speed,cy,r*(1-i*0.04),color); } ctx.restore();
+    glowCircle(ctx,x,cy,r,color);
+    label(ctx,'m='+mass,x,cy,'#06121a',Math.max(11,r*0.55));
+    const pLen=(W*0.22)*mass*speed;
+    arrow(ctx,x,cy-r-10,pLen,0,COL.amber,5);
+    label(ctx,'p = m·v',x+pLen*0.5,cy-r-26,COL.amber,13);
+    label(ctx,'speed → '+(speed.toFixed(2)),W-12,18,COL.muted,12,'right');
+  });
+}
+function animCollisions(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    ctx.save(); ctx.strokeStyle='rgba(157,75,255,0.35)'; ctx.lineWidth=2; ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(W/2,8); ctx.lineTo(W/2,H-8); ctx.stroke(); ctx.restore();
+    drawCollisionPanel(ctx,0,0,W/2,H,t,true);
+    drawCollisionPanel(ctx,W/2,0,W/2,H,t,false);
+  });
+}
+function drawCollisionPanel(ctx,ox,oy,w,h,t,elastic){
+  ctx.save(); ctx.translate(ox,oy); ctx.beginPath(); ctx.rect(0,0,w,h); ctx.clip();
+  const cy=h*0.50; const r=Math.max(10,Math.min(w,h)*0.085); const margin=r*1.6;
+  const meet=w/2; const period=4.2; const ph=(t%period)/period;
+  const approachEnd=0.45; let xA,xB,flash=0;
+  if(ph<approachEnd){ const k=ph/approachEnd; xA=margin+(meet-r-margin)*k; xB=(w-margin)-((w-margin)-(meet+r))*k; }
+  else if(ph<0.92){ const k=(ph-approachEnd)/(0.92-approachEnd); flash=Math.max(0,1-(ph-approachEnd)/0.12);
+    if(elastic){ xA=(meet-r)-((meet-r)-margin)*k; xB=(meet+r)+((w-margin)-(meet+r))*k; }
+    else { const combinedStart=meet; const drift=((w-margin)-meet)*k*0.9; xA=combinedStart-r*0.85+drift; xB=combinedStart+r*0.85+drift; } }
+  else { xA=margin; xB=w-margin; }
+  ctx.strokeStyle='rgba(0,240,255,0.18)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(8,cy+r+8); ctx.lineTo(w-8,cy+r+8); ctx.stroke();
+  label(ctx,elastic?'ELASTIC':'INELASTIC',w/2,22,elastic?COL.green:COL.amber,Math.max(13,w*0.045));
+  if(ph<approachEnd){ arrow(ctx,xA+r+4,cy,w*0.10,0,COL.amber,4); arrow(ctx,xB-r-4,cy,-w*0.10,0,COL.amber,4); }
+  if(flash>0){
+    ctx.save(); const fx=meet,fy=cy;
+    const g=ctx.createRadialGradient(fx,fy,1,fx,fy,r*3.2*flash+1);
+    g.addColorStop(0,`rgba(255,255,255,${0.9*flash})`); g.addColorStop(0.4,`rgba(255,210,63,${0.5*flash})`); g.addColorStop(1,'rgba(255,210,63,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(fx,fy,r*3.2*flash+1,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=`rgba(255,255,255,${0.7*flash})`; ctx.lineWidth=2;
+    for(let i=0;i<6;i++){ const a=i/6*Math.PI*2, L=r*(1.4+flash*1.6);
+      ctx.beginPath(); ctx.moveTo(fx+Math.cos(a)*r*0.8, fy+Math.sin(a)*r*0.8); ctx.lineTo(fx+Math.cos(a)*L, fy+Math.sin(a)*L); ctx.stroke(); }
+    ctx.restore();
+  }
+  glowCircle(ctx,xA,cy,r,COL.ballA); glowCircle(ctx,xB,cy,r,COL.ballB);
+  ctx.save(); ctx.font=`600 ${Math.max(10,w*0.032)}px -apple-system,system-ui,sans-serif`; ctx.textAlign='center';
+  const capY=h-16;
+  if(elastic){ ctx.fillStyle=COL.green; ctx.fillText('KE kept · momentum conserved',w/2,capY); }
+  else { ctx.fillStyle=COL.amber; ctx.fillText('KE lost (heat/sound) · momentum conserved',w/2,capY); }
+  ctx.restore(); ctx.restore();
+}
+function animImpulse(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    ctx.save(); ctx.strokeStyle='rgba(157,75,255,0.30)'; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(W/2,8); ctx.lineTo(W/2,H-8); ctx.stroke(); ctx.restore();
+    drawImpulsePanel(ctx,0,0,W/2,H,t,true); drawImpulsePanel(ctx,W/2,0,W/2,H,t,false);
+  });
+}
+function drawImpulsePanel(ctx,ox,oy,w,h,t,hard){
+  ctx.save(); ctx.translate(ox,oy); ctx.beginPath(); ctx.rect(0,0,w,h); ctx.clip();
+  const r=Math.max(9,Math.min(w,h)*0.075); const wallY=h*0.52; const topY=h*0.16; const period=2.6; const ph=(t%period)/period;
+  let by,contact=0; const downEnd=0.5;
+  if(ph<downEnd){ const k=ph/downEnd; by=topY+(wallY-r-topY)*(k*k); }
+  else { const k=(ph-downEnd)/(1-downEnd); contact=Math.max(0,1-k*3); by=topY+(wallY-r-topY)*((1-k)*(1-k)); }
+  label(ctx,hard?'HARD':'SOFT (airbag)',w/2,20,hard?COL.red:COL.green,Math.max(12,w*0.05));
+  ctx.save(); ctx.strokeStyle=hard?COL.red:COL.green; ctx.shadowColor=ctx.strokeStyle; ctx.shadowBlur=10; ctx.lineWidth=4;
+  if(hard){ ctx.beginPath(); ctx.moveTo(w*0.18,wallY); ctx.lineTo(w*0.82,wallY); ctx.stroke(); }
+  else { const squish=contact*r*0.7; ctx.fillStyle='rgba(57,255,122,0.18)'; roundRect(ctx,w*0.20,wallY-8+squish,w*0.60,12+(r*0.4-squish*0.5),7); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+  const ballY=by-(hard?contact*r*0.18:0); glowCircle(ctx,w/2,ballY,r,COL.ballA);
+  if(contact>0){ const fLen=(hard?r*2.6:r*1.0)*contact; arrow(ctx,w/2,wallY+6,0,-fLen,COL.amber,hard?6:4);
+    label(ctx,hard?'BIG F':'small F',w/2+(hard?34:40),wallY-fLen*0.5,COL.amber,11,'left'); }
+  const px=w*0.12,pw=w*0.76,pyB=h-26,ph2=h*0.22;
+  ctx.save(); ctx.strokeStyle='rgba(232,232,255,0.35)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(px,pyB-ph2); ctx.lineTo(px,pyB); ctx.lineTo(px+pw,pyB); ctx.stroke();
+  label(ctx,'F',px-2,pyB-ph2-2,COL.muted,10,'right'); label(ctx,'t',px+pw+8,pyB,COL.muted,10,'left');
+  const col=hard?COL.red:COL.green; ctx.strokeStyle=col; ctx.fillStyle=hard?'rgba(255,75,107,0.20)':'rgba(57,255,122,0.18)';
+  ctx.shadowColor=col; ctx.shadowBlur=8; ctx.lineWidth=2.5;
+  const peak=hard?ph2*0.96:ph2*0.40; const width=hard?0.34:0.86; const cx0=px+pw*((1-width)/2);
+  ctx.beginPath(); ctx.moveTo(px,pyB); const NN=40;
+  for(let i=0;i<=NN;i++){ const fx=px+pw*i/NN; const u=(fx-cx0)/(pw*width); let fy=0; if(u>=0&&u<=1){ fy=peak*Math.sin(Math.PI*u); } ctx.lineTo(fx,pyB-fy); }
+  ctx.lineTo(px+pw,pyB); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  for(let i=0;i<=NN;i++){ const fx=px+pw*i/NN; const u=(fx-cx0)/(pw*width); const fy=(u>=0&&u<=1)?peak*Math.sin(Math.PI*u):0; if(i===0) ctx.moveTo(fx,pyB-fy); else ctx.lineTo(fx,pyB-fy); }
+  ctx.stroke(); ctx.restore();
+  label(ctx,'same impulse (area)',w/2,pyB+14,COL.muted,10);
+  ctx.restore();
+}
+function animFriction(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    ctx.save(); ctx.strokeStyle='rgba(157,75,255,0.30)'; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(W/2,8); ctx.lineTo(W/2,H-8); ctx.stroke(); ctx.restore();
+    drawFrictionPanel(ctx,0,0,W/2,H,t,true); drawFrictionPanel(ctx,W/2,0,W/2,H,t,false);
+  });
+}
+function drawFrictionPanel(ctx,ox,oy,w,h,t,isStatic){
+  ctx.save(); ctx.translate(ox,oy); ctx.beginPath(); ctx.rect(0,0,w,h); ctx.clip();
+  const groundY=h*0.66; const bw=Math.max(38,w*0.22), bh=Math.max(26,h*0.18); const period=3.4; const ph=(t%period)/period;
+  ctx.save(); ctx.strokeStyle='rgba(0,240,255,0.35)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(6,groundY); ctx.lineTo(w-6,groundY); ctx.stroke();
+  ctx.strokeStyle='rgba(0,240,255,0.18)'; ctx.lineWidth=1;
+  for(let x=6;x<w-6;x+=10){ ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x-6,groundY+7); ctx.stroke(); } ctx.restore();
+  label(ctx,isStatic?'STATIC':'KINETIC',w/2,20,isStatic?COL.amber:COL.green,Math.max(12,w*0.05));
+  let bx,moving;
+  if(isStatic){ bx=w*0.30+Math.sin(t*9)*1.2; moving=false; }
+  else { const k=Math.min(1,ph/0.8); const ease=1-(1-k)*(1-k); bx=w*0.16+(w*0.5)*ease; moving=k<1; }
+  const blockTop=groundY-bh;
+  ctx.save(); ctx.fillStyle='rgba(0,240,255,0.18)'; ctx.strokeStyle=COL.neon; ctx.lineWidth=2; ctx.shadowColor=COL.neon; ctx.shadowBlur=10;
+  roundRect(ctx,bx,blockTop,bw,bh,6); ctx.fill(); ctx.stroke(); ctx.restore();
+  label(ctx,'m',bx+bw/2,blockTop+bh/2,COL.ink,13);
+  if(isStatic){ arrow(ctx,bx+bw+4,blockTop+bh/2,w*0.14,0,COL.neon2,4); label(ctx,'F applied',bx+bw+w*0.14+6,blockTop+bh/2-12,COL.neon2,10,'left'); }
+  const fLen=isStatic?-w*0.14:-(w*0.12)*(moving?1:0.2);
+  arrow(ctx,bx-4,blockTop+bh/2,fLen,0,COL.red,4); label(ctx,'friction',bx+fLen-4,blockTop+bh/2-12,COL.red,10,'right');
+  ctx.fillStyle=COL.muted; ctx.font=`600 ${Math.max(9,w*0.03)}px system-ui`; ctx.textAlign='center';
+  ctx.fillText(isStatic?"won't move (f = F)":"slides, then stops",w/2,h-14);
+  ctx.restore();
+}
+function animFreeBody(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    const cx=W*0.5, cy=H*0.52; const bw=Math.max(54,Math.min(W,H)*0.22); const bh=bw*0.72; const groundY=cy+bh/2;
+    ctx.save(); ctx.strokeStyle='rgba(0,240,255,0.35)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W*0.1,groundY); ctx.lineTo(W*0.9,groundY); ctx.stroke();
+    ctx.strokeStyle='rgba(0,240,255,0.18)';
+    for(let x=W*0.1;x<W*0.9;x+=10){ ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x-6,groundY+7); ctx.stroke(); } ctx.restore();
+    ctx.save(); ctx.fillStyle='rgba(157,75,255,0.18)'; ctx.strokeStyle=COL.neon3; ctx.lineWidth=2; ctx.shadowColor=COL.neon3; ctx.shadowBlur=12;
+    roundRect(ctx,cx-bw/2,cy-bh/2,bw,bh,8); ctx.fill(); ctx.stroke(); ctx.restore();
+    label(ctx,'BLOCK',cx,cy,COL.ink,Math.max(11,bw*0.18));
+    const pulse=0.85+0.15*Math.sin(t*2.2); const L=Math.min(W,H)*0.26*pulse; const Ls=L*0.78;
+    arrow(ctx,cx,cy-bh/2-2,0,-L,COL.green,5); label(ctx,'Normal (N)',cx,cy-bh/2-L-12,COL.green,12);
+    arrow(ctx,cx,cy+bh/2+2,0,L,COL.red,5); label(ctx,'Weight (mg)',cx,cy+bh/2+L+12,COL.red,12);
+    arrow(ctx,cx+bw/2+2,cy,Ls,0,COL.neon,5); label(ctx,'Applied (F)',cx+bw/2+Ls+8,cy-14,COL.neon,12,'left');
+    arrow(ctx,cx-bw/2-2,cy,-Ls*0.7,0,COL.amber,5); label(ctx,'Friction (f)',cx-bw/2-Ls*0.7-8,cy-14,COL.amber,12,'right');
+    label(ctx,'Free-Body Diagram',cx,18,COL.muted,12);
+  });
+}
+function animEnergy(canvas){
+  const env=setupCanvas(canvas);
+  return loop(env,(ctx,W,H,t)=>{
+    clearBg(ctx,W,H);
+    const period=3.6; const ph=(t%period)/period;
+    let k; if(ph<0.85){ k=ph/0.85; } else { k=0; } const ease=k;
+    const topX=W*0.16, topY=H*0.22, botX=W*0.74, botY=H*0.74;
+    ctx.save(); ctx.strokeStyle=COL.neon3; ctx.lineWidth=4; ctx.shadowColor=COL.neon3; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.moveTo(topX,topY); ctx.lineTo(botX,botY); ctx.stroke();
+    ctx.strokeStyle='rgba(0,240,255,0.3)'; ctx.shadowBlur=0; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(botX,botY); ctx.lineTo(W*0.95,botY); ctx.stroke();
+    ctx.strokeStyle='rgba(232,232,255,0.25)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(topX,topY); ctx.lineTo(topX,botY); ctx.stroke(); ctx.restore();
+    const bx=topX+(botX-topX)*ease; const by=topY+(botY-topY)*(ease*ease); const r=Math.max(9,Math.min(W,H)*0.05);
+    glowCircle(ctx,bx,by-r,r,COL.amber);
+    const frac=(ease*ease); const PE=Math.max(0,1-frac); const KE=Math.min(1,frac);
+    const bxr=W*0.84, barW=W*0.05, barH=H*0.5, barY=H*0.18;
+    drawBar(ctx,bxr,barY,barW,barH,PE,COL.neon3,'PE'); drawBar(ctx,bxr+barW*1.7,barY,barW,barH,KE,COL.green,'KE');
+    label(ctx,'Total E = constant',W*0.5,18,COL.muted,12);
+    ctx.save(); ctx.setLineDash([3,3]); ctx.strokeStyle='rgba(255,210,63,0.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(bxr-6,barY); ctx.lineTo(bxr+barW*2.7+6,barY); ctx.stroke(); ctx.restore();
+  });
+}
+function drawBar(ctx,x,y,w,h,frac,color,name){
+  frac=Math.max(0,Math.min(1,frac));
+  ctx.save(); ctx.strokeStyle='rgba(232,232,255,0.25)'; ctx.lineWidth=1.5; ctx.strokeRect(x,y,w,h);
+  const fh=h*frac; ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=12; ctx.fillRect(x,y+h-fh,w,fh); ctx.restore();
+  label(ctx,name,x+w/2,y+h+14,color,12); label(ctx,Math.round(frac*100)+'%',x+w/2,y-10,color,11);
+}
+window.PhysicsAnims = {
+  momentum:animMomentum, collisions:animCollisions, impulse:animImpulse,
+  friction:animFriction, freebody:animFreeBody, energy:animEnergy
+};
+})();
+</script>
+
+<!-- ===================== CONCEPT WEB POPUP (cw- namespaced) ===================== -->
+<script>
+(function () {
+  "use strict";
+  var NODES = [
+    { id:"n2",label:"Newton's 2nd",formula:"F = ma",x:160,y:52 },
+    { id:"mom",label:"Momentum",formula:"p = mv",x:64,y:120 },
+    { id:"imp",label:"Impulse",formula:"J = Δp",x:256,y:120 },
+    { id:"fbd",label:"Free-Body",formula:"diagram",x:160,y:150 },
+    { id:"col",label:"Collisions",formula:"",x:70,y:215 },
+    { id:"ene",label:"Energy",formula:"KE,heat",x:250,y:215 },
+    { id:"fric",label:"Friction",formula:"f = μN",x:160,y:250 },
+    { id:"grav",label:"Gravity",formula:"1/r²",x:78,y:315 },
+    { id:"elec",label:"Electric",formula:"1/r²",x:242,y:315 }
+  ];
+  var EDGES = [
+    { a:"mom",b:"col",rel:"leads to",why:"Total momentum is conserved through a collision." },
+    { a:"mom",b:"imp",rel:"leads to",why:"Impulse equals the change in momentum (J = Δp)." },
+    { a:"n2",b:"imp",rel:"generalizes to",why:"Integrate F = ma over time: J = F·Δt." },
+    { a:"n2",b:"fbd",rel:"applied in",why:"You sum the forces from a free-body diagram, then use F = ma." },
+    { a:"imp",b:"col",rel:"explains",why:"Contact forces during impact deliver the impulse that changes motion." },
+    { a:"grav",b:"elec",rel:"same 1/r² form",why:"Both follow an inverse-square law — but mass only attracts, while charge attracts or repels." },
+    { a:"grav",b:"fbd",rel:"force in",why:"Gravity (weight) is one of the forces you draw in a free-body diagram." },
+    { a:"elec",b:"fbd",rel:"force in",why:"The electric force is another arrow on the free-body diagram." },
+    { a:"fric",b:"fbd",rel:"force in",why:"Friction is a contact force you include in a free-body diagram." },
+    { a:"fric",b:"ene",rel:"removes",why:"Friction drains mechanical energy, lost as heat." },
+    { a:"col",b:"ene",rel:"contrast",why:"KE is kept in elastic collisions, lost in inelastic ones — momentum is always conserved." },
+    { a:"imp",b:"ene",rel:"contrast",why:"Impulse and energy are two different conserved quantities (one uses time, one uses distance)." }
+  ];
+  var SVGNS="http://www.w3.org/2000/svg", svg, infoEl, overlay, built=false, nodeById={};
+  function el(tag,attrs){ var e=document.createElementNS(SVGNS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function neighborsOf(id){ var set={},list=[];
+    EDGES.forEach(function(ed){ if(ed.a===id){ set[ed.b]=true; list.push({other:ed.b,rel:ed.rel,why:ed.why}); }
+      else if(ed.b===id){ set[ed.a]=true; list.push({other:ed.a,rel:ed.rel,why:ed.why}); } });
+    return { set:set, list:list }; }
+  function build(){
+    NODES.forEach(function(n){ nodeById[n.id]=n; });
+    EDGES.forEach(function(ed,i){ var A=nodeById[ed.a],B=nodeById[ed.b];
+      svg.appendChild(el("line",{ x1:A.x,y1:A.y,x2:B.x,y2:B.y,class:"cw-edge-line","data-edge":i,"data-a":ed.a,"data-b":ed.b })); });
+    NODES.forEach(function(n){
+      var g=el("g",{ class:"cw-node-g","data-id":n.id }); var r=30;
+      g.appendChild(el("circle",{ cx:n.x,cy:n.y,r:r,class:"cw-node-circle" }));
+      var lbl=el("text",{ x:n.x,y:n.formula?n.y-1:n.y+3,class:"cw-node-label" }); lbl.textContent=n.label; g.appendChild(lbl);
+      if(n.formula){ var fm=el("text",{ x:n.x,y:n.y+10,class:"cw-node-formula" }); fm.textContent=n.formula; g.appendChild(fm); }
+      g.addEventListener("click",function(e){ e.stopPropagation(); selectNode(n.id); });
+      svg.appendChild(g);
+    });
+    svg.addEventListener("click",function(){ resetGraph(); });
+    built=true;
+  }
+  function resetGraph(){
+    Array.prototype.forEach.call(svg.querySelectorAll(".cw-node-g"),function(g){ g.classList.remove("cw-active","cw-neighbor","cw-dim"); });
+    Array.prototype.forEach.call(svg.querySelectorAll(".cw-edge-line"),function(l){ l.classList.remove("cw-active","cw-dim"); });
+    infoEl.innerHTML='<div class="cw-info-empty">Tap any glowing node above to highlight its links and read <b>why</b> the concepts connect. Try <b>Momentum</b> or <b>Newton\'s 2nd Law</b> to start.</div>';
+  }
+  function selectNode(id){
+    var nb=neighborsOf(id), node=nodeById[id];
+    Array.prototype.forEach.call(svg.querySelectorAll(".cw-node-g"),function(g){
+      var gid=g.getAttribute("data-id"); g.classList.remove("cw-active","cw-neighbor","cw-dim");
+      if(gid===id) g.classList.add("cw-active"); else if(nb.set[gid]) g.classList.add("cw-neighbor"); else g.classList.add("cw-dim");
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll(".cw-edge-line"),function(l){
+      var a=l.getAttribute("data-a"),b=l.getAttribute("data-b"); l.classList.remove("cw-active","cw-dim");
+      if(a===id||b===id) l.classList.add("cw-active"); else l.classList.add("cw-dim");
+    });
+    var html='<div class="cw-info-title">'+esc(fullName(node))+
+      (node.formula&&node.formula.indexOf("=")>-1?' <span class="cw-info-formula">'+esc(node.formula)+"</span>":"")+"</div>";
+    if(nb.list.length){ html+='<ul class="cw-conn-list">';
+      nb.list.forEach(function(c){ var o=nodeById[c.other];
+        html+="<li><span class=\"cw-arrow\">→</span> <span class=\"cw-conn-rel\">"+esc(c.rel)+"</span> <span class=\"cw-conn-target\">"+esc(fullName(o))+"</span><div class=\"cw-conn-why\">"+esc(c.why)+"</div></li>"; });
+      html+="</ul>";
+    } else { html+='<div class="cw-info-empty">No links recorded.</div>'; }
+    infoEl.innerHTML=html;
+  }
+  function fullName(n){ var map={ n2:"Newton's 2nd Law",mom:"Momentum",imp:"Impulse",fbd:"Free-Body Diagram",col:"Collisions",ene:"Energy",fric:"Friction",grav:"Gravity",elec:"Electric Force" }; return map[n.id]||n.label; }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]; }); }
+  function open(){
+    if(!svg){ svg=document.getElementById("cw-svg"); infoEl=document.getElementById("cw-info"); overlay=document.getElementById("cw-overlay"); }
+    if(!built) build();
+    overlay.classList.add("cw-open"); overlay.setAttribute("aria-hidden","false"); document.body.style.overflow="hidden";
+  }
+  function close(){ if(!overlay) overlay=document.getElementById("cw-overlay"); overlay.classList.remove("cw-open"); overlay.setAttribute("aria-hidden","true"); document.body.style.overflow=""; }
+  document.getElementById("cw-overlay").addEventListener("click",function(e){ if(e.target===e.currentTarget) close(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"||e.key==="Esc") close(); });
+  window.openConceptWeb=open; window.closeConceptWeb=close;
+})();
+</script>
+
 <script>
 /* ===================== CONTENT MODEL ===================== */
 const CONCEPTS = [
   {
-    n:1, title:"MOMENTUM",
+    n:1, title:"MOMENTUM", anim:"momentum",
     teach:{
       kicker:"CONCEPT 1 / 6",
       head:"Momentum",
@@ -318,11 +907,25 @@ const CONCEPTS = [
         {t:"5 kg·m/s", ok:false, why:"Don't add — momentum multiplies: 2 × 3 = 6."},
         {t:"1.5 kg·m/s", ok:false, why:"That's dividing. Use p = mv = 2 × 3 = 6."},
         {t:"3 kg·m/s", ok:false, why:"You forgot the mass. p = m × v = 2 × 3 = 6."}
-      ]
+      ],
+      solver:{
+        id:"momentum-1", lhs:"p",
+        prompt:'A <b>2 kg</b> ball moves right at <b>3 m/s</b>. <span class="ask">Find its momentum.</span>',
+        inventory:[
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:true  },
+          { id:"fma",  tex:"F = ma",     label:"newton 2nd",   relevant:false },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false },
+          { id:"fric", tex:"f = μN",     label:"friction",     relevant:false }
+        ],
+        answerEqId:"pmv", dockedTex:"p = m v",
+        terms:[ { symbol:"m", sub:"(2 kg)" }, { symbol:"v", sub:"(3 m/s)" } ],
+        distractors:["a","½","g"],
+        result:{ expression:"p = m v", substitution:"p = (2 kg)(3 m/s)", answer:"p = 6 kg·m/s" }
+      }
     }
   },
   {
-    n:2, title:"COLLISIONS",
+    n:2, title:"COLLISIONS", anim:"collisions",
     teach:{
       kicker:"CONCEPT 2 / 6",
       head:"Collisions",
@@ -345,11 +948,26 @@ const CONCEPTS = [
         {t:"Elastic", ok:false, why:"Elastic means they bounce apart and keep KE. These stuck together."},
         {t:"No collision happened", ok:false, why:"They did collide and couple — it's a collision."},
         {t:"Momentum was destroyed", ok:false, why:"Momentum is always conserved, never destroyed."}
-      ]
+      ],
+      solver:{
+        id:"collisions-1", lhs:"p",
+        prompt:'A <b>2 kg</b> cart at <b>5 m/s</b> hits a still <b>3 kg</b> cart and they stick. ' +
+               '<span class="ask">Find the total momentum before impact.</span>',
+        inventory:[
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:true  },
+          { id:"fma",  tex:"F = ma",     label:"newton 2nd",   relevant:false },
+          { id:"imp",  tex:"J = FΔt",    label:"impulse",      relevant:false },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false }
+        ],
+        answerEqId:"pmv", dockedTex:"p = m v",
+        terms:[ { symbol:"m", sub:"(2 kg)" }, { symbol:"v", sub:"(5 m/s)" } ],
+        distractors:["m₂","v_f","g"],
+        result:{ expression:"p = m v", substitution:"p = (2 kg)(5 m/s)", answer:"p = 10 kg·m/s" }
+      }
     }
   },
   {
-    n:3, title:"IMPULSE",
+    n:3, title:"IMPULSE", anim:"impulse",
     teach:{
       kicker:"CONCEPT 3 / 6",
       head:"Impulse & Airbags",
@@ -372,11 +990,26 @@ const CONCEPTS = [
         {t:"It increases the change in momentum", ok:false, why:"Δp is set by your speed — the airbag changes the time, not Δp."},
         {t:"It removes your momentum instantly", ok:false, why:"Instant stop = tiny Δt = huge force. That's the opposite of helpful."},
         {t:"It makes you heavier", ok:false, why:"Mass isn't the point — it's about stretching the stopping time."}
-      ]
+      ],
+      solver:{
+        id:"impulse-1", lhs:"J",
+        prompt:'A <b>10 N</b> force pushes on a cart for <b>3 s</b>. ' +
+               '<span class="ask">Find the impulse delivered.</span>',
+        inventory:[
+          { id:"imp",  tex:"J = FΔt",    label:"impulse",      relevant:true  },
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:false },
+          { id:"fric", tex:"f = μN",     label:"friction",     relevant:false },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false }
+        ],
+        answerEqId:"imp", dockedTex:"J = F Δt",
+        terms:[ { symbol:"F", sub:"(10 N)" }, { symbol:"Δt", sub:"(3 s)" } ],
+        distractors:["m","½","a"],
+        result:{ expression:"J = F Δt", substitution:"J = (10 N)(3 s)", answer:"J = 30 N·s" }
+      }
     }
   },
   {
-    n:4, title:"FRICTION",
+    n:4, title:"FRICTION", anim:"friction",
     teach:{
       kicker:"CONCEPT 4 / 6",
       head:"Friction",
@@ -399,11 +1032,26 @@ const CONCEPTS = [
         {t:"Kinetic friction", ok:false, why:"Kinetic only acts once it's actually sliding."},
         {t:"No friction at all", ok:false, why:"Friction is what stops it from sliding — it's static friction."},
         {t:"Gravity friction", ok:false, why:"There's no such thing; resting-and-not-sliding is static friction."}
-      ]
+      ],
+      solver:{
+        id:"friction-1", lhs:"f",
+        prompt:'A box presses on the floor with normal force <b>N = 20 N</b> and ' +
+               '<b>μ = 0.5</b>. <span class="ask">Find the friction force.</span>',
+        inventory:[
+          { id:"fric", tex:"f = μN",     label:"friction",     relevant:true  },
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:false },
+          { id:"fma",  tex:"F = ma",     label:"newton 2nd",   relevant:false },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false }
+        ],
+        answerEqId:"fric", dockedTex:"f = μ N",
+        terms:[ { symbol:"μ", sub:"(0.5)" }, { symbol:"N", sub:"(20 N)" } ],
+        distractors:["m","g","v"],
+        result:{ expression:"f = μ N", substitution:"f = (0.5)(20 N)", answer:"f = 10 N" }
+      }
     }
   },
   {
-    n:5, title:"FREE-BODY",
+    n:5, title:"FREE-BODY", anim:"freebody",
     teach:{
       kicker:"CONCEPT 5 / 6",
       head:"Free-Body Diagrams",
@@ -426,11 +1074,26 @@ const CONCEPTS = [
         {t:"Only gravity", ok:false, why:"The table must push back (normal force) or the book would fall."},
         {t:"Friction and tension", ok:false, why:"No rope and no sliding here — it's gravity vs normal force."},
         {t:"A forward force keeping it still", ok:false, why:"Nothing pushes a resting book sideways; it's gravity vs normal."}
-      ]
+      ],
+      solver:{
+        id:"freebody-1", lhs:"ΣF",
+        prompt:'A <b>4 kg</b> block accelerates at <b>2 m/s²</b>. ' +
+               '<span class="ask">Find the net force (ΣF = ma).</span>',
+        inventory:[
+          { id:"fma",  tex:"ΣF = ma",   label:"newton 2nd",   relevant:true  },
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:false },
+          { id:"fric", tex:"f = μN",     label:"friction",     relevant:false },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false }
+        ],
+        answerEqId:"fma", dockedTex:"ΣF = m a",
+        terms:[ { symbol:"m", sub:"(4 kg)" }, { symbol:"a", sub:"(2 m/s²)" } ],
+        distractors:["v","μ","½"],
+        result:{ expression:"ΣF = m a", substitution:"ΣF = (4 kg)(2 m/s²)", answer:"ΣF = 8 N" }
+      }
     }
   },
   {
-    n:6, title:"ENERGY",
+    n:6, title:"ENERGY", anim:"energy",
     teach:{
       kicker:"CONCEPT 6 / 6",
       head:"Energy & Work",
@@ -453,7 +1116,22 @@ const CONCEPTS = [
         {t:"2× as much", ok:false, why:"It would be 2× only if KE were linear — but v is squared."},
         {t:"The same", ok:false, why:"More speed means more KE; it grows with v²."},
         {t:"Half as much", ok:false, why:"Faster means MORE energy, and it's squared: 4×."}
-      ]
+      ],
+      solver:{
+        id:"energy-1", lhs:"W",
+        prompt:'A <b>15 N</b> force pushes a crate <b>4 m</b> in the same direction. ' +
+               '<span class="ask">Find the work done (W = F·d).</span>',
+        inventory:[
+          { id:"work", tex:"W = Fd",     label:"work",         relevant:true  },
+          { id:"ke",   tex:"KE = ½mv²",  label:"kinetic E",    relevant:false },
+          { id:"pmv",  tex:"p = mv",     label:"momentum",     relevant:false },
+          { id:"fric", tex:"f = μN",     label:"friction",     relevant:false }
+        ],
+        answerEqId:"work", dockedTex:"W = F d",
+        terms:[ { symbol:"F", sub:"(15 N)" }, { symbol:"d", sub:"(4 m)" } ],
+        distractors:["m","½","v"],
+        result:{ expression:"W = F d", substitution:"W = (15 N)(4 m)", answer:"W = 60 J" }
+      }
     }
   }
 ];
@@ -471,9 +1149,10 @@ function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(
 
 function teachHTML(c){
   const t=c.teach;
-  return `<div class="panel teach">
+  return `<div class="panel teach" data-anim="${c.anim}">
     <div class="kicker anim anim1">${t.kicker}</div>
     <h1 class="head anim anim2">${t.head}</h1>
+    <div class="anim-frame anim anim2"><canvas class="teach-canvas"></canvas></div>
     <div class="analogy anim anim2">${t.analogy}</div>
     <p class="lead anim anim2">${t.lead}</p>
     <div class="eqcard anim-eq"><span class="eqlabel">${t.eqlabel}</span>${t.eq}</div>
@@ -485,12 +1164,19 @@ function teachHTML(c){
 function quizHTML(c){
   const q=c.quiz;
   const opts=q.opts.map((o,i)=>`<button class="opt" data-ok="${o.ok}" data-why="${o.why.replace(/"/g,'&quot;')}" data-i="${i}">${o.t}</button>`).join("");
-  return `<div class="panel quiz">
+  return `<div class="panel quiz" data-concept="${c.n}">
     <div class="kicker">CONCEPT ${c.n} / 6 — QUIZ</div>
     <h2 class="head">${c.title}: Quick Check</h2>
-    <p class="qbox">${q.q}</p>
-    <div class="opts">${opts}</div>
-    <div class="feedback" data-fb></div>
+    <div class="mode-toggle">
+      <button class="mode-btn on" data-mode="mcq">MULTIPLE CHOICE</button>
+      <button class="mode-btn" data-mode="solver">BUILD THE EQUATION</button>
+    </div>
+    <div class="mcq-block">
+      <p class="qbox">${q.q}</p>
+      <div class="opts">${opts}</div>
+      <div class="feedback" data-fb></div>
+    </div>
+    <div class="solver-mount" hidden></div>
     <div class="wb-wrap">
       <div class="wb-bar">
         <span class="wb-title">🖊 WHITEBOARD</span>
@@ -516,7 +1202,7 @@ function welcomeHTML(){
     </ul>
     <p class="lead" style="font-size:14px;color:var(--dim)">Tap <b>💡 TIPS</b> anytime for formula help. Use <b>← BACK / NEXT →</b> below to move.</p>
     <button class="btn big magenta nextLocal">START →</button>
-    <p style="margin-top:14px"><a class="weblink" href="concept-web.html">See the Concept Web →</a></p>
+    <p style="margin-top:14px"><a class="weblink" href="#" data-conceptweb>🔗 Open the Concept Web</a></p>
   </div></div>`;
 }
 
@@ -534,7 +1220,7 @@ function doneHTML(){
       <li>W = Fd, KE = ½mv² · energy of motion</li>
     </ul>
     <button class="btn big magenta" id="reviewBtn">↻ REVIEW FROM START</button>
-    <p style="margin-top:16px"><a class="weblink" href="concept-web.html">Explore the Concept Web →</a></p>
+    <p style="margin-top:16px"><a class="weblink" href="#" data-conceptweb>🔗 Explore the Concept Web</a></p>
   </div></div>`;
 }
 
@@ -579,6 +1265,7 @@ function show(idx, dir){
     old.classList.remove('active');
     old.style.transform = dir>=0 ? 'translateX(-100%)' : 'translateX(100%)';
     old.style.opacity='0';
+    resetQuizMode(old);
   }
   next.classList.add('active');
   next.style.transform='translateX(0)';
@@ -587,8 +1274,35 @@ function show(idx, dir){
   cur=idx;
   updateChrome();
   typeset(next);
-  const cv=next.querySelector('canvas');
+  const cv=next.querySelector('.wb-wrap canvas');
   if(cv && cv._fit) requestAnimationFrame(cv._fit);
+  updateAnim(next);
+}
+
+/* reset a quiz panel back to MCQ mode (so the shared solver can move freely) */
+function resetQuizMode(panel){
+  if(!panel || !panel.classList.contains('quiz')) return;
+  const mount=panel.querySelector('.solver-mount');
+  if(mount && !mount.hidden){
+    mount.hidden=true;
+    const mcq=panel.querySelector('.mcq-block'); if(mcq) mcq.hidden=false;
+    panel.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on', b.dataset.mode==='mcq'));
+    const sb=document.getElementById('solverBlock');
+    if(sb){ sb.hidden=true; }   /* leave parented; next solver toggle re-appends */
+  }
+}
+
+/* ===================== TEACH ANIMATION LIFECYCLE ===================== */
+let activeAnim=null;
+function updateAnim(panel){
+  if(activeAnim){ try{ activeAnim.stop(); }catch(_){} activeAnim=null; }
+  if(!panel.classList.contains('teach')) return;
+  const name=panel.dataset.anim;
+  const fn=window.PhysicsAnims && window.PhysicsAnims[name];
+  const canvas=panel.querySelector('.teach-canvas');
+  if(fn && canvas){
+    requestAnimationFrame(()=>{ if(panel.classList.contains('active')){ try{ activeAnim=fn(canvas); }catch(_){} } });
+  }
 }
 
 function updateChrome(){
@@ -707,7 +1421,168 @@ function initCanvas(panel){
   });
 }
 
-panels.forEach(p=>{ if(p.querySelector('canvas')) initCanvas(p); });
+panels.forEach(p=>{ if(p.querySelector('.wb-wrap canvas')) initCanvas(p); });
+
+/* ===================== DRAG-TO-BUILD SOLVER (scoped) ===================== */
+const Solver = (function(){
+  const els = {
+    block:      document.getElementById('solverBlock'),
+    prompt:     document.getElementById('slv-prompt'),
+    inventory:  document.getElementById('slv-inventory'),
+    answerArea: document.getElementById('slv-answerArea'),
+    termBank:   document.getElementById('slv-termBank'),
+    bankLabel:  document.getElementById('slv-bankLabel'),
+    cue:        document.getElementById('slv-cue'),
+    resetBtn:   document.getElementById('slv-resetBtn')
+  };
+  let Q=null, stageS="equation", termIndex=0, workLine=null, subLine=null, drag=null, cueTimer=null;
+
+  function loadQuestion(q){
+    Q=q; stageS="equation"; termIndex=0; workLine=subLine=null;
+    els.prompt.innerHTML=q.prompt;
+    els.inventory.innerHTML="";
+    q.inventory.forEach(eq=>{
+      const card=document.createElement("div");
+      card.className="eq-card "+(eq.relevant?"glow":"dim");
+      card.dataset.eqId=eq.id;
+      card.innerHTML=`${eq.tex}<span class="lbl">${eq.label}</span>`;
+      makeEquationDraggable(card,eq);
+      els.inventory.appendChild(card);
+    });
+    els.answerArea.className="slv-answer-area empty-hint";
+    els.answerArea.textContent="Drag the glowing equation here ↓";
+    els.termBank.className="slv-term-bank";
+    els.termBank.innerHTML="";
+    els.bankLabel.style.opacity="0";
+  }
+  function buildTermBank(){
+    const pool=[ ...Q.terms.map(t=>({label:t.symbol,correct:true})), ...Q.distractors.map(d=>({label:d,correct:false})) ];
+    shuffle(pool);
+    els.termBank.innerHTML="";
+    pool.forEach(item=>{
+      const chip=document.createElement("div");
+      chip.className="chip"; chip.textContent=item.label;
+      chip.dataset.symbol=item.label; chip.dataset.correct=item.correct?"1":"0";
+      makeChipDraggable(chip); els.termBank.appendChild(chip);
+    });
+    els.bankLabel.style.opacity="1";
+    requestAnimationFrame(()=> els.termBank.classList.add("show"));
+  }
+  function startDrag(e,sourceEl,kind,payload){
+    e.preventDefault();
+    if(sourceEl.setPointerCapture){ try{ sourceEl.setPointerCapture(e.pointerId); }catch(_){} }
+    const ghost=document.createElement("div"); ghost.className="slv-drag-ghost";
+    ghost.textContent=sourceEl.dataset.symbol||payload.face||sourceEl.firstChild.textContent;
+    document.body.appendChild(ghost); moveGhost(ghost,e.clientX,e.clientY);
+    const onMove=(ev)=>{ moveGhost(ghost,ev.clientX,ev.clientY); highlightDropTarget(ev.clientX,ev.clientY,kind); ev.preventDefault(); };
+    const onUp=(ev)=>{ cleanupDrag(); handleDrop(ev.clientX,ev.clientY,kind,payload,sourceEl); };
+    window.addEventListener("pointermove",onMove,{passive:false});
+    window.addEventListener("pointerup",onUp);
+    window.addEventListener("pointercancel",onUp);
+    drag={ ghost,onMove,onUp };
+  }
+  function moveGhost(ghost,x,y){ ghost.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(1.08)`; }
+  function cleanupDrag(){
+    if(!drag) return;
+    window.removeEventListener("pointermove",drag.onMove);
+    window.removeEventListener("pointerup",drag.onUp);
+    window.removeEventListener("pointercancel",drag.onUp);
+    drag.ghost.remove(); drag=null; els.answerArea.classList.remove("hint");
+  }
+  function highlightDropTarget(x,y,kind){
+    const target=(kind==="equation")?els.answerArea:(workLine||els.answerArea);
+    els.answerArea.classList.toggle("hint", isInside(target,x,y));
+  }
+  function makeEquationDraggable(card,eq){
+    card.addEventListener("pointerdown",(e)=>{ if(stageS!=="equation") return; startDrag(e,card,"equation",{eqId:eq.id,face:eq.tex}); });
+  }
+  function makeChipDraggable(chip){
+    chip.addEventListener("pointerdown",(e)=>{ if(stageS!=="terms") return; if(chip.classList.contains("used")) return;
+      startDrag(e,chip,"term",{ symbol:chip.dataset.symbol, correct:chip.dataset.correct==="1", face:chip.dataset.symbol }); });
+  }
+  function handleDrop(x,y,kind,payload,sourceEl){
+    if(kind==="equation"){
+      if(!isInside(els.answerArea,x,y)) return;
+      if(payload.eqId===Q.answerEqId) dockEquation(sourceEl);
+      else wrongDrop(sourceEl,"Not this one — try the glowing match");
+    } else if(kind==="term"){
+      const target=workLine||els.answerArea;
+      if(!isInside(target,x,y)) return;
+      const expected=Q.terms[termIndex];
+      if(payload.correct && payload.symbol===expected.symbol) acceptTerm(sourceEl,expected);
+      else wrongDrop(sourceEl,"Wrong term — check the formula");
+    }
+  }
+  function dockEquation(sourceEl){
+    stageS="terms"; sourceEl.classList.add("docked-src");
+    els.answerArea.className="slv-answer-area"; els.answerArea.innerHTML="";
+    const head=document.createElement("div"); head.className="docked-eq"; head.textContent=Q.dockedTex; els.answerArea.appendChild(head);
+    const lhs=Q.lhs||"p";
+    workLine=document.createElement("div"); workLine.className="work-line";
+    const lead=document.createElement("span"); lead.innerHTML=lhs+"&nbsp;";
+    const eqs=document.createElement("span"); eqs.className="eq-sign"; eqs.textContent="=";
+    workLine.appendChild(lead); workLine.appendChild(eqs);
+    Q.terms.forEach((t,i)=>{ const slot=document.createElement("span"); slot.className="term-slot"+(i===0?" next":""); slot.dataset.slot=i; slot.textContent=""; workLine.appendChild(slot); });
+    els.answerArea.appendChild(workLine);
+    subLine=document.createElement("div"); subLine.className="work-line sub-line";
+    const sLead=document.createElement("span"); sLead.innerHTML=lhs+"&nbsp;";
+    const sEq=document.createElement("span"); sEq.className="eq-sign"; sEq.textContent="=";
+    subLine.appendChild(sLead); subLine.appendChild(sEq);
+    Q.terms.forEach((t,i)=>{ const slot=document.createElement("span"); slot.className="term-slot"; slot.dataset.sub=i; slot.textContent=""; subLine.appendChild(slot); });
+    els.answerArea.appendChild(subLine);
+    showCue("Nice! Now build the right side →",true); buildTermBank();
+  }
+  function acceptTerm(chip,term){
+    chip.classList.add("used");
+    const slot=workLine.querySelector(`[data-slot="${termIndex}"]`); slot.textContent=term.symbol; slot.classList.add("filled"); slot.classList.remove("next");
+    const sslot=subLine.querySelector(`[data-sub="${termIndex}"]`); sslot.textContent=term.sub; sslot.classList.add("filled");
+    termIndex++;
+    const nextSlot=workLine.querySelector(`[data-slot="${termIndex}"]`); if(nextSlot) nextSlot.classList.add("next");
+    if(termIndex>=Q.terms.length) finish(); else showCue("✓ "+term.symbol+" placed",true);
+  }
+  function finish(){
+    stageS="done";
+    const fa=document.createElement("div"); fa.className="final-answer"; fa.innerHTML=`<small>RESULT</small>${Q.result.answer}`;
+    els.answerArea.appendChild(fa); requestAnimationFrame(()=> fa.classList.add("show"));
+    showCue("🎉 Solved!",true); els.termBank.classList.remove("show");
+  }
+  function wrongDrop(sourceEl,msg){
+    sourceEl.classList.remove("shake"); void sourceEl.offsetWidth; sourceEl.classList.add("shake");
+    setTimeout(()=> sourceEl.classList.remove("shake"),420); showCue(msg,false);
+  }
+  function showCue(msg,ok){
+    els.cue.textContent=msg; els.cue.className="slv-cue show"+(ok?" ok":"");
+    clearTimeout(cueTimer); cueTimer=setTimeout(()=> els.cue.className="slv-cue"+(ok?" ok":""),1500);
+  }
+  function isInside(el,x,y){ const r=el.getBoundingClientRect(); return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; }
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  els.resetBtn.addEventListener("click",()=>{ if(Q) loadQuestion(Q); });
+  return { load:loadQuestion, el:els.block };
+})();
+
+/* ===================== QUIZ MODE TOGGLE (MCQ / SOLVER) ===================== */
+stage.addEventListener('click',(e)=>{
+  const mb=e.target.closest('.mode-btn');
+  if(!mb) return;
+  const panel=mb.closest('.panel');
+  const mode=mb.dataset.mode;
+  panel.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on', b===mb));
+  const mcq=panel.querySelector('.mcq-block');
+  const mount=panel.querySelector('.solver-mount');
+  if(mode==='solver'){
+    mcq.hidden=true;
+    mount.hidden=false;
+    mount.appendChild(Solver.el);           // move shared solver block into this panel
+    Solver.el.hidden=false;
+    const ci=+panel.dataset.concept;
+    const q=CONCEPTS[ci-1].quiz.solver;
+    Solver.load(q);
+  } else {
+    mcq.hidden=false;
+    mount.hidden=true;
+    Solver.el.hidden=true;
+  }
+});
 
 /* refit visible canvas on resize */
 let rT;
@@ -732,7 +1607,32 @@ backdrop.addEventListener('click', closeDrawer);
 window.addEventListener('keydown',(e)=>{
   if(e.key==='ArrowRight' && cur<N-1) show(cur+1,1);
   if(e.key==='ArrowLeft' && cur>0) show(cur-1,-1);
-  if(e.key==='Escape') closeDrawer();
+  if(e.key==='Escape'){ closeDrawer(); closeNav(); }
+});
+
+/* ===================== TOP NAV (drag-down on mobile) ===================== */
+const appnav=document.getElementById('appnav');
+const appnavHandle=document.getElementById('appnavHandle');
+function openNav(){ appnav.classList.add('open'); appnavHandle.setAttribute('aria-expanded','true'); }
+function closeNav(){ appnav.classList.remove('open'); appnavHandle.setAttribute('aria-expanded','false'); }
+function toggleNav(){ appnav.classList.contains('open') ? closeNav() : openNav(); }
+appnavHandle.addEventListener('click', toggleNav);
+/* drag-down gesture on the handle */
+let navStartY=null;
+appnavHandle.addEventListener('pointerdown',(e)=>{ navStartY=e.clientY; });
+appnavHandle.addEventListener('pointermove',(e)=>{
+  if(navStartY===null) return;
+  if(e.clientY-navStartY>22){ openNav(); navStartY=null; }
+  else if(navStartY-e.clientY>22){ closeNav(); navStartY=null; }
+});
+window.addEventListener('pointerup',()=>{ navStartY=null; });
+/* close nav after picking a link, open concept web */
+document.getElementById('navConceptWeb').addEventListener('click',()=>{ closeNav(); if(window.openConceptWeb) window.openConceptWeb(); });
+document.querySelectorAll('#appnavLinks a').forEach(a=>a.addEventListener('click',closeNav));
+
+/* concept-web triggers on Welcome / Done screens (delegated) */
+stage.addEventListener('click',(e)=>{
+  if(e.target.closest('[data-conceptweb]')){ e.preventDefault(); if(window.openConceptWeb) window.openConceptWeb(); }
 });
 
 /* ===================== INIT ===================== */
