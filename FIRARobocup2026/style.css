@@ -414,3 +414,47 @@ h1,h2,h3,h4 {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-top: 1.5rem; align-items: start;
 }
+
+/* ---------- 15. AWARD CARD ---------------------------------- */
+.award-grid {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  margin-top: 1.5rem;
+}
+.award-card {
+  position: relative; display: flex; flex-direction: column;
+  background: var(--c-bg-2); border: 1px solid var(--c-line);
+  padding: 1.3rem 1.4rem;
+  clip-path: polygon(
+    var(--chamfer) 0, 100% 0,
+    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+    0 100%, 0 var(--chamfer));
+  transition: transform .2s var(--ease), border-color .2s var(--ease);
+}
+.award-card:hover { transform: translateY(-3px); border-color: var(--c-accent); }
+.award-card__meta {
+  font-family: var(--font-head); font-size: .66rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--c-text-mute); margin-bottom: .55rem;
+}
+.award-card__issuer {
+  font-family: var(--font-head); font-size: 1.02rem; color: var(--c-text);
+  margin: 0 0 .25rem; line-height: 1.2;
+}
+.award-card__kind { color: var(--c-text-dim); font-size: .9rem; margin: 0 0 1rem; flex: 1; }
+.award-card__link {
+  font-family: var(--font-head); font-size: .74rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--c-accent);
+  display: inline-flex; align-items: center; gap: .4rem; margin-top: auto;
+}
+.award-card__link:hover { color: var(--c-accent-2); }
+/* featured top honour — Prime Minister of Canada */
+.award-card--top { border-color: var(--c-accent); box-shadow: var(--glow); }
+.award-card--top .award-card__meta { color: var(--c-accent); }
+.award-card--top::after {
+  content: "★ PRIME MINISTER";
+  position: absolute; top: 0; right: 0;
+  font-family: var(--font-head); font-size: .58rem; letter-spacing: .13em;
+  color: var(--c-bg); background: var(--c-accent);
+  padding: .28rem .62rem;
+  clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%);
+}
