@@ -169,21 +169,6 @@ ul.beats li b{ color:var(--yellow); }
 .feedback b.ok{ color:var(--green); }
 .feedback b.no{ color:var(--red); }
 
-/* ============ WHITEBOARD ============ */
-.wb-wrap{ margin:6px 0 8px; }
-.wb-bar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
-.wb-title{ font-family:'Press Start 2P',monospace; font-size:8px; color:var(--green);
-  text-shadow:0 0 6px var(--green); margin-right:auto; }
-.tool{ min-height:40px; min-width:44px; padding:8px 12px; border-radius:8px;
-  border:2px solid #2a2a55; background:var(--panel2); color:var(--ink);
-  font-size:13px; font-weight:700; cursor:pointer; }
-.tool.on{ border-color:var(--cyan); box-shadow:0 0 10px var(--cyan); color:var(--cyan); }
-.tool:active{ transform:scale(.96); }
-.canvas-frame{ position:relative; width:100%; height:240px;
-  border:2px solid #2a2a55; border-radius:12px; overflow:hidden;
-  background:#0a0a18; box-shadow:inset 0 0 24px rgba(33,230,255,.08); touch-action:none; }
-.canvas-frame canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-
 /* ============ BUTTONS ============ */
 .btn{ display:inline-flex; align-items:center; justify-content:center;
   min-height:52px; padding:14px 22px; border-radius:12px; cursor:pointer;
@@ -590,7 +575,7 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
 <div class="slv" id="solverBlock" hidden>
   <div class="slv-qnav" id="slv-qnav"></div>
   <div class="mode-toggle" id="slv-modeToggle">
-    <button class="mode-btn on" data-mode="build">BUILD IT</button>
+    <button class="mode-btn on" data-mode="build">BUILD THE EQUATION</button>
     <button class="mode-btn" data-mode="mcq">MULTIPLE CHOICE</button>
   </div>
   <div class="slv-prompt" id="slv-prompt"></div>
