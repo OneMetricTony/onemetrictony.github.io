@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kavosh — Engineering World Champions Since 2010 · FIRA RoboWorld Cup 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
+    @media (max-width: 760px) {
+      .nav.nav--open .nav__links { display: flex; }
+    }
+    /* Vertical timeline (uses palette + angular geometry only) */
+    .timeline { position: relative; margin: 2rem 0 0; padding-left: 1.5rem; }
+    .timeline::before {
+      content: ""; position: absolute; left: 4px; top: .4rem; bottom: .4rem;
+      width: 2px;
+      background: repeating-linear-gradient(180deg, var(--c-accent) 0 14px, transparent 14px 22px);
+    }
+    .timeline__step { position: relative; margin: 0 0 1.25rem; }
+    .timeline__step::before {
+      content: ""; position: absolute; left: -1.5rem; top: .55rem;
+      width: 12px; height: 12px; background: var(--c-accent);
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    }
+    .timeline__year {
+      font-family: var(--font-head); font-weight: 700; letter-spacing: .12em;
+      color: var(--c-accent); font-size: .95rem;
+    }
+    .timeline__step--mark .timeline__year { color: var(--c-accent-2); }
+    .timeline__step--mark::before { background: var(--c-accent-2); }
+    .grid-2 { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .chip-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.4rem; }
+    .lead { color: var(--c-text-dim); font-size: clamp(1rem, 2.2vw, 1.15rem); max-width: 64ch; }
+    .pillars { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .6rem; }
+    .pillars li { position: relative; padding-left: 1.4rem; color: var(--c-text-dim); }
+    .pillars li::before {
+      content: ""; position: absolute; left: 0; top: .55em;
+      width: 8px; height: 8px; background: var(--c-accent);
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    .cta-band { text-align: center; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html"><img src="assets/emblem.svg" alt="" width="30" height="30"> FIRA · 2026</a>
+    <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
+    <div class="nav__links">
+      <a class="nav__link" href="index.html">Home</a>
+      <a class="nav__link" href="robocup.html">RoboCup 2026</a>
+      <a class="nav__link" href="kavosh.html" aria-current="page">Kavosh</a>
+      <a class="nav__link" href="sponsorship.html">Sponsorship</a>
+      <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
+      <a class="nav__link" href="about.html">About</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="container hero__inner">
+      <p class="eyebrow">Kavosh AI &amp; Robotics Academy · Canada</p>
+      <h1>KAVOSH — Engineering <span>World Champions</span> Since 2010</h1>
+      <p>Kavosh AI &amp; Robotics Academy was founded in 2010 in Canada, with hubs across
+        Toronto, Markham, Vancouver, Richmond, Winnipeg and Montreal. We train the next
+        generation of engineers for RoboCup, FIRA and VEX — building humanoid and rescue
+        robots, and competing on the world stage. President: <strong>Alireza (Ali) Vafadar</strong>.</p>
+      <div class="hero__actions">
+        <a class="angled-btn" href="sponsorship.html">Become a Sponsor</a>
+        <a class="angled-btn angled-btn--ghost" href="robocup.html">About RoboCup 2026</a>
+      </div>
+      <div class="chip-row">
+        <span class="stat-chip"><b>2010</b><small>Founded</small></span>
+        <span class="stat-chip"><b>14+</b><small>Years</small></span>
+        <span class="stat-chip"><b>50+</b><small>Champions Trained</small></span>
+        <span class="stat-chip"><b>24</b><small>Trophies</small></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- INTRO / MISSION-PREVIEW -->
+    <section class="section">
+      <div class="hud-frame">
+        <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
+        <p class="eyebrow">Who We Are</p>
+        <p class="lead">From a small group of teenage builders to a Canadian national robotics
+          program, Kavosh has spent more than a decade turning curiosity into engineering
+          excellence. Our founders began competing internationally at age 14 — and our students
+          now carry that legacy onto the global stage at the FIRA RoboWorld Cup 2026 in Markham.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider"><span>Our Journey</span></hr>
+
+    <!-- TIMELINE -->
+    <section class="section" aria-labelledby="timeline-h">
+      <h2 id="timeline-h">Timeline</h2>
+      <div class="timeline">
+        <div class="timeline__step">
+          <div class="timeline__year">2010</div>
+          <p>Kavosh AI &amp; Robotics Academy is founded in Canada. Founders begin competing
+            internationally at age 14 — earning 10 championships and 24 trophies over the years.</p>
+        </div>
+        <div class="timeline__step timeline__step--mark">
+          <div class="timeline__year">2023 · FIRA Germany (Wolfenbüttel)</div>
+          <p>Kavosh fields the <strong>first Canadian national team</strong> at the FIRA RoboWorld
+            Cup — bringing home 2 championships and 1 runner-up finish.</p>
+        </div>
+        <div class="timeline__step">
+          <div class="timeline__year">2024 · FIRA World Cup (São Luís, Brazil)</div>
+          <p>Competing on the world stage in Brazil, deepening our humanoid and rescue robotics
+            programs against the best teams on the planet.</p>
+        </div>
+        <div class="timeline__step">
+          <div class="timeline__year">2025 · FIRA Canada National (Markham)</div>
+          <p>National competition held in Markham, Ontario (March 15–16) — preparing the next
+            wave of champions on home soil.</p>
+        </div>
+        <div class="timeline__step timeline__step--mark">
+          <div class="timeline__year">2026 · FIRA RoboWorld Cup (Markham, Canada)</div>
+          <p>The world comes to Canada. Kavosh competes at the first FIRA RoboWorld Cup
+            ever hosted in Canada.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider"><span>Track Record</span></hr>
+
+    <!-- ACHIEVEMENTS -->
+    <section class="section" aria-labelledby="ach-h">
+      <h2 id="ach-h">Achievements</h2>
+      <div class="grid-2">
+        <div class="hud-panel hud-panel--accent">
+          <h3>On the Podium</h3>
+          <ul class="pillars">
+            <li>10 championships across international competition</li>
+            <li>24 trophies earned over 14+ years</li>
+            <li>First Canadian national team at FIRA (2023, Germany)</li>
+          </ul>
+        </div>
+        <div class="hud-panel">
+          <h3>Beyond the Arena</h3>
+          <ul class="pillars">
+            <li>50+ world champions trained</li>
+            <li>CNRS-certified courses</li>
+            <li>Alumni at top-100 universities and in Silicon Valley</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider"><span>Why We Build</span></hr>
+
+    <!-- MISSION + PILLARS -->
+    <section class="section" aria-labelledby="mission-h">
+      <h2 id="mission-h">Our Mission</h2>
+      <div class="hud-panel" style="margin-bottom:var(--gap)">
+        <p class="lead" style="margin:0">“To be a global leader in robotics and AI education,
+          inspiring and empowering the next generation of innovators.”</p>
+      </div>
+      <div class="grid-2">
+        <div class="hud-panel">
+          <h3>Our Pillars</h3>
+          <ul class="pillars">
+            <li>World-class, hands-on curriculum</li>
+            <li>Building critical thinkers and problem solvers</li>
+            <li>Competition prep for VEX, RoboCup &amp; FIRA</li>
+          </ul>
+        </div>
+        <div class="hud-panel">
+          <h3 aria-hidden="true">&nbsp;</h3>
+          <ul class="pillars">
+            <li>Clear pathways to university &amp; industry</li>
+            <li>An inclusive and diverse community</li>
+            <li>Engineering champions, one student at a time</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider"><span>By the Numbers</span></hr>
+
+    <!-- STAT CHIPS -->
+    <section class="section">
+      <div class="chip-row">
+        <span class="stat-chip"><b>2010</b><small>Founded</small></span>
+        <span class="stat-chip"><b>14+</b><small>Years</small></span>
+        <span class="stat-chip"><b>50+</b><small>Champions Trained</small></span>
+        <span class="stat-chip"><b>24</b><small>Trophies</small></span>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section">
+      <div class="hud-frame cta-band">
+        <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
+        <p class="eyebrow">Partner With Us</p>
+        <h2>Back the Next Generation of World Champions</h2>
+        <p class="lead" style="margin-inline:auto">Sponsoring Kavosh at the FIRA RoboWorld Cup 2026
+          means investing in STEM talent on a global stage. Join us in Markham.</p>
+        <p style="margin-top:1.4rem"><a class="angled-btn angled-btn--amber" href="sponsorship.html">Explore Sponsorship</a></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <img src="assets/emblem.svg" alt="" width="40" height="40"> FIRA · 2026
+        </div>
+        <div class="footer__cols">
+          <div>
+            <h4>Explore</h4>
+            <a href="index.html">Home</a>
+            <a href="robocup.html">RoboCup 2026</a>
+            <a href="kavosh.html">Kavosh</a>
+            <a href="sponsorship.html">Sponsorship</a>
+            <!-- ABOUT PAGE (deletable): delete about.html and remove this one link -->
+            <a href="about.html">About</a>
+          </div>
+          <div>
+            <h4>Contact</h4>
+            <a href="mailto:tonychu@hqcnrs.org">Tony Chu · tonychu@hqcnrs.org</a>
+            <a href="tel:+16476066942">647-606-6942</a>
+            <span style="display:block;color:var(--c-text-dim);font-size:.88rem;padding:.15rem 0">FIRA Canada · Canadian National Robotic Society</span>
+            <a href="https://canada.firaworldcup.org">canada.firaworldcup.org</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bar">© 2026 FIRA Canada · Canadian National Robotic Society</div>
+    </div>
+  </footer>
+
+  <script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+</body>
+</html>
