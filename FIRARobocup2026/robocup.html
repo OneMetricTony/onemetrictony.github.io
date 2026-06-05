@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIRA RoboWorld Cup 2026 · The World Stage for Robotics</title>
+<link rel="icon" href="assets/emblem.svg">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
+  @media (max-width: 760px) {
+    .nav.nav--open .nav__links { display: flex; }
+  }
+  /* Local helpers reusing palette tokens (no edits to style.css) */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .panel-grid {
+    display: grid; gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .aside-note {
+    margin-top: 1rem; padding: .9rem 1.1rem;
+    background: var(--c-bg-3); border-left: 3px solid var(--c-accent-2);
+    font-size: .9rem; color: var(--c-text-dim);
+  }
+  .aside-note b { color: var(--c-accent-2); font-family: var(--font-head); letter-spacing: .08em; }
+  .pull-quote {
+    font-family: var(--font-head); font-size: clamp(1.15rem, 3vw, 1.6rem);
+    line-height: 1.3; color: var(--c-text); margin: 0;
+  }
+  .pull-quote cite {
+    display: block; margin-top: 1rem; font-style: normal;
+    font-size: .82rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--c-accent);
+  }
+  .league-list { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .5rem; }
+  .league-list li { position: relative; padding-left: 1.3rem; color: var(--c-text-dim); }
+  .league-list li::before {
+    content: ""; position: absolute; left: 0; top: .55em;
+    width: 8px; height: 8px; background: var(--c-accent);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .league-list li b { color: var(--c-text); font-family: var(--font-head); letter-spacing: .04em; }
+  .cta-band { text-align: center; }
+  .cta-band p { color: var(--c-text-dim); max-width: 52ch; margin: .6rem auto 1.6rem; }
+  .footer__sources { font-size: .74rem; color: var(--c-text-mute); }
+  .footer__sources a { display: inline; color: var(--c-text-mute); }
+  .footer__sources a:hover { color: var(--c-accent); }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html"><img src="assets/emblem.svg" alt="" width="30" height="30"> FIRA · 2026</a>
+    <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
+    <div class="nav__links">
+      <a class="nav__link" href="index.html">Home</a>
+      <a class="nav__link" href="robocup.html" aria-current="page">RoboCup 2026</a>
+      <a class="nav__link" href="kavosh.html">Kavosh</a>
+      <a class="nav__link" href="sponsorship.html">Sponsorship</a>
+      <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
+      <a class="nav__link" href="about.html">About</a>
+    </div>
+  </nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container hero__inner">
+    <p class="eyebrow">FIRA RoboWorld Cup 2026 · Markham, Canada</p>
+    <h1>The World Stage for <span>Robotics</span> — FIRA RoboWorld Cup 2026</h1>
+    <p>The world's brightest student and research robotics teams compete head-to-head. In 2026 the FIRA RoboWorld Cup — run by the Federation of International RoboSports Association — comes to Markham, Ontario for the first time ever in Canada, co-organized with the Canadian National Robotic Society.</p>
+    <div class="hero__actions">
+      <a class="angled-btn" href="sponsorship.html">Become a Sponsor</a>
+      <a class="angled-btn angled-btn--ghost" href="#competition">Explore the Competition</a>
+    </div>
+  </div>
+</section>
+
+<main class="container section">
+
+  <!-- ===== STAT CHIPS ===== -->
+  <div class="section-divider"><span>By the Numbers</span></div>
+  <div class="chip-row">
+    <div class="stat-chip"><b>1996</b><small>FIRA Founded</small></div>
+    <div class="stat-chip"><b>Jul 17–21</b><small>2026 · Markham</small></div>
+    <div class="stat-chip"><b>10+</b><small>HuroCup Events</small></div>
+    <div class="stat-chip"><b>4</b><small>FIRA League Families</small></div>
+    <div class="stat-chip"><b>1st</b><small>Canada-Hosted Edition</small></div>
+  </div>
+
+  <!-- ===== 1. WHAT IS FIRA ===== -->
+  <div class="section-divider"><span>What Is FIRA</span></div>
+  <div class="hud-panel hud-panel--accent">
+    <h2>What Is the FIRA RoboWorld Cup</h2>
+    <p style="color:var(--c-text-dim)">The FIRA RoboWorld Cup is the international championship of fully autonomous robots. FIRA — the Federation of International RoboSports Association — was founded in 1996 in Daejeon, Korea, beginning with MiroSot robot soccer and growing into a worldwide series of robot sports for humanoid, flying, and industrial machines.</p>
+    <div class="aside-note">
+      <b>Did you know?</b> RoboCup is a <em>separate</em> organization, founded in 1997, famous for its goal of building a robot soccer team that can beat the human World Cup champions by 2050. The two share a sporting spirit but are run independently.
+    </div>
+  </div>
+
+  <!-- ===== 2. FIRA 2026 MARKHAM ===== -->
+  <div class="section-divider"><span>FIRA 2026 · Markham</span></div>
+  <div class="hud-frame">
+    <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
+    <h2>FIRA 2026 — Markham, Canada</h2>
+    <p style="color:var(--c-text-dim);margin:0">The 31st edition of the FIRA RoboWorld Cup runs <b style="color:var(--c-text)">July 17–21, 2026</b>, hosted at the Markham Pan Am Centre and York University's Markham Campus. It is the first time the championship has ever been held in Canada — bringing the global robotics community to the Greater Toronto Area.</p>
+  </div>
+
+  <!-- ===== 3. THE COMPETITION ===== -->
+  <div class="section-divider" id="competition"><span>The Competition</span></div>
+  <div class="panel-grid">
+    <div class="hud-panel">
+      <h3>FIRA Sports</h3>
+      <p style="color:var(--c-text-dim);margin:0 0 .4rem">Headlined by <b style="color:var(--c-text)">HuroCup</b> — a humanoid robot decathlon where a single robot design must master every discipline:</p>
+      <ul class="league-list">
+        <li>Sprint &amp; Marathon</li>
+        <li>Long Jump &amp; Weightlifting</li>
+        <li>Archery &amp; Basketball</li>
+        <li>Obstacle Run &amp; Robot Soccer</li>
+      </ul>
+    </div>
+    <div class="hud-panel">
+      <h3>League Families</h3>
+      <ul class="league-list">
+        <li><b>FIRA Sports</b> — humanoid &amp; soccer events incl. HuroCup</li>
+        <li><b>FIRA AIR</b> — autonomous flying robots</li>
+        <li><b>FIRA Challenges</b> — industrial, rescue &amp; service</li>
+        <li><b>FIRA Youth</b> — the next generation of competitors</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 4. A GLOBAL STAGE ===== -->
+  <div class="section-divider"><span>A Global Stage</span></div>
+  <div class="hud-panel">
+    <h2>A Global Stage</h2>
+    <p style="color:var(--c-text-dim);margin:0">Teams travel from across the world to compete — including squads from Canada, China, Egypt, Germany, Iran, Nepal, Turkey, the USA, and many more. The RoboWorld Cup is as much a meeting of cultures and ideas as it is a contest of engineering.</p>
+  </div>
+
+  <!-- ===== 5. WHY IT MATTERS ===== -->
+  <div class="section-divider"><span>Why It Matters</span></div>
+  <div class="hud-panel hud-panel--accent">
+    <h2>Why It Matters — and Why Sponsors Belong Here</h2>
+    <p style="color:var(--c-text-dim)">Competitions like the FIRA RoboWorld Cup are where the next generation of robotics and AI engineers are forged. The autonomy, perception, and control technology on display is the same that powers self-driving vehicles and industrial automation. Backing a team is a direct investment in STEM talent — on a genuine world stage, in front of a global audience.</p>
+  </div>
+
+  <!-- ===== PULL QUOTE ===== -->
+  <div class="section-divider"></div>
+  <div class="hud-frame">
+    <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
+    <blockquote class="pull-quote">
+      &ldquo;Hosting the FIRA RoboWorld Cup 2026 in Canada is a milestone achievement that highlights our country's growing influence.&rdquo;
+      <cite>— Samia Karimi Dastjerdi, President, FIRA Canada</cite>
+    </blockquote>
+  </div>
+
+  <!-- ===== CTA BAND ===== -->
+  <div class="section-divider"></div>
+  <div class="hud-panel hud-panel--accent cta-band">
+    <h2>Put Your Brand on the World Stage</h2>
+    <p>Join us in bringing the FIRA RoboWorld Cup to Canada and championing the engineers of tomorrow.</p>
+    <a class="angled-btn angled-btn--amber" href="sponsorship.html">Become a Sponsor</a>
+  </div>
+
+</main>
+
+<!-- ============ SHARED FOOTER ============ -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <div class="footer__brand"><img src="assets/emblem.svg" alt=""> FIRA · 2026</div>
+      <p style="color:var(--c-text-mute);max-width:32ch;font-size:.88rem">The 31st FIRA RoboWorld Cup &amp; Summit — Markham, Canada. Organized by FIRA Canada / Canadian National Robotic Society.</p>
+    </div>
+    <div class="footer__cols">
+      <div>
+        <h4>Explore</h4>
+        <a href="index.html">Home</a>
+        <a href="robocup.html">RoboCup 2026</a>
+        <a href="kavosh.html">Kavosh</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
+        <a href="about.html">About</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="mailto:tonychu@hqcnrs.org">Tony Chu · tonychu@hqcnrs.org</a>
+        <a href="tel:+16476066942">647-606-6942</a>
+        <a>FIRA Canada · CNRS</a>
+        <a href="https://canada.firaworldcup.org" target="_blank" rel="noopener">canada.firaworldcup.org</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer__bar">
+    <div class="container">
+      <p class="footer__sources" style="margin:0 0 .5rem">Sources: <a href="https://firaworldcup.org" target="_blank" rel="noopener">firaworldcup.org</a> · <a href="https://canada.firaworldcup.org" target="_blank" rel="noopener">canada.firaworldcup.org</a> · Visit Markham · York University News.</p>
+      © 2026 FIRA Canada · Canadian National Robotic Society
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SHARED NAV TOGGLE JS ============ -->
+<script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+
+</body>
+</html>
