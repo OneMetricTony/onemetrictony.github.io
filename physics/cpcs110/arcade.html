@@ -572,9 +572,177 @@ footer{
   text-align:center; font-family:'Press Start 2P',monospace; font-size:7px;
   color:var(--dim); padding:24px 10px 40px; line-height:1.8;
 }
+
+/* ============ INTRO WELCOME ============ */
+#introWelcome{
+  max-width:1280px; margin:18px auto 0; padding:0 14px;
+}
+.intro-card{
+  background:linear-gradient(180deg, #0e0e1c, #10102a);
+  border:3px solid var(--cyan); border-radius:8px;
+  box-shadow:0 0 24px rgba(33,230,255,.18), inset 0 0 0 2px #000;
+  padding:20px 22px;
+}
+.intro-card h2{
+  font-family:'Press Start 2P',monospace; font-size:12px; color:var(--yellow);
+  margin:0 0 14px; text-shadow:0 0 10px var(--magenta); line-height:1.6;
+}
+.intro-card p{ font-size:15px; line-height:1.7; margin:0 0 12px; }
+.intro-card p:last-child{ margin-bottom:0; }
+.intro-card .hi{ color:var(--cyan); font-weight:bold; }
+.intro-card .hi2{ color:var(--green); font-weight:bold; }
+.intro-cta{
+  display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;
+}
+
+/* ============ SCROLL-THROUGH SLIDE LESSON ============ */
+/* scroll-progress bar pinned at very top of the slide deck viewport */
+.slide-progress-wrap{
+  position:fixed; top:0; left:0; right:0; height:5px; z-index:600;
+  background:rgba(6,6,13,.4); opacity:0; transition:opacity .4s;
+  pointer-events:none;
+}
+.slide-progress-wrap.live{ opacity:1; }
+.slide-progress-bar{
+  height:100%; width:0%;
+  background:linear-gradient(90deg, var(--cyan), var(--magenta), var(--green), var(--yellow));
+  box-shadow:0 0 12px var(--magenta);
+  transition:width .15s linear;
+}
+
+#slideDeck{
+  scroll-snap-type:y mandatory;
+  height:100vh; overflow-y:scroll; overflow-x:hidden;
+  position:relative;
+  border-top:3px solid var(--magenta);
+  border-bottom:3px solid var(--magenta);
+  box-shadow:0 0 30px rgba(255,61,240,.2) inset;
+  scrollbar-width:thin; scrollbar-color:var(--magenta) #06060f;
+}
+#slideDeck::-webkit-scrollbar{ width:10px; }
+#slideDeck::-webkit-scrollbar-track{ background:#06060f; }
+#slideDeck::-webkit-scrollbar-thumb{ background:var(--magenta); border-radius:5px; }
+
+.slide{
+  min-height:100vh; scroll-snap-align:start;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:60px 20px; position:relative;
+  overflow:hidden;
+}
+.slide-inner{ max-width:760px; width:100%; }
+
+/* per-slide ambient glow */
+.slide::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(circle at 50% 35%, var(--sg, rgba(33,230,255,.10)), transparent 60%);
+}
+.slide > *{ position:relative; z-index:1; }
+
+.slide-step{
+  font-family:'Press Start 2P',monospace; font-size:8px; color:var(--magenta);
+  letter-spacing:1px; margin-bottom:18px; text-shadow:0 0 8px var(--magenta);
+  opacity:0; transform:translateY(20px); transition:opacity .6s, transform .6s;
+}
+.slide-title{
+  font-family:'Press Start 2P',monospace; font-size:clamp(13px,2.6vw,22px);
+  color:var(--yellow); line-height:1.7; margin:0 0 24px;
+  text-shadow:0 0 10px var(--cyan), 3px 3px 0 #003;
+  opacity:0; transform:translateY(30px); transition:opacity .7s .1s, transform .7s .1s;
+}
+.slide-analogy{
+  font-size:16px; line-height:1.7; color:var(--ink); margin:0 auto 22px; max-width:640px;
+  opacity:0; transform:translateY(24px); transition:opacity .7s .25s, transform .7s .25s;
+}
+.slide-analogy .term{ color:var(--cyan); font-weight:bold; }
+
+.slide-eq{
+  display:inline-block; margin:6px auto 24px; padding:16px 26px;
+  background:#0a0a1c; border:3px solid var(--green); border-radius:8px;
+  box-shadow:0 0 4px var(--green);
+  font-size:20px; color:#fff;
+  opacity:0; transform:scale(.4); transition:opacity .7s .35s, transform .7s cubic-bezier(.3,1.6,.5,1) .35s;
+}
+.slide-eq .eq-label{
+  display:block; font-family:'Press Start 2P',monospace; font-size:7px;
+  color:var(--green); margin-bottom:10px; letter-spacing:.5px;
+}
+.slide-bullets{
+  list-style:none; padding:0; margin:0 auto; max-width:600px; text-align:left;
+}
+.slide-bullets li{
+  font-size:15px; line-height:1.6; margin-bottom:12px; padding-left:26px; position:relative;
+  opacity:0; transform:translateX(-24px); transition:opacity .55s, transform .55s;
+}
+.slide-bullets li::before{
+  content:"▸"; position:absolute; left:4px; top:0; color:var(--cyan);
+  text-shadow:0 0 6px var(--cyan);
+}
+.slide-bullets li b{ color:var(--green); }
+
+/* IntersectionObserver adds .in to animate everything in */
+.slide.in .slide-step{ opacity:1; transform:none; }
+.slide.in .slide-title{ opacity:1; transform:none; }
+.slide.in .slide-analogy{ opacity:1; transform:none; }
+.slide.in .slide-eq{ opacity:1; transform:scale(1); box-shadow:0 0 26px var(--green), 0 0 46px rgba(57,255,136,.4); }
+.slide.in .slide-bullets li{ opacity:1; transform:none; }
+.slide.in .slide-bullets li:nth-child(1){ transition-delay:.45s; }
+.slide.in .slide-bullets li:nth-child(2){ transition-delay:.6s; }
+.slide.in .slide-bullets li:nth-child(3){ transition-delay:.75s; }
+.slide.in .slide-bullets li:nth-child(4){ transition-delay:.9s; }
+
+/* "scroll to continue" cue */
+.scroll-cue{
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cyan);
+  text-shadow:0 0 8px var(--cyan); letter-spacing:1px; text-align:center;
+  animation:cueBounce 1.6s ease-in-out infinite; z-index:2;
+}
+.scroll-cue .arrow{ display:block; font-size:16px; margin-top:6px; }
+@keyframes cueBounce{ 0%,100%{ transform:translateX(-50%) translateY(0);} 50%{ transform:translateX(-50%) translateY(8px);} }
+.slide.is-last .scroll-cue{ display:none; }
+
+.slide-finish{
+  margin-top:10px; opacity:0; transform:translateY(20px);
+  transition:opacity .7s .5s, transform .7s .5s;
+}
+.slide.in .slide-finish{ opacity:1; transform:none; }
+
+.deck-banner{
+  max-width:1280px; margin:26px auto 0; padding:0 14px;
+}
+.deck-banner-inner{
+  background:linear-gradient(180deg,#10102a,#0c0c20);
+  border:3px solid var(--green); border-radius:8px; padding:16px 18px;
+  text-align:center; box-shadow:0 0 18px rgba(57,255,136,.18), inset 0 0 0 2px #000;
+}
+.deck-banner-inner h3{
+  font-family:'Press Start 2P',monospace; font-size:10px; color:var(--green);
+  margin:0 0 8px; text-shadow:0 0 8px var(--green); line-height:1.6;
+}
+.deck-banner-inner p{ font-size:13px; color:var(--dim); margin:0; }
+
+/* ============ QUESTION HINT TOGGLE ============ */
+.hint-box{
+  margin-top:10px; padding:10px 14px;
+  background:rgba(33,230,255,.05); border:2px dashed var(--cyan); border-radius:5px;
+  font-size:13.5px; line-height:1.6; color:var(--ink); display:none;
+}
+.hint-box.show{ display:block; animation:popIn .25s ease; }
+.hint-box .hlabel{
+  font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cyan);
+  display:block; margin-bottom:6px;
+}
+.newbie-tag{
+  display:inline-block; font-family:'Press Start 2P',monospace; font-size:6px;
+  color:#021a0c; background:var(--green); padding:3px 6px; border-radius:3px;
+  margin-left:8px; vertical-align:middle; box-shadow:0 0 8px var(--green);
+}
 </style>
 </head>
 <body>
+
+<!-- scroll-progress bar for the slide deck (hidden until the deck is on screen) -->
+<div class="slide-progress-wrap" id="slideProgressWrap"><div class="slide-progress-bar" id="slideProgressBar"></div></div>
 
 <header class="title">
   <h1>⚡ PHYSICS ARCADE ⚡</h1>
@@ -582,6 +750,35 @@ footer{
   <a class="gbtn magenta" id="conceptWebLink" href="concept-web.html"
      style="display:inline-block; margin-top:14px; text-decoration:none;">🔗 CONCEPT WEB</a>
 </header>
+
+<!-- ============ INTRO WELCOME (brand-new student) ============ -->
+<div id="introWelcome">
+  <div class="intro-card">
+    <h2>👋 NEW HERE? START WITH THE LESSON</h2>
+    <p>Welcome! This page teaches you the <span class="hi">two big ideas of Chapters 4 &amp; 5</span> —
+       how things <b>push, crash, slide, and move</b> — and it assumes you've never seen any physics before.
+       <b>No background needed.</b> Every word and every equation is explained in plain English first.</p>
+    <p>Below is a <span class="hi2">scroll-through slide lesson</span>: just keep scrolling and each idea
+       animates in, one easy step at a time — like a little game. After that you'll find
+       <span class="hi">practice questions that start super easy</span> (with hints!), a flashcard deck,
+       a toolkit of equations, and a concept map showing how it all connects.</p>
+    <p style="color:var(--dim); font-size:13px;">Tip: the bar up top is your <b>equation hotbar</b> —
+       press keys <b>1–9</b> any time to fling a formula into your toolkit. Don't worry about it yet; the lesson comes first. 🙂</p>
+    <div class="intro-cta">
+      <a class="gbtn cyan" href="#slideDeck" style="text-decoration:none;">▶ START THE SLIDE LESSON</a>
+      <a class="gbtn yellow" href="#lessonPanel" style="text-decoration:none;">SKIP TO PRACTICE</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCROLL-THROUGH SLIDE LESSON ============ -->
+<div class="deck-banner">
+  <div class="deck-banner-inner">
+    <h3>🎬 SLIDE LESSON — SCROLL TO PLAY</h3>
+    <p>Scroll down inside the panel below. Each concept slides &amp; glows into view. Take your time.</p>
+  </div>
+</div>
+<div id="slideDeck"></div>
 
 <!-- ============ EQUATION HOTBAR ============ -->
 <div class="hotbar-wrap">
@@ -606,8 +803,12 @@ footer{
       <div class="lesson-meta" id="lessonMeta"></div>
       <div class="lesson-card" id="lessonCard"></div>
       <div class="qbox">
-        <div class="qlabel">❓ PRACTICE QUESTION</div>
+        <div class="qlabel">❓ PRACTICE QUESTION <span class="newbie-tag" id="newbieTag" style="display:none;">NEW STUDENT — EASY</span></div>
         <div class="qtext" id="qText"></div>
+        <div class="hint-box" id="hintBox">
+          <span class="hlabel">💡 HINT</span>
+          <div id="hintText"></div>
+        </div>
         <div class="answer" id="answerBox">
           <span class="alabel">✓ WORKED ANSWER</span>
           <div id="answerText"></div>
@@ -615,6 +816,7 @@ footer{
         <div class="qeq-zone" id="qeqZone"></div>
       </div>
       <div class="btnrow">
+        <button class="gbtn cyan" id="hintBtn">💡 SHOW HINT</button>
         <button class="gbtn green" id="showAnsBtn">SHOW ANSWER</button>
         <button class="gbtn yellow" id="useBtn">USE EQUATION ▶</button>
         <button class="gbtn cyan" id="nextBtn">NEXT ▶▶</button>
@@ -696,8 +898,139 @@ const HOTBAR = [
   { key:9, tex:"f_s\\le\\mu_s N",         name:"STATIC f",    tip:["Static Friction","Grip before sliding. Adjusts up to a maximum μ_s·N. Use to test 'will it move?'"] },
 ];
 
+// --- SCROLL-THROUGH SLIDE LESSON (Ch 4 & 5, beginner order) ---
+// Each slide assumes ZERO physics background: everyday analogy first,
+// term defined, equation explained in words, then the equation shown.
+const SLIDES = [
+  {
+    step:"SLIDE 1 / 7 — WELCOME",
+    glow:"rgba(255,225,77,.12)",
+    title:"LET'S LEARN HOW THINGS MOVE",
+    analogy:"Think of <span class=\"term\">bumper cars</span>, a <span class=\"term\">box you shove across the floor</span>, and a <span class=\"term\">ball rolling downhill</span>. Chapters 4 &amp; 5 are really just about those everyday things — why they speed up, slow down, crash, and stop. We'll build it up gently, one idea at a time.",
+    bullets:[
+      "You need <b>zero</b> physics background — every new word gets defined.",
+      "Each slide shows the idea, then the equation, then what it means in plain words.",
+      "Just keep scrolling. There's no rush and nothing to memorize yet."
+    ]
+  },
+  {
+    step:"SLIDE 2 / 7 — MOMENTUM",
+    glow:"rgba(255,61,240,.12)",
+    title:"WHAT IS MOMENTUM?",
+    analogy:"Imagine a <span class=\"term\">shopping cart</span> rolling at you. A heavy, fast cart is <b>hard to stop</b>; a light, slow one is easy. <span class=\"term\">Momentum</span> is just a number for how hard something is to stop — it's the <b>amount of motion</b> an object has.",
+    eqLabel:"MOMENTUM = MASS × VELOCITY",
+    eq:"\\vec p = m\\vec v",
+    bullets:[
+      "<b>Mass (m)</b> = how much stuff is in it (kilograms). <b>Velocity (v)</b> = how fast and which way.",
+      "More mass OR more speed → more momentum → harder to stop.",
+      "The little arrow means momentum has a <b>direction</b> (left, right, etc.)."
+    ]
+  },
+  {
+    step:"SLIDE 3 / 7 — COLLISIONS",
+    glow:"rgba(33,230,255,.12)",
+    title:"COLLISIONS: BOUNCY vs STICKY",
+    analogy:"Two <span class=\"term\">bumper cars</span> crash. Sometimes they <b>bounce</b> apart; sometimes they <b>crumple and stick</b>. Either way, here's the magic rule: if you add up all the momentum <b>before</b> the crash, you get the exact same total <b>after</b>. We say momentum is <span class=\"term\">conserved</span> (kept the same).",
+    eqLabel:"TOTAL MOMENTUM BEFORE = TOTAL MOMENTUM AFTER",
+    eq:"\\sum\\vec p_{i}=\\sum\\vec p_{f}",
+    bullets:[
+      "<b>Elastic</b> = bouncy, the motion energy is kept (like superballs).",
+      "<b>Inelastic</b> = some energy is lost to heat/sound (a real car crash).",
+      "Stick together = <b>perfectly inelastic</b> — treat them as one combined object."
+    ]
+  },
+  {
+    step:"SLIDE 4 / 7 — IMPULSE",
+    glow:"rgba(57,255,136,.12)",
+    title:"IMPULSE: WHY AIRBAGS WORK",
+    analogy:"Drop your phone on <span class=\"term\">concrete</span> vs a <span class=\"term\">pillow</span>. Same fall, but the pillow makes the stop <b>last longer</b>, so the force is gentler. <span class=\"term\">Impulse</span> is the push spread over time. Your momentum must drop to zero either way — an airbag just stretches out the time, so the force on you is much smaller.",
+    eqLabel:"IMPULSE = FORCE × TIME = CHANGE IN MOMENTUM",
+    eq:"\\vec J=\\vec F\\,\\Delta t=\\Delta\\vec p",
+    bullets:[
+      "<b>Δt</b> (\"delta-t\") just means <b>how long</b> the push lasts.",
+      "Same change in momentum + longer time = <b>smaller force</b>. That's the airbag.",
+      "Catching an egg? Pull your hands back to make the stop last longer."
+    ]
+  },
+  {
+    step:"SLIDE 5 / 7 — FRICTION",
+    glow:"rgba(255,225,77,.12)",
+    title:"FRICTION: STATIC vs KINETIC",
+    analogy:"Try sliding a <span class=\"term\">heavy box</span>. At first it won't budge — that grip is <span class=\"term\">static friction</span>. Push hard enough and it suddenly breaks free and slides; now <span class=\"term\">kinetic friction</span> drags on it. Friction is the rubbing force that always fights sliding.",
+    eqLabel:"SLIDING FRICTION = ROUGHNESS × HOW HARD SURFACES PRESS",
+    eq:"f_k=\\mu_k N",
+    bullets:[
+      "<b>μ (\"mu\")</b> = a grippiness number for the two surfaces (no units).",
+      "<b>N</b> = the <b>normal force</b>: how hard the surface pushes back (on flat ground, N = weight).",
+      "Static grip can adjust up to a max; once moving, kinetic drag is a fixed value."
+    ]
+  },
+  {
+    step:"SLIDE 6 / 7 — FREE-BODY DIAGRAMS",
+    glow:"rgba(33,230,255,.12)",
+    title:"FREE-BODY DIAGRAMS",
+    analogy:"Before solving anything, draw a quick <span class=\"term\">map of the pushes and pulls</span> on ONE object. Picture a box on the floor: gravity pulls it <b>down</b>, the floor pushes it <b>up</b>, your hand pushes <b>sideways</b>, friction pushes <b>back</b>. That picture is a <span class=\"term\">free-body diagram</span>.",
+    eqLabel:"ADD UP ALL THE FORCE ARROWS = NET FORCE",
+    eq:"\\vec F_{net}=\\textstyle\\sum\\vec F",
+    bullets:[
+      "Draw the object as a dot, then one arrow for <b>every</b> force on it.",
+      "Only forces <b>on</b> it — never forces it pushes on other things.",
+      "If it sits still or moves steadily, all arrows cancel: <b>net force = 0</b>."
+    ]
+  },
+  {
+    step:"SLIDE 7 / 7 — ENERGY",
+    glow:"rgba(255,157,61,.14)",
+    title:"ENERGY &amp; THE WORK IDEA",
+    analogy:"Push a <span class=\"term\">ball uphill</span> and you give it energy; let it <span class=\"term\">roll back down</span> and that energy turns into speed. <span class=\"term\">Work</span> means using a force over a distance to add or remove energy. <span class=\"term\">Kinetic energy</span> is just the energy of moving.",
+    eqLabel:"NET WORK = CHANGE IN MOTION-ENERGY",
+    eq:"W_{net}=\\Delta KE=\\tfrac12 mv_f^2-\\tfrac12 mv_i^2",
+    bullets:[
+      "<b>Work</b> = force × distance (only the part of the push along the motion counts).",
+      "Push along the motion → speeds up; friction pushes back → slows down.",
+      "<b>You did it!</b> Scroll back up to the practice and try the easy questions. 🎉"
+    ]
+  }
+];
+
 // --- LESSON -> QUESTION pairs (Ch 4-5) ---
 const LESSONS = [
+  {
+    topic:"WARM-UP — WHAT IS MOMENTUM?",
+    newbie:true,
+    title:"Your very first question (easy!)",
+    body:[
+      "<b>Momentum</b> is just <b>mass × velocity</b>, written $\\vec p=m\\vec v$. It tells you how much motion something has — a big truck has way more than a bike at the same speed.",
+      "No tricks here: just multiply the two numbers. You've got this. 🙂"
+    ],
+    q:"A 4 kg bowling ball rolls at 2 m/s. What is its momentum?",
+    hint:"Momentum = mass × velocity. Multiply 4 by 2. The unit is kg·m/s.",
+    a:"Just plug into $p=mv$:<br>$p=(4)(2)=8\\ \\text{kg·m/s}$.<br>That's it — momentum is mass times velocity. Nice work! 🎉"
+  },
+  {
+    topic:"WARM-UP — IMPULSE FEEL",
+    newbie:true,
+    title:"Bigger time, smaller force",
+    body:[
+      "<b>Impulse</b> means a force acting for some time: $J=F\\,\\Delta t$. The longer the time, the smaller the force needed for the same effect.",
+      "This is a 'which is gentler?' question — no heavy math, just the idea behind airbags."
+    ],
+    q:"You catch a fast ball. To make it hurt your hand LESS, should you (a) stop it instantly, or (b) pull your hand back so the catch takes longer?",
+    hint:"Force = change in momentum ÷ time. A longer time makes the force smaller.",
+    a:"<b>(b) Pull your hand back.</b><br>A longer stopping time $\\Delta t$ means a smaller force, because $F=\\Delta p/\\Delta t$. Same idea as an airbag — stretch out the time, soften the hit. 👍"
+  },
+  {
+    topic:"WARM-UP — FRICTION DIRECTION",
+    newbie:true,
+    title:"Which way does friction push?",
+    body:[
+      "<b>Friction</b> is the rubbing force between surfaces. Its one job: <b>oppose sliding</b>.",
+      "So you don't even need numbers — just think about which way the object is trying to move."
+    ],
+    q:"You push a box to the RIGHT across the floor. Which way does friction on the box point?",
+    hint:"Friction always points opposite to the way the object slides.",
+    a:"Friction points to the <b>LEFT</b> — opposite the motion.<br>Friction always fights the sliding, so if the box moves right, friction drags left. Simple as that. ✅"
+  },
   {
     topic:"COLLISIONS — ELASTIC vs INELASTIC",
     title:"Two kinds of bookkeeping",
@@ -706,6 +1039,7 @@ const LESSONS = [
       "<b>Kinetic energy</b> $\\tfrac12mv^2$ is conserved <b>only</b> in an <b>elastic</b> collision. In an <b>inelastic</b> one some KE is lost to heat, sound and dents. If the objects <b>stick together</b> it is <b>perfectly inelastic</b> (most KE lost)."
     ],
     q:"A 2 kg cart at 3 m/s strikes a stationary 1 kg cart and they stick together. Find their common final velocity.",
+    hint:"They stick → add the masses. Conserve momentum: (before) = (combined mass)×v.",
     a:"Perfectly inelastic → conserve momentum.<br>$p_i = (2)(3) + (1)(0) = 6\\ \\text{kg·m/s}$.<br>After: $p_f=(2+1)v = 3v$.<br>Set equal: $3v = 6 \\Rightarrow v = 2\\ \\text{m/s}$ in the original direction.<br>(KE drops from 9 J to 6 J — the lost 3 J became heat/sound: that's why it's inelastic.)"
   },
   {
@@ -716,6 +1050,7 @@ const LESSONS = [
       "Once it breaks free, <b>kinetic</b> friction is a <b>fixed</b> drag $f_k=\\mu_k N$, the same at any speed. Usually $\\mu_s>\\mu_k$, which is why a box 'lurches' when it finally starts to move. On flat ground $N=mg$."
     ],
     q:"A 10 kg crate sits on the floor, μ_s = 0.5, μ_k = 0.3 (g = 9.8). (a) What push just starts it moving? (b) Once sliding, what friction force acts?",
+    hint:"First find N = mg. Then max static = μ_s·N, and kinetic = μ_k·N.",
     a:"$N=mg=10(9.8)=98\\ \\text{N}$.<br>(a) Max static $=\\mu_s N = 0.5(98)=49\\ \\text{N}$ — you must exceed 49 N to start it.<br>(b) Kinetic $f_k=\\mu_k N = 0.3(98)=29.4\\ \\text{N}$ once it slides.<br>Notice the drag <i>drops</i> from 49 N to 29.4 N once moving — that's the lurch."
   },
   {
@@ -726,6 +1061,7 @@ const LESSONS = [
       "Then split into <b>x</b> and <b>y</b> and sum each separately. At rest or constant speed, $\\vec F_{net}=0$. <b>Normal force is not always $mg$</b> — recompute it if something else pushes or the surface tilts."
     ],
     q:"A 5 kg lamp hangs at rest from a single vertical rope. Draw the FBD and find the tension T.",
+    hint:"At rest, the up force (tension) balances the down force (weight = mg).",
     a:"Two forces only: weight $mg$ down, tension $T$ up.<br>At rest ⇒ $\\vec F_{net}=0$ in y:<br>$T - mg = 0 \\Rightarrow T = mg = 5(9.8) = 49\\ \\text{N}$.<br>(There's no normal force here — nothing is touching a surface, so don't draw one.)"
   },
   {
@@ -736,6 +1072,7 @@ const LESSONS = [
       "An airbag, crumple zone, or pulling your hand back when catching a ball <b>lengthens $\\Delta t$</b>. Since $F_{avg}=\\Delta p/\\Delta t$, a bigger time means a much <b>smaller force</b> on you. Impulse is also the <b>area under a force-vs-time graph</b>."
     ],
     q:"An 80 kg driver going 20 m/s is brought to rest. Compare the average force if stopped in 0.1 s (no airbag) vs 0.5 s (airbag).",
+    hint:"Find Δp = m·Δv once (it's the same both times), then F = Δp ÷ time for each time.",
     a:"$\\Delta p = m\\Delta v = 80(0-20)=-1600\\ \\text{kg·m/s}$ (magnitude 1600 N·s) — same either way.<br>No airbag: $F=\\dfrac{1600}{0.1}=16{,}000\\ \\text{N}$.<br>Airbag: $F=\\dfrac{1600}{0.5}=3200\\ \\text{N}$.<br>5× longer stop ⇒ 5× smaller force. That's why airbags save you."
   },
   {
@@ -746,6 +1083,7 @@ const LESSONS = [
       "The <b>work–energy theorem</b> says the <b>net</b> work equals the change in kinetic energy: $W_{net}=\\Delta KE=\\tfrac12mv_f^2-\\tfrac12mv_i^2$. Use it to get a final speed from forces over a distance without ever needing time. Friction does <b>negative</b> work (removes energy as heat)."
     ],
     q:"A 4 kg box slides on a rough floor; friction is 8 N and it travels 5 m starting at 6 m/s. Find its final speed.",
+    hint:"Work-energy: W_net = ΔKE. Friction's work is −f·d. Add it to the starting KE.",
     a:"Friction opposes motion ⇒ $W_{net}=-f\\,d=-(8)(5)=-40\\ \\text{J}$.<br>$\\tfrac12mv_i^2=\\tfrac12(4)(6^2)=72\\ \\text{J}$.<br>$\\tfrac12mv_f^2 = 72 + (-40) = 32\\ \\text{J}$.<br>$v_f=\\sqrt{2(32)/4}=\\sqrt{16}=4\\ \\text{m/s}$."
   },
   {
@@ -756,6 +1094,7 @@ const LESSONS = [
       "So the two pieces carry equal-and-opposite momenta: $m_1v_1=-m_2v_2$. The lighter piece flies off faster. This is exactly how a gun recoils and how rockets work."
     ],
     q:"A 60 kg skater throws a 2 kg ball at 10 m/s while standing still on frictionless ice. How fast does the skater recoil?",
+    hint:"Start at rest → total momentum stays 0. So m_ball·v_ball + m_skater·v_skater = 0.",
     a:"Start at rest ⇒ total $p=0$, so it stays 0.<br>$m_{ball}v_{ball} + m_{skater}v_{skater}=0$.<br>$2(10) + 60\\,v_{skater}=0$.<br>$v_{skater}=-\\dfrac{20}{60}=-0.33\\ \\text{m/s}$ — backwards, slower (heavier)."
   },
 ];
@@ -909,9 +1248,16 @@ const qText=document.getElementById('qText');
 const answerBox=document.getElementById('answerBox');
 const answerText=document.getElementById('answerText');
 const qeqZone=document.getElementById('qeqZone');
+const hintBox=document.getElementById('hintBox');
+const hintText=document.getElementById('hintText');
+const newbieTag=document.getElementById('newbieTag');
+const hintBtn=document.getElementById('hintBtn');
 
 // each question -> the equation slot key(s) it needs (drives the "fly DOWN" animation)
 const topicToKeys={
+  "WARM-UP — WHAT IS MOMENTUM?":[2],
+  "WARM-UP — IMPULSE FEEL":[3],
+  "WARM-UP — FRICTION DIRECTION":[8],
   "COLLISIONS — ELASTIC vs INELASTIC":[4],
   "FRICTION — STATIC vs KINETIC":[8,9],
   "FREE-BODY DIAGRAMS":[1],
@@ -932,6 +1278,11 @@ function renderLesson(){
   qText.innerHTML=L.q;
   answerText.innerHTML=L.a;
   answerBox.classList.remove('show');
+  // hint + new-student framing
+  hintText.innerHTML=L.hint||"Re-read the lesson card above — the method you need is right there.";
+  hintBox.classList.remove('show');
+  hintBtn.textContent='💡 SHOW HINT';
+  newbieTag.style.display = L.newbie ? 'inline-block' : 'none';
   qeqZone.innerHTML='';
   // restart the swap animation
   lessonCard.style.animation='none'; qText.style.animation='none';
@@ -945,6 +1296,12 @@ function renderLesson(){
 }
 document.getElementById('nextBtn').addEventListener('click',()=>{
   lessonIdx=(lessonIdx+1)%LESSONS.length; renderLesson();
+});
+// HINT toggle (one-line hint per question)
+hintBtn.addEventListener('click',()=>{
+  const showing=hintBox.classList.toggle('show');
+  hintBtn.textContent = showing ? '💡 HIDE HINT' : '💡 SHOW HINT';
+  if(showing) typeset(hintBox);
 });
 document.getElementById('showAnsBtn').addEventListener('click',()=>{
   answerBox.classList.add('show'); typeset(answerBox);
@@ -1332,6 +1689,61 @@ document.getElementById('cwSvg').addEventListener('click',e=>{
       `<div class="cw-legend"><b>↔</b> two-way link &nbsp; <b>→</b> leads to<br>NODE = concept &nbsp;·&nbsp; EDGE = relationship</div>`;
   }
 });
+
+/* ===================== SCROLL-THROUGH SLIDE DECK ===================== */
+const slideDeck=document.getElementById('slideDeck');
+SLIDES.forEach((s,i)=>{
+  const sec=document.createElement('section');
+  sec.className='slide'+(i===SLIDES.length-1?' is-last':'');
+  sec.style.setProperty('--sg', s.glow||'rgba(33,230,255,.10)');
+  let inner=`<div class="slide-inner">`+
+    `<div class="slide-step">${s.step}</div>`+
+    `<div class="slide-title">${s.title}</div>`+
+    `<p class="slide-analogy">${s.analogy}</p>`;
+  if(s.eq){
+    inner+=`<div class="slide-eq"><span class="eq-label">${s.eqLabel||''}</span>\\(${s.eq}\\)</div>`;
+  }
+  if(s.bullets&&s.bullets.length){
+    inner+=`<ul class="slide-bullets">${s.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>`;
+  }
+  inner+=`</div>`;
+  // scroll cue (hidden on the last slide via .is-last)
+  inner+=`<div class="scroll-cue">SCROLL TO CONTINUE<span class="arrow">↓</span></div>`;
+  sec.innerHTML=inner;
+  slideDeck.appendChild(sec);
+});
+typeset(slideDeck);
+
+// IntersectionObserver: animate each slide's content in as it scrolls into view
+const slideEls=[...slideDeck.querySelectorAll('.slide')];
+const slideObs=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      en.target.classList.add('in');
+      // a little neon spark when the equation flies in
+      const eq=en.target.querySelector('.slide-eq');
+      if(eq && !en.target.dataset.sparked){
+        en.target.dataset.sparked='1';
+        setTimeout(()=>burst(eq,'#39ff88',14),420);
+      }
+    }
+  });
+},{ root:slideDeck, threshold:0.55 });
+slideEls.forEach(el=>slideObs.observe(el));
+
+// scroll-progress bar: only visible while the deck is on screen
+const slideProgressWrap=document.getElementById('slideProgressWrap');
+const slideProgressBar=document.getElementById('slideProgressBar');
+slideDeck.addEventListener('scroll',()=>{
+  const max=slideDeck.scrollHeight - slideDeck.clientHeight;
+  const pct = max>0 ? (slideDeck.scrollTop/max)*100 : 0;
+  slideProgressBar.style.width=pct+'%';
+});
+// show the progress bar only when the deck itself is in the viewport
+const deckVisObs=new IntersectionObserver((entries)=>{
+  entries.forEach(en=> slideProgressWrap.classList.toggle('live', en.isIntersecting));
+},{ threshold:0.15 });
+deckVisObs.observe(slideDeck);
 
 // ---- init ----
 renderLesson();
