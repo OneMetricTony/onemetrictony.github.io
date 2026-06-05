@@ -299,63 +299,112 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   :root{ --topnavh:50px; }
 }
 
-/* ============ CONCEPT WEB POPUP (cw- namespaced) ============ */
-.cw-overlay{
-  position:fixed; inset:0; z-index:9500;
-  display:flex; align-items:center; justify-content:center; padding:16px;
-  background:rgba(4,4,16,.74); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
-  opacity:0; pointer-events:none; transition:opacity .22s ease;
+/* ============ CONCEPT MAP v2 (cw2- namespaced) ============ */
+/* the concept-map host is ONLY visible inside the popup modal; hide its
+   resting home so the graph/panel don't bleed into the page behind. */
+#cw2-root{ display:none; }
+body.cw2-active #cw2-root{ display:block; }
+#cw2-root{
+  --bg0:#06060f; --panel:#10102a; --panel-edge:#23234d;
+  --neon:#00f0ff; --neon-dim:#0a5560; --sel:#ffe14d; --sel-glow:#ffcc00;
+  --mag:#ff3df0; --green:#39ff7a; --txt:#dfe6ff; --muted:#7d83b5;
+  --edge:#3a3a6e; --edge-hot:#00f0ff; --foundation:#5a4d8a;
+  --gold:#ffcf3f; --gold-glow:#ffb800; --gold-edge:#ffae00;
 }
-.cw-overlay.cw-open{ opacity:1; pointer-events:auto; }
-.cw-modal{
-  position:relative; width:90vw; max-width:460px; max-height:88vh;
-  background:linear-gradient(160deg,#11112a,#0c0c1e);
-  border:1px solid rgba(0,240,255,.35); border-radius:20px;
+.cw2-overlay{ position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
+  padding:14px; background:rgba(4,4,16,.74); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  opacity:0; pointer-events:none; transition:opacity .22s ease; }
+.cw2-overlay.cw2-open{ opacity:1; pointer-events:auto; }
+.cw2-modal{ position:relative; width:94vw; max-width:480px; max-height:90vh;
+  background:linear-gradient(160deg,#10102a,#0c0c1e);
+  border:1px solid rgba(0,240,255,.35); border-radius:18px;
   box-shadow:0 0 0 1px rgba(177,75,255,.2),0 18px 60px rgba(0,0,0,.7),0 0 50px rgba(0,240,255,.18);
   display:flex; flex-direction:column; overflow:hidden;
-  transform:scale(.86) translateY(14px); opacity:0;
-  transition:transform .26s cubic-bezier(.2,1.1,.3,1), opacity .26s ease;
-}
-.cw-overlay.cw-open .cw-modal{ transform:scale(1) translateY(0); opacity:1; }
-.cw-header{ flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:16px 18px 12px; border-bottom:1px solid #2a2a55; }
-.cw-title{ margin:0; font-size:18px; font-weight:800; letter-spacing:.5px;
-  background:linear-gradient(90deg,#00f0ff,#ff2bd6); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.cw-sub{ margin:2px 0 0; font-size:11.5px; color:#6a6a9a; font-weight:500; }
-.cw-close{ margin-left:auto; flex:0 0 auto; width:38px; height:38px; border-radius:50%;
-  border:1px solid rgba(255,43,214,.5); background:rgba(255,43,214,.08); color:#ff2bd6;
+  transform:scale(.88) translateY(12px); opacity:0;
+  transition:transform .26s cubic-bezier(.2,1.1,.3,1),opacity .26s ease; }
+.cw2-overlay.cw2-open .cw2-modal{ transform:scale(1) translateY(0); opacity:1; }
+.cw2-mhead{ flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:13px 15px 10px; border-bottom:1px solid #23234d; }
+.cw2-mtitle{ margin:0; font-family:'Press Start 2P',monospace; font-size:11px; color:#fff;
+  text-shadow:0 0 6px #00f0ff,0 0 14px #00f0ff; letter-spacing:.5px; }
+.cw2-msub{ margin:3px 0 0; font-size:11px; color:#7d83b5; }
+.cw2-close{ margin-left:auto; flex:0 0 auto; width:38px; height:38px; border-radius:50%;
+  border:1px solid rgba(255,61,240,.5); background:rgba(255,61,240,.08); color:#ff3df0;
   font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.cw-close:active{ transform:scale(.9); }
-.cw-body{ flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 18px; }
-.cw-graphwrap{ position:relative; border:1px solid #2a2a55; border-radius:14px;
-  background:radial-gradient(circle at 50% 40%, #14143a 0%, #08081a 80%); overflow:hidden; }
-#cw-svg{ display:block; width:100%; height:auto; touch-action:manipulation; }
-.cw-edge-line{ stroke:#2a2a55; stroke-width:1.6; transition:stroke .2s,stroke-width .2s,opacity .2s; opacity:.55; }
-.cw-edge-line.cw-active{ stroke:#00f0ff; stroke-width:2.6; opacity:1; filter:drop-shadow(0 0 4px #00f0ff); }
-.cw-edge-line.cw-dim{ opacity:.12; }
-.cw-node-g{ cursor:pointer; }
-.cw-node-circle{ fill:#15153a; stroke:#b14bff; stroke-width:2; transition:stroke .2s,fill .2s,opacity .2s,filter .2s; }
-.cw-node-g.cw-active .cw-node-circle{ fill:#2a1450; stroke:#00f0ff; stroke-width:3; filter:drop-shadow(0 0 8px #00f0ff); }
-.cw-node-g.cw-neighbor .cw-node-circle{ stroke:#ff2bd6; filter:drop-shadow(0 0 6px #ff2bd6); }
-.cw-node-g.cw-dim{ opacity:.28; }
-.cw-node-label{ fill:#dfe3ff; font-size:8.5px; font-weight:700; text-anchor:middle; pointer-events:none;
-  paint-order:stroke; stroke:#08081a; stroke-width:2.4px; }
-.cw-node-formula{ fill:#ffcf3f; font-size:7.5px; font-weight:600; text-anchor:middle; pointer-events:none;
-  paint-order:stroke; stroke:#08081a; stroke-width:2px; }
-.cw-hint{ text-align:center; font-size:11px; color:#6a6a9a; margin:8px 0 4px; }
-.cw-info{ margin-top:12px; border:1px solid rgba(0,240,255,.25); border-radius:14px;
-  background:rgba(0,240,255,.04); padding:14px 16px; min-height:60px; }
-.cw-info-empty{ color:#6a6a9a; font-size:13px; line-height:1.5; }
-.cw-info-title{ font-size:15px; font-weight:800; color:#00f0ff; margin:0 0 2px;
-  display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
-.cw-info-formula{ font-size:12px; color:#ffcf3f; font-weight:700; }
-.cw-conn-list{ list-style:none; margin:10px 0 0; padding:0; }
-.cw-conn-list li{ padding:9px 11px; margin-bottom:7px; border-radius:10px;
-  background:rgba(177,75,255,.07); border-left:3px solid #b14bff; font-size:12.5px; line-height:1.45; }
-.cw-conn-target{ font-weight:800; color:#fff; }
-.cw-conn-rel{ display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.4px; color:#ff2bd6; margin:0 4px; }
-.cw-conn-why{ color:#c4c4e6; margin-top:3px; }
-.cw-arrow{ color:#6a6a9a; }
+.cw2-close:active{ transform:scale(.9); }
+.cw2-mbody{ flex:1 1 auto; display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+.cw2-stage{ flex:1 1 auto; display:flex; flex-direction:column; min-height:0; height:100%; }
+.cw2-canvas-wrap{ position:relative; flex:0 0 auto; height:46%; min-height:230px; min-width:0; }
+#cw2-web{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; }
+.cw2-aside{ flex:1 1 auto; max-width:100%; background:linear-gradient(180deg,#10102a,#0b0b1e);
+  border-top:1px solid #23234d; padding:14px 14px 20px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.cw2-aside h2{ font-family:'Press Start 2P',monospace; font-size:11px; line-height:1.6;
+  margin:0 0 4px; color:#ffe14d; text-shadow:0 0 8px #ffcc00; }
+.cw2-eq{ font-size:18px; color:#fff; margin:2px 0 12px; font-family:'Cambria Math','Segoe UI',serif; letter-spacing:.5px; }
+.cw2-eq small{ color:#7d83b5; font-size:13px; }
+.cw2-hint{ color:#7d83b5; font-size:12.5px; line-height:1.6; }
+.cw2-star-badge{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.5px;
+  color:#1a1400; background:linear-gradient(135deg,#ffcf3f,#ffe08a); border-radius:20px;
+  padding:2px 9px; margin-left:6px; vertical-align:middle; box-shadow:0 0 10px rgba(255,184,0,.55); }
+.cw2-conn-card{ border:1px solid #23234d; border-left:4px solid #00f0ff; background:rgba(0,240,255,.04);
+  border-radius:8px; padding:9px 11px; margin:9px 0; animation:cw2pop .25s ease; }
+.cw2-conn-card.cw2-final{ border-left-color:#ffcf3f; background:rgba(255,184,0,.06); }
+.cw2-conn-card .cw2-top{ display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
+.cw2-arrow{ font-size:17px; font-weight:700; line-height:1; }
+.cw2-a-out{ color:#00f0ff; } .cw2-a-in{ color:#39ff7a; } .cw2-a-bi{ color:#ff3df0; }
+.cw2-conn-card .cw2-type{ font-size:10px; text-transform:uppercase; letter-spacing:1px;
+  padding:2px 7px; border-radius:20px; border:1px solid currentColor; }
+.cw2-conn-card .cw2-star{ font-size:11px; color:#ffcf3f; }
+.cw2-conn-card .cw2-target{ font-weight:700; color:#fff; font-size:14px; margin-left:auto; }
+.cw2-conn-card .cw2-why{ font-size:12.5px; color:#dfe6ff; opacity:.85; line-height:1.5; }
+@keyframes cw2pop{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+.cw2-final-blurb{ margin:12px 0 4px; border:1px solid #ffae00; border-radius:10px;
+  background:linear-gradient(160deg,rgba(255,184,0,.10),rgba(255,184,0,.02)); padding:11px 13px; }
+.cw2-final-blurb h3{ margin:0 0 6px; font-size:11px; font-family:'Press Start 2P',monospace;
+  color:#ffcf3f; text-shadow:0 0 8px #ffb800; letter-spacing:.5px; line-height:1.5; }
+.cw2-final-blurb ul{ margin:6px 0 0; padding-left:18px; font-size:12px; color:#ffe7a8; line-height:1.6; }
+.cw2-final-blurb li b{ color:#fff; }
+.cw2-legend{ margin-top:16px; padding-top:14px; border-top:1px dashed #23234d; font-size:12px; color:#7d83b5; }
+.cw2-legend h3{ font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#7d83b5; margin:0 0 8px; }
+.cw2-lg-row{ display:flex; align-items:center; gap:9px; margin:6px 0; }
+.cw2-swatch{ width:26px; height:0; border-top:3px solid #3a3a6e; flex:0 0 auto; border-radius:2px; }
+.cw2-sw-hot{ border-top-color:#00f0ff; box-shadow:0 0 6px #00f0ff; }
+.cw2-sw-bi{ border-top:3px dashed #ff3df0; }
+.cw2-sw-gold{ border-top-color:#ffae00; box-shadow:0 0 6px #ffb800; }
+.cw2-dot{ width:13px; height:13px; border-radius:50%; flex:0 0 auto; }
+.cw2-dot-core{ background:#00f0ff; box-shadow:0 0 8px #00f0ff; }
+.cw2-dot-sel{ background:#ffe14d; box-shadow:0 0 8px #ffcc00; }
+.cw2-dot-found{ background:#5a4d8a; opacity:.6; }
+.cw2-dot-gold{ background:#ffcf3f; box-shadow:0 0 8px #ffb800; }
+#cw2-web .edge{ stroke:#3a3a6e; stroke-width:2; fill:none; transition:stroke .18s,stroke-width .18s,opacity .18s; cursor:pointer; }
+#cw2-web .edge.bi{ stroke-dasharray:7 5; }
+#cw2-web .edge.final{ stroke:#ffae00; stroke-width:2.6; opacity:.9; filter:drop-shadow(0 0 3px #ffb800); }
+#cw2-web .edge.hot{ stroke:#00f0ff; stroke-width:3.4; filter:drop-shadow(0 0 4px #00f0ff); }
+#cw2-web .edge.hotbi{ stroke:#ff3df0; stroke-width:3.4; filter:drop-shadow(0 0 4px #ff3df0); }
+#cw2-web .edge.hotgold{ stroke:#ffae00; stroke-width:3.8; filter:drop-shadow(0 0 6px #ffb800); }
+#cw2-web .edge.dim{ opacity:.1; }
+#cw2-web .elabel{ font-size:10px; fill:#7d83b5; pointer-events:none; opacity:0; transition:opacity .18s; text-anchor:middle; }
+#cw2-web .elabel.show{ opacity:1; fill:#cfe9ff; }
+#cw2-web .elabel.showgold{ opacity:1; fill:#ffcf3f; }
+#cw2-web .node{ cursor:pointer; }
+#cw2-web .node circle{ fill:url(#cw2-nodeGrad); stroke:#00f0ff; stroke-width:2.2;
+  filter:drop-shadow(0 0 7px rgba(0,240,255,.6)); transition:stroke .18s,stroke-width .18s,filter .18s,opacity .18s; }
+#cw2-web .node.foundation circle{ stroke:#5a4d8a; fill:url(#cw2-foundGrad);
+  filter:drop-shadow(0 0 5px rgba(90,77,138,.5)); opacity:.66; }
+#cw2-web .node.final circle{ stroke:#ffae00; fill:url(#cw2-goldGrad); filter:drop-shadow(0 0 9px #ffb800); }
+#cw2-web .node text{ fill:#eef3ff; text-anchor:middle; pointer-events:none; transition:opacity .18s; }
+#cw2-web .node .nm{ font-size:12.5px; font-weight:700; }
+#cw2-web .node .eqn{ font-size:11px; fill:#9fd8ff; font-family:'Cambria Math',serif; }
+#cw2-web .node.final .eqn{ fill:#ffcf3f; }
+#cw2-web .node.foundation .nm{ font-size:11px; fill:#b9aee6; }
+#cw2-web .node.foundation .eqn{ fill:#8d80c0; }
+#cw2-web .node .starbadge{ font-size:17px; pointer-events:none; }
+#cw2-web .node.neighbor circle{ stroke:#bfefff; stroke-width:2.6; filter:drop-shadow(0 0 11px #00f0ff); }
+#cw2-web .node.final.neighbor circle{ stroke:#ffe08a; filter:drop-shadow(0 0 12px #ffb800); }
+#cw2-web .node.selected circle{ stroke:#ffe14d; stroke-width:3.4; fill:url(#cw2-selGrad); filter:drop-shadow(0 0 16px #ffcc00); }
+#cw2-web .node.dim{ opacity:.16; }
+#cw2-web .node.dim circle{ filter:none; }
+.cw2-footnote{ position:absolute; left:10px; bottom:8px; font-size:10px; color:#7d83b5; pointer-events:none;
+  background:rgba(6,6,15,.5); padding:3px 8px; border-radius:6px; }
 
 /* ============ QUIZ MODE TOGGLE ============ */
 .mode-toggle{ display:flex; gap:8px; margin:2px 0 14px; }
@@ -498,6 +547,186 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   .panel.teach.active .anim,.panel.teach.active .anim-eq,
   .panel.teach.active .stagger > *{ animation:none !important; opacity:1 !important; }
 }
+
+/* ============================================================
+   MULTI-MODE SHELL  (hub / assignments / practice / exam)
+   Scoped under #modeLayer + .mz- classes to avoid collisions.
+   ============================================================ */
+#modeLayer{
+  position:fixed;
+  top:calc(var(--toph) + var(--sat)); bottom:0;
+  left:0; right:0; z-index:500;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:18px calc(16px + var(--sar)) calc(28px + var(--sab)) calc(16px + var(--sal));
+  background:
+    radial-gradient(circle at 20% 0%, rgba(33,230,255,0.06), transparent 42%),
+    radial-gradient(circle at 90% 12%, rgba(255,61,240,0.06), transparent 42%),
+    var(--bg);
+}
+@media (min-width:720px){ #modeLayer{ top:calc(var(--toph) + var(--sat) + 50px); } }
+body.mode-learn #modeLayer{ display:none; }
+/* in non-learn modes hide the learn-only chrome */
+body:not(.mode-learn) .stage,
+body:not(.mode-learn) .navbar{ display:none; }
+/* the STEP X/Y progress label only makes sense in Learn */
+body:not(.mode-learn) .topbar .step-label{ visibility:hidden; }
+body:not(.mode-learn) .topbar .progress-fill{ opacity:.25; }
+.mz-screen{ display:none; max-width:560px; margin:0 auto; }
+.mz-screen.on{ display:block; animation:mzIn .34s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes mzIn{ from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:none;} }
+
+.mz-hubhead{ text-align:center; margin:4px 0 16px; }
+.mz-logo{ font-size:clamp(40px,13vw,60px); line-height:1; filter:drop-shadow(0 0 14px var(--magenta)); }
+.mz-title{ font-family:'Press Start 2P',monospace; font-size:clamp(13px,4.6vw,20px);
+  color:var(--yellow); text-shadow:0 0 6px var(--magenta),2px 2px 0 #5a005a; margin:8px 0 6px; }
+.mz-sub{ font-size:13px; color:var(--dim); line-height:1.5; margin:0 0 4px; }
+
+.mz-tiles{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0 8px; }
+.mz-tile{ position:relative; border:2px solid #2a2a55; border-radius:16px;
+  background:linear-gradient(160deg,#12122b,#0c0c1e); padding:16px 12px 14px;
+  text-align:left; cursor:pointer; min-height:104px; color:var(--ink);
+  display:flex; flex-direction:column; gap:4px; justify-content:flex-start;
+  transition:transform .12s, border-color .15s, box-shadow .2s; }
+.mz-tile:active{ transform:scale(.97); }
+.mz-tile .ic{ font-size:30px; line-height:1; }
+.mz-tile .tt{ font-family:'Press Start 2P',monospace; font-size:10px; letter-spacing:.5px; margin-top:6px; }
+.mz-tile .ds{ font-size:11.5px; color:var(--dim); line-height:1.35; }
+.mz-tile.learn{ border-color:var(--cyan); box-shadow:0 0 14px rgba(33,230,255,.22); }
+.mz-tile.learn .tt{ color:var(--cyan); }
+.mz-tile.assign{ border-color:var(--magenta); box-shadow:0 0 14px rgba(255,61,240,.2); }
+.mz-tile.assign .tt{ color:var(--magenta); }
+.mz-tile.exam{ border-color:var(--yellow); box-shadow:0 0 14px rgba(255,225,77,.2); }
+.mz-tile.exam .tt{ color:var(--yellow); }
+.mz-tile.practice{ border-color:var(--green); box-shadow:0 0 14px rgba(57,255,136,.2); }
+.mz-tile.practice .tt{ color:var(--green); }
+
+.mz-dir{ display:flex; flex-wrap:wrap; gap:9px; margin:14px 0 4px; }
+.mz-dir a, .mz-dir button{ flex:1 1 30%; min-width:96px; text-decoration:none;
+  border:2px solid #2a2a55; border-radius:12px; background:var(--panel2); color:var(--ink);
+  font-family:'Press Start 2P',monospace; font-size:8px; letter-spacing:.5px; line-height:1.5;
+  padding:11px 8px; min-height:50px; cursor:pointer; text-align:center;
+  display:flex; align-items:center; justify-content:center; gap:4px;
+  transition:transform .12s, border-color .15s, color .15s; }
+.mz-dir a:active, .mz-dir button:active{ transform:scale(.96); }
+
+/* mode sub-header with a back-to-hub control + title */
+.mz-bar{ display:flex; align-items:center; gap:10px; margin:0 0 14px; }
+.mz-back{ flex:0 0 auto; border:2px solid var(--cyan); color:var(--cyan); background:transparent;
+  border-radius:10px; min-height:42px; padding:8px 12px; cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:8px; letter-spacing:.5px; }
+.mz-back:active{ transform:scale(.96); }
+.mz-bar h2{ font-family:'Press Start 2P',monospace; font-size:11px; color:var(--yellow);
+  text-shadow:0 0 6px var(--magenta); margin:0; line-height:1.4; }
+
+/* assignment list */
+.mz-group-label{ font-family:'Press Start 2P',monospace; font-size:8px; color:var(--magenta);
+  letter-spacing:1px; margin:16px 0 8px; text-shadow:0 0 6px var(--magenta); }
+.mz-alist{ display:flex; flex-direction:column; gap:10px; }
+.mz-aitem{ border:2px solid #2a2a55; border-radius:12px; background:var(--panel2);
+  padding:13px 14px; cursor:pointer; color:var(--ink); text-align:left;
+  display:flex; align-items:center; gap:12px; transition:transform .12s, border-color .15s; }
+.mz-aitem:active{ transform:scale(.98); }
+.mz-aitem .an{ font-family:'Press Start 2P',monospace; font-size:11px; color:var(--cyan); flex:0 0 auto; }
+.mz-aitem .am{ font-size:12.5px; color:var(--ink); line-height:1.4; }
+.mz-aitem .am small{ display:block; color:var(--dim); font-size:11px; margin-top:2px; }
+.mz-aitem.distinct{ border-color:var(--yellow); }
+.mz-aitem.distinct .an{ color:var(--yellow); }
+
+/* solver host inside a mode */
+.mz-host{ margin-top:4px; }
+.mz-progressline{ font-size:12px; color:var(--dim); margin:0 0 10px; letter-spacing:.5px; }
+.mz-progressline b{ color:var(--cyan); }
+.mz-advance{ display:flex; gap:10px; margin:18px 0 4px; }
+.mz-advance .btn{ flex:1; }
+.mz-advance .btn:disabled{ opacity:.3; pointer-events:none; }
+
+/* score + rank badge */
+.mz-scorebar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  border:2px solid #2a2a55; border-radius:14px; background:linear-gradient(160deg,#12122b,#0c0c1e);
+  padding:11px 13px; margin:0 0 14px; }
+.mz-rank{ font-family:'Press Start 2P',monospace; font-size:9px; letter-spacing:.5px;
+  padding:7px 11px; border-radius:20px; border:2px solid currentColor; white-space:nowrap; }
+.mz-score{ font-size:13px; color:var(--ink); }
+.mz-score b{ color:var(--yellow); font-size:15px; }
+.mz-rankprog{ flex:1 1 100%; height:6px; background:#1a1a38; border-radius:6px; overflow:hidden;
+  box-shadow:inset 0 0 0 1px #000; margin-top:2px; }
+.mz-rankprog i{ display:block; height:100%; width:0%; border-radius:6px;
+  background:linear-gradient(90deg,var(--cyan),var(--magenta)); transition:width .4s ease; }
+.mz-weak{ font-size:11.5px; color:var(--dim); flex:1 1 100%; }
+.mz-weak b{ color:var(--red); }
+
+/* practice feedback line */
+.mz-feedback{ border-left:3px solid var(--green); background:rgba(57,255,136,.07);
+  border-radius:8px; padding:10px 12px; margin:10px 0; font-size:13px; line-height:1.5;
+  display:none; }
+.mz-feedback.show{ display:block; animation:mzIn .3s ease; }
+.mz-feedback.bad{ border-left-color:var(--red); background:rgba(255,84,112,.07); }
+
+/* exam / practice summary */
+.mz-summary{ text-align:center; padding:10px 0; }
+.mz-summary .bigemoji{ font-size:clamp(44px,15vw,66px); }
+
+/* persistent HUB button (top-left, in non-learn modes) */
+#hubBtn{ position:fixed; z-index:700;
+  top:calc(var(--toph) + var(--sat) + 8px); left:calc(12px + var(--sar));
+  min-height:44px; padding:9px 13px; border-radius:22px; cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  border:2px solid var(--magenta); background:#1a0518; color:var(--magenta);
+  box-shadow:0 0 16px rgba(255,61,240,.45); display:none; }
+@media (min-width:720px){ #hubBtn{ top:calc(var(--toph) + var(--sat) + 58px); } }
+#hubBtn:active{ transform:scale(.95); }
+body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
+
+/* ============================================================
+   VECTOR DRAG (namespaced under #vz-root / .vz)
+   ============================================================ */
+#vz-root{ --vneon:#00f6ff; --vneon2:#ff2fd0; --vgood:#22ffa7; --vgold:#ffd23f;
+  --vdim:#8a7fb8; --vslot:#2a1560; --vchip:linear-gradient(160deg,#2b1166,#491a9e); }
+#vz-root .vz-prompt{ font-size:14px; line-height:1.5; margin-bottom:10px; color:var(--ink); }
+#vz-root .vz-given{ display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 4px; }
+#vz-root .vz-given .vz-vec{ background:#1a0a40; border:1px solid #3a1f7a; border-radius:10px;
+  padding:7px 11px; font-size:14px; }
+#vz-root .vz-vec{ font-family:'Cambria Math','Times New Roman',serif; font-size:16px; white-space:nowrap; }
+#vz-root .vz-vlabel{ color:var(--vgold); font-weight:700; }
+#vz-root .vz-angle{ color:var(--vneon); }
+#vz-root .vz-opline{ text-align:center; font-size:14px; color:var(--vdim); margin:10px 0 6px; }
+#vz-root .vz-resultRow{ display:flex; align-items:center; justify-content:center; gap:6px;
+  flex-wrap:wrap; font-size:19px; margin:8px 0 6px; font-family:'Cambria Math',serif; }
+#vz-root .vz-resultRow .vz-vlabel{ font-size:19px; }
+#vz-root .vz-slot{ width:58px; height:50px; border-radius:12px; border:2px dashed #5a3aa8;
+  background:var(--vslot); display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:700; color:var(--vdim); transition:.15s; position:relative; }
+#vz-root .vz-slot.vz-hover{ border-color:var(--vneon); box-shadow:0 0 14px var(--vneon); }
+#vz-root .vz-slot.vz-filled{ border-style:solid; border-color:var(--vgood);
+  background:linear-gradient(160deg,#0d3a2c,#114d39); color:#fff; box-shadow:0 0 12px rgba(34,255,167,.5); }
+#vz-root .vz-slot .vz-work{ position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+  font-size:9.5px; color:var(--vgood); white-space:nowrap; font-family:monospace; }
+#vz-root .vz-comma{ color:var(--vdim); font-size:21px; }
+#vz-root .va{ position:relative; display:inline-block; padding-top:.18em; line-height:1; }
+#vz-root .va::before{ content:"→"; position:absolute; top:-.62em; left:50%;
+  transform:translateX(-50%) scaleX(1.15); font-size:.62em; font-weight:700; color:inherit; }
+#vz-root .vz-bankTitle{ font-size:11px; color:var(--vdim); margin:16px 0 8px;
+  text-transform:uppercase; letter-spacing:1px; }
+#vz-root .vz-bank{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:56px; }
+#vz-root .vz-chip{ min-width:54px; height:48px; padding:0 12px; border-radius:12px;
+  background:var(--vchip); border:1px solid #6a37c4; display:flex; align-items:center; justify-content:center;
+  font-size:17px; font-weight:700; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);
+  cursor:grab; user-select:none; touch-action:none; transition:transform .08s; }
+#vz-root .vz-chip:active{ cursor:grabbing; }
+#vz-root .vz-chip.vz-dragging{ box-shadow:0 0 18px var(--vneon2),0 8px 20px rgba(0,0,0,.6);
+  border-color:var(--vneon2); z-index:1000; opacity:.96; }
+#vz-root .vz-chip.vz-placed{ visibility:hidden; }
+#vz-root .vz-chip.vz-reject{ animation:vzshake .35s; }
+@keyframes vzshake{ 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-7px);} 40%,80%{transform:translateX(7px);} }
+#vz-floatLayer{ position:fixed; inset:0; pointer-events:none; z-index:9999; }
+#vz-root .vz-finale{ margin-top:16px; text-align:center; padding:14px; border-radius:14px;
+  background:linear-gradient(160deg,#11314d,#0c2440); border:1px solid var(--vneon); display:none;
+  box-shadow:0 0 18px rgba(0,246,255,.3); }
+#vz-root .vz-finale.vz-show{ display:block; animation:vzpop .4s; }
+@keyframes vzpop{ 0%{transform:scale(.85);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+#vz-root .vz-finale .vz-rvec{ font-size:19px; color:#fff; margin-bottom:6px; font-family:'Cambria Math',serif; }
+#vz-root .vz-finale .vz-mag{ font-size:14px; color:var(--vneon); }
+#vz-root .vz-finale .vz-mag b{ color:var(--vgold); }
 </style>
 </head>
 <body>
@@ -523,8 +752,110 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
 <!-- TIPS FAB -->
 <button class="tips-fab" id="tipsBtn" aria-label="Open tips">💡 TIPS</button>
 
-<!-- STAGE -->
+<!-- HUB / MODE return button -->
+<button id="hubBtn" aria-label="Back to hub">⌂ HUB</button>
+
+<!-- STAGE (Learn mode) -->
 <div class="stage" id="stage"></div>
+
+<!-- ===================== MULTI-MODE LAYER ===================== -->
+<div id="modeLayer">
+
+  <!-- HUB -->
+  <section class="mz-screen" id="mz-hub">
+    <div class="mz-hubhead">
+      <div class="mz-logo">⚡</div>
+      <div class="mz-title">PHYSICS ARCADE</div>
+      <p class="mz-sub">CPCS110 · Ch 1–6 — pick a mode</p>
+    </div>
+    <div class="mz-tiles">
+      <button class="mz-tile learn" data-go="learn">
+        <span class="ic">🎓</span><span class="tt">LEARN</span>
+        <span class="ds">Teach + quiz run-through, all 6 concepts</span>
+      </button>
+      <button class="mz-tile assign" data-go="assignments">
+        <span class="ic">📋</span><span class="tt">ASSIGN</span>
+        <span class="ds">A1–A5 questions in the drag-build solver</span>
+      </button>
+      <button class="mz-tile exam" data-go="exam">
+        <span class="ic">📝</span><span class="tt">EXAM</span>
+        <span class="ds">Mixed timed set + a vector problem, scored</span>
+      </button>
+      <button class="mz-tile practice" data-go="practice">
+        <span class="ic">🎯</span><span class="tt">PRACTICE</span>
+        <span class="ds">Adaptive drills on your weak spots, ranked</span>
+      </button>
+    </div>
+    <div class="mz-dir">
+      <button data-go="modules">🧩 Modules</button>
+      <button id="mz-conceptmap">🔗 Concept Map</button>
+      <button id="mz-formula">📐 Formula Sheet</button>
+      <a href="/physics/cpcs110/">🏠 Home</a>
+    </div>
+  </section>
+
+  <!-- ASSIGNMENTS MENU -->
+  <section class="mz-screen" id="mz-assignments">
+    <div class="mz-bar"><button class="mz-back" data-go="hub">⌂ HUB</button><h2>📋 ASSIGNMENTS</h2></div>
+    <div id="mz-assignMenu"></div>
+  </section>
+
+  <!-- MODULES MENU (P1) -->
+  <section class="mz-screen" id="mz-modules">
+    <div class="mz-bar"><button class="mz-back" data-go="hub">⌂ HUB</button><h2>🧩 MODULES</h2></div>
+    <p class="mz-sub" style="margin-bottom:12px">Jump straight to any single concept's teach + quiz.</p>
+    <div class="mz-alist" id="mz-moduleMenu"></div>
+  </section>
+
+  <!-- GENERIC RUNNER (assignments / exam) -->
+  <section class="mz-screen" id="mz-runner">
+    <div class="mz-bar"><button class="mz-back" data-go="hub">⌂ HUB</button><h2 id="mz-runnerTitle">RUN</h2></div>
+    <div class="mz-scorebar" id="mz-runnerScore" style="display:none">
+      <span class="mz-rank" id="mz-runnerRank">—</span>
+      <span class="mz-score">Score <b id="mz-runnerXp">0</b></span>
+    </div>
+    <div class="mz-progressline" id="mz-runnerProg"></div>
+    <div class="mz-host" id="mz-runnerHost"></div>
+    <div class="mz-advance">
+      <button class="btn magenta" id="mz-runnerNext" disabled>NEXT →</button>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="mz-screen" id="mz-practice">
+    <div class="mz-bar"><button class="mz-back" data-go="hub">⌂ HUB</button><h2>🎯 PRACTICE</h2></div>
+    <div class="mz-scorebar">
+      <span class="mz-rank" id="mz-pracRank">Bronze</span>
+      <span class="mz-score">XP <b id="mz-pracXp">0</b> · streak <span id="mz-pracStreak">0</span></span>
+      <div class="mz-rankprog"><i id="mz-pracProg"></i></div>
+      <div class="mz-weak" id="mz-pracWeak"></div>
+    </div>
+    <div class="mz-feedback" id="mz-pracFeedback"></div>
+    <div class="mz-host" id="mz-pracHost"></div>
+    <div class="mz-advance">
+      <button class="btn" id="mz-pracNext" disabled>NEXT WEAK ITEM →</button>
+    </div>
+    <div class="mz-dir" style="margin-top:18px">
+      <button id="mz-pracReset">↺ Reset progress</button>
+    </div>
+  </section>
+
+  <!-- VECTOR PROBLEM HOST (used by exam; lives here, relocated into runner host) -->
+  <div id="vz-root" hidden>
+    <div class="vz-prompt" id="vz-prompt"></div>
+    <div class="vz-given" id="vz-given"></div>
+    <div class="vz-opline" id="vz-opline"></div>
+    <div class="vz-resultRow" id="vz-resultRow"></div>
+    <div class="vz-bankTitle">Drag the right sum into each slot</div>
+    <div class="vz-bank" id="vz-bank"></div>
+    <div class="vz-finale" id="vz-finale">
+      <div class="vz-rvec" id="vz-finaleVec"></div>
+      <div class="vz-mag" id="vz-finaleMag"></div>
+    </div>
+  </div>
+
+</div>
+<div id="vz-floatLayer"></div>
 
 <!-- BOTTOM NAV -->
 <div class="navbar">
@@ -546,28 +877,48 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   <div class="tip"><b>FORMULA SHEET</b>p=mv · F·Δt=Δp · f=μN · W=Fd · KE=½mv² · ΣF=ma</div>
 </aside>
 
-<!-- ===================== CONCEPT WEB POPUP (cw- namespaced) ===================== -->
-<div class="cw-overlay" id="cw-overlay" role="dialog" aria-modal="true" aria-labelledby="cw-title" aria-hidden="true">
-  <div class="cw-modal" role="document">
-    <div class="cw-header">
+<!-- ===================== CONCEPT MAP v2 POPUP (cw2- namespaced) ===================== -->
+<div id="cw2-root">
+  <!-- host stage (moved into the modal body on open) -->
+  <div class="cw2-stage" id="cw2-stage">
+    <div class="cw2-canvas-wrap">
+      <svg id="cw2-web" viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="cw2-nodeGrad" cx="40%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#123a55"/><stop offset="60%" stop-color="#0a1a36"/><stop offset="100%" stop-color="#070d22"/>
+          </radialGradient>
+          <radialGradient id="cw2-selGrad" cx="40%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#4a3d10"/><stop offset="60%" stop-color="#2a230a"/><stop offset="100%" stop-color="#140f04"/>
+          </radialGradient>
+          <radialGradient id="cw2-foundGrad" cx="40%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#241b3d"/><stop offset="100%" stop-color="#0d0920"/>
+          </radialGradient>
+          <radialGradient id="cw2-goldGrad" cx="40%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#3d2f08"/><stop offset="60%" stop-color="#241a04"/><stop offset="100%" stop-color="#120c02"/>
+          </radialGradient>
+          <marker id="cw2-arrow" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#3a3a6e"/></marker>
+          <marker id="cw2-arrowHot" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#00f0ff"/></marker>
+          <marker id="cw2-arrowGold" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#ffae00"/></marker>
+        </defs>
+        <g id="cw2-edgeLayer"></g>
+        <g id="cw2-labelLayer"></g>
+        <g id="cw2-nodeLayer"></g>
+      </svg>
+      <div class="cw2-footnote" id="cw2-foot"></div>
+    </div>
+    <aside class="cw2-aside" id="cw2-panel"></aside>
+  </div>
+</div>
+<div class="cw2-overlay" id="cw2-overlay" role="dialog" aria-modal="true" aria-labelledby="cw2-mtitle" aria-hidden="true">
+  <div class="cw2-modal" role="document">
+    <div class="cw2-mhead">
       <div>
-        <h2 class="cw-title" id="cw-title">⚡ Concept Web</h2>
-        <p class="cw-sub">Tap a node to see how the physics connects</p>
+        <h2 class="cw2-mtitle" id="cw2-mtitle">🔗 CONCEPT MAP</h2>
+        <p class="cw2-msub">CPCS110 Ch 1–6 · ⭐ gold = likely on the final</p>
       </div>
-      <button class="cw-close" aria-label="Close" onclick="closeConceptWeb()">&times;</button>
+      <button class="cw2-close" aria-label="Close" onclick="closeConceptWeb()">&times;</button>
     </div>
-    <div class="cw-body">
-      <div class="cw-graphwrap">
-        <svg id="cw-svg" viewBox="0 0 320 360" preserveAspectRatio="xMidYMid meet" aria-label="Physics concept graph"></svg>
-      </div>
-      <p class="cw-hint">Tap empty space to reset</p>
-      <div class="cw-info" id="cw-info">
-        <div class="cw-info-empty">
-          Tap any glowing node above to highlight its links and read <b>why</b> the
-          concepts connect. Try <b>Momentum</b> or <b>Newton's 2nd Law</b> to start.
-        </div>
-      </div>
-    </div>
+    <div class="cw2-mbody" id="cw2-mbody"></div>
   </div>
 </div>
 
@@ -852,90 +1203,226 @@ window.PhysicsAnims = {
 })();
 </script>
 
-<!-- ===================== CONCEPT WEB POPUP (cw- namespaced) ===================== -->
+<!-- ===================== CONCEPT MAP v2 (cw2- namespaced, star final markers) ===================== -->
 <script>
-(function () {
+(function(){
   "use strict";
-  var NODES = [
-    { id:"n2",label:"Newton's 2nd",formula:"F = ma",x:160,y:52 },
-    { id:"mom",label:"Momentum",formula:"p = mv",x:64,y:120 },
-    { id:"imp",label:"Impulse",formula:"J = Δp",x:256,y:120 },
-    { id:"fbd",label:"Free-Body",formula:"diagram",x:160,y:150 },
-    { id:"col",label:"Collisions",formula:"",x:70,y:215 },
-    { id:"ene",label:"Energy",formula:"KE,heat",x:250,y:215 },
-    { id:"fric",label:"Friction",formula:"f = μN",x:160,y:250 },
-    { id:"grav",label:"Gravity",formula:"1/r²",x:78,y:315 },
-    { id:"elec",label:"Electric",formula:"1/r²",x:242,y:315 }
+  /* 11 core CPCS110 concepts (Ch 1-6) + 2 foundations. final:true => likely on final (gold). */
+  var nodes = [
+    {id:'si',   name:"SI Units",            eq:"kg·m·s",          x:120, y:120, core:false},
+    {id:'vec',  name:"Vectors",             eq:"⟨x,y,z⟩", x:120, y:330, core:false},
+    {id:'vel',  name:"Velocity",            eq:"v = Δr/Δt", x:330, y:120, core:true},
+    {id:'mom',  name:"Momentum",            eq:"p = mv",          x:330, y:300, core:true, final:true},
+    {id:'n2l',  name:"Newton's 2nd Law",    eq:"F = ma = dp/dt",  x:560, y:140, core:true, final:true},
+    {id:'imp',  name:"Impulse",             eq:"J = FΔt = Δp", x:540, y:340, core:true, final:true},
+    {id:'col',  name:"Collisions",          eq:"Σp conserved", x:300, y:520, core:true, final:true},
+    {id:'fbd',  name:"Free-Body Diagram",   eq:"ΣF",         x:760, y:260, core:true, final:true},
+    {id:'grav', name:"Gravity",             eq:"F = Gm₁m₂/r²", x:880, y:130, core:true, final:true},
+    {id:'elec', name:"Electric Force",      eq:"F = kq₁q₂/r²", x:880, y:380, core:true, final:true},
+    {id:'fric', name:"Friction",            eq:"f = μN",     x:760, y:520, core:true},
+    {id:'en',   name:"Energy / Work",       eq:"W = Fd, ½mv²", x:520, y:640, core:true, final:true}
   ];
-  var EDGES = [
-    { a:"mom",b:"col",rel:"leads to",why:"Total momentum is conserved through a collision." },
-    { a:"mom",b:"imp",rel:"leads to",why:"Impulse equals the change in momentum (J = Δp)." },
-    { a:"n2",b:"imp",rel:"generalizes to",why:"Integrate F = ma over time: J = F·Δt." },
-    { a:"n2",b:"fbd",rel:"applied in",why:"You sum the forces from a free-body diagram, then use F = ma." },
-    { a:"imp",b:"col",rel:"explains",why:"Contact forces during impact deliver the impulse that changes motion." },
-    { a:"grav",b:"elec",rel:"same 1/r² form",why:"Both follow an inverse-square law — but mass only attracts, while charge attracts or repels." },
-    { a:"grav",b:"fbd",rel:"force in",why:"Gravity (weight) is one of the forces you draw in a free-body diagram." },
-    { a:"elec",b:"fbd",rel:"force in",why:"The electric force is another arrow on the free-body diagram." },
-    { a:"fric",b:"fbd",rel:"force in",why:"Friction is a contact force you include in a free-body diagram." },
-    { a:"fric",b:"ene",rel:"removes",why:"Friction drains mechanical energy, lost as heat." },
-    { a:"col",b:"ene",rel:"contrast",why:"KE is kept in elastic collisions, lost in inelastic ones — momentum is always conserved." },
-    { a:"imp",b:"ene",rel:"contrast",why:"Impulse and energy are two different conserved quantities (one uses time, one uses distance)." }
+  var edges = [
+    {a:'si',  b:'vel', type:'foundation',     dir:'out', foundation:true, why:'Velocity is measured in SI units (m/s) built from base units.'},
+    {a:'si',  b:'n2l', type:'foundation',     dir:'out', foundation:true, why:'Force in newtons = kg·m/s² comes straight from SI base units.'},
+    {a:'si',  b:'en',  type:'foundation',     dir:'out', foundation:true, why:'Energy in joules (kg·m²/s²) is defined from SI units.'},
+    {a:'vec', b:'vel', type:'foundation',     dir:'out', foundation:true, why:'Velocity is a vector — it has direction, not just speed.'},
+    {a:'vec', b:'mom', type:'foundation',     dir:'out', foundation:true, why:'Momentum is a vector quantity (p = mv points where v points).'},
+    {a:'vec', b:'n2l', type:'foundation',     dir:'out', foundation:true, why:'Forces are vectors — you add them by components.'},
+    {a:'vec', b:'fbd', type:'foundation',     dir:'out', foundation:true, why:'A free-body diagram is built entirely from vector force arrows.'},
+    {a:'vel', b:'mom', type:'defines',        dir:'out', why:'Momentum p = mv is mass times the velocity vector.'},
+    {a:'mom', b:'col', type:'conserved in',   dir:'out', final:true, why:'Total momentum Σp is ALWAYS conserved in a collision — the #1 collision tool.'},
+    {a:'mom', b:'imp', type:'changed by',     dir:'out', final:true, why:'Impulse-momentum theorem: J = Δp. Force over time changes momentum.'},
+    {a:'n2l', b:'imp', type:'generalizes to', dir:'out', final:true, why:'J = FΔt is F = ma integrated over time — same law, time-form.'},
+    {a:'n2l', b:'fbd', type:'applied via',    dir:'out', final:true, why:'Sum the forces on the free-body diagram, then set ΣF = ma. The core problem-solving loop.'},
+    {a:'n2l', b:'mom', type:'is rate of',     dir:'out', final:true, why:'F = dp/dt — net force is the rate of change of momentum.'},
+    {a:'imp', b:'col', type:'explains',       dir:'out', why:'Contact forces during impact deliver the impulse that changes each object momentum.'},
+    {a:'grav',b:'elec',type:'same 1/r²', dir:'bi',  final:true, why:'Both are inverse-square laws. Mass only attracts; charge attracts OR repels — classic compare/contrast.'},
+    {a:'grav',b:'fbd', type:'force in',       dir:'out', why:'Gravity (weight, mg) is one of the arrows you draw in a free-body diagram.'},
+    {a:'elec',b:'fbd', type:'force in',       dir:'out', why:'The electric force is another arrow on the free-body diagram.'},
+    {a:'fric',b:'fbd', type:'force in',       dir:'out', why:'Friction is a contact force you include in the free-body diagram (f = μN).'},
+    {a:'fric',b:'en',  type:'removes',        dir:'out', why:'Friction drains mechanical energy, dissipated as heat.'},
+    {a:'fbd', b:'en',  type:'does work',      dir:'out', final:true, why:'Work-energy theorem: net work W = Fd = ΔKE. Forces on the diagram do the work.'},
+    {a:'col', b:'en',  type:'contrast',       dir:'bi',  final:true, why:'KE is KEPT in elastic but LOST in inelastic collisions — yet momentum is ALWAYS conserved.'},
+    {a:'mom', b:'en',  type:'two conserved Qs', dir:'bi', final:true, why:'Momentum vs Energy: two different conserved quantities (time vs distance). Knowing which to use is the key final skill.'}
   ];
-  var SVGNS="http://www.w3.org/2000/svg", svg, infoEl, overlay, built=false, nodeById={};
-  function el(tag,attrs){ var e=document.createElementNS(SVGNS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
-  function neighborsOf(id){ var set={},list=[];
-    EDGES.forEach(function(ed){ if(ed.a===id){ set[ed.b]=true; list.push({other:ed.b,rel:ed.rel,why:ed.why}); }
-      else if(ed.b===id){ set[ed.a]=true; list.push({other:ed.a,rel:ed.rel,why:ed.why}); } });
-    return { set:set, list:list }; }
+
+  var NR=50, FR=36;
+  var byId={}; nodes.forEach(function(n){ byId[n.id]=n; });
+  function radius(n){ return n.core?NR:FR; }
+  var NS='http://www.w3.org/2000/svg';
+  var edgeLayer, labelLayer, nodeLayer, panel, web, built=false, selected=null;
+
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function trimmed(a,b){
+    var A=byId[a], B=byId[b];
+    var dx=B.x-A.x, dy=B.y-A.y, d=Math.hypot(dx,dy)||1, ux=dx/d, uy=dy/d;
+    var ra=radius(A)+4, rb=radius(B)+9;
+    return {x1:A.x+ux*ra,y1:A.y+uy*ra,x2:B.x-ux*rb,y2:B.y-uy*rb,mx:(A.x+B.x)/2,my:(A.y+B.y)/2};
+  }
   function build(){
-    NODES.forEach(function(n){ nodeById[n.id]=n; });
-    EDGES.forEach(function(ed,i){ var A=nodeById[ed.a],B=nodeById[ed.b];
-      svg.appendChild(el("line",{ x1:A.x,y1:A.y,x2:B.x,y2:B.y,class:"cw-edge-line","data-edge":i,"data-a":ed.a,"data-b":ed.b })); });
-    NODES.forEach(function(n){
-      var g=el("g",{ class:"cw-node-g","data-id":n.id }); var r=30;
-      g.appendChild(el("circle",{ cx:n.x,cy:n.y,r:r,class:"cw-node-circle" }));
-      var lbl=el("text",{ x:n.x,y:n.formula?n.y-1:n.y+3,class:"cw-node-label" }); lbl.textContent=n.label; g.appendChild(lbl);
-      if(n.formula){ var fm=el("text",{ x:n.x,y:n.y+10,class:"cw-node-formula" }); fm.textContent=n.formula; g.appendChild(fm); }
-      g.addEventListener("click",function(e){ e.stopPropagation(); selectNode(n.id); });
-      svg.appendChild(g);
+    edgeLayer=document.getElementById('cw2-edgeLayer');
+    labelLayer=document.getElementById('cw2-labelLayer');
+    nodeLayer=document.getElementById('cw2-nodeLayer');
+    panel=document.getElementById('cw2-panel');
+    web=document.getElementById('cw2-web');
+    edges.forEach(function(e,i){
+      var t=trimmed(e.a,e.b);
+      var line=document.createElementNS(NS,'line');
+      line.setAttribute('x1',t.x1);line.setAttribute('y1',t.y1);line.setAttribute('x2',t.x2);line.setAttribute('y2',t.y2);
+      var cls='edge'; if(e.dir==='bi')cls+=' bi'; if(e.foundation)cls+=' dim'; else if(e.final)cls+=' final';
+      line.setAttribute('class',cls);
+      if(e.foundation){line.style.stroke='#5a4d8a';line.style.opacity='.28';line.style.strokeWidth='1.5';}
+      if(e.dir!=='bi') line.setAttribute('marker-end', e.foundation?'url(#cw2-arrow)':(e.final?'url(#cw2-arrowGold)':'url(#cw2-arrow)'));
+      line.dataset.idx=i;
+      line.addEventListener('click',function(ev){ev.stopPropagation();focusEdge(i);});
+      edgeLayer.appendChild(line); e._line=line;
+      var lbl=document.createElementNS(NS,'text');
+      lbl.setAttribute('x',t.mx);lbl.setAttribute('y',t.my-4);lbl.setAttribute('class','elabel');lbl.textContent=e.type;
+      labelLayer.appendChild(lbl); e._lbl=lbl;
     });
-    svg.addEventListener("click",function(){ resetGraph(); });
+    nodes.forEach(function(n){
+      var g=document.createElementNS(NS,'g');
+      var cls='node'; if(!n.core)cls+=' foundation'; if(n.final)cls+=' final';
+      g.setAttribute('class',cls); g.setAttribute('transform','translate('+n.x+','+n.y+')');
+      var c=document.createElementNS(NS,'circle'); c.setAttribute('r',radius(n)); g.appendChild(c);
+      var words=n.name.split(' '), lines=[];
+      if(n.name.length>13 && words.length>1){ var mid=Math.ceil(words.length/2); lines.push(words.slice(0,mid).join(' ')); lines.push(words.slice(mid).join(' ')); }
+      else lines.push(n.name);
+      var startY=-(lines.length-1)*7-4;
+      lines.forEach(function(ln,k){ var t=document.createElementNS(NS,'text'); t.setAttribute('class','nm'); t.setAttribute('y',startY+k*14); t.textContent=ln; g.appendChild(t); });
+      var eqt=document.createElementNS(NS,'text'); eqt.setAttribute('class','eqn'); eqt.setAttribute('y',startY+lines.length*14+6); eqt.textContent=n.eq; g.appendChild(eqt);
+      if(n.final){ var star=document.createElementNS(NS,'text'); star.setAttribute('class','starbadge'); star.setAttribute('y',-radius(n)+2); star.setAttribute('text-anchor','middle'); star.textContent='⭐'; g.appendChild(star); }
+      g.addEventListener('click',function(ev){ev.stopPropagation();selectNode(n.id);});
+      nodeLayer.appendChild(g); n._g=g;
+    });
+    document.getElementById('cw2-foot').textContent =
+      edges.length+' connections · '+nodes.filter(function(n){return n.core;}).length+' core · '+
+      nodes.filter(function(n){return !n.core;}).length+' foundations · '+
+      nodes.filter(function(n){return n.final;}).length+' ⭐ final';
+    web.addEventListener('click',function(){ selected=null; clearVisual(); renderDefault(); });
     built=true;
   }
-  function resetGraph(){
-    Array.prototype.forEach.call(svg.querySelectorAll(".cw-node-g"),function(g){ g.classList.remove("cw-active","cw-neighbor","cw-dim"); });
-    Array.prototype.forEach.call(svg.querySelectorAll(".cw-edge-line"),function(l){ l.classList.remove("cw-active","cw-dim"); });
-    infoEl.innerHTML='<div class="cw-info-empty">Tap any glowing node above to highlight its links and read <b>why</b> the concepts connect. Try <b>Momentum</b> or <b>Newton\'s 2nd Law</b> to start.</div>';
+  function neighborsOf(id){ var ns=new Set(), es=[];
+    edges.forEach(function(e,i){ if(e.a===id){ns.add(e.b);es.push(i);} else if(e.b===id){ns.add(e.a);es.push(i);} });
+    return {ns:ns,es:es};
   }
-  function selectNode(id){
-    var nb=neighborsOf(id), node=nodeById[id];
-    Array.prototype.forEach.call(svg.querySelectorAll(".cw-node-g"),function(g){
-      var gid=g.getAttribute("data-id"); g.classList.remove("cw-active","cw-neighbor","cw-dim");
-      if(gid===id) g.classList.add("cw-active"); else if(nb.set[gid]) g.classList.add("cw-neighbor"); else g.classList.add("cw-dim");
+  function clearVisual(){
+    nodes.forEach(function(n){ n._g.classList.remove('selected','neighbor','dim'); });
+    edges.forEach(function(e){
+      e._line.classList.remove('hot','hotbi','hotgold','dim'); e._lbl.classList.remove('show','showgold');
+      if(e.foundation){ e._line.classList.add('dim'); }
+      if(e.dir!=='bi') e._line.setAttribute('marker-end', e.foundation?'url(#cw2-arrow)':(e.final?'url(#cw2-arrowGold)':'url(#cw2-arrow)')); else e._line.removeAttribute('marker-end');
     });
-    Array.prototype.forEach.call(svg.querySelectorAll(".cw-edge-line"),function(l){
-      var a=l.getAttribute("data-a"),b=l.getAttribute("data-b"); l.classList.remove("cw-active","cw-dim");
-      if(a===id||b===id) l.classList.add("cw-active"); else l.classList.add("cw-dim");
-    });
-    var html='<div class="cw-info-title">'+esc(fullName(node))+
-      (node.formula&&node.formula.indexOf("=")>-1?' <span class="cw-info-formula">'+esc(node.formula)+"</span>":"")+"</div>";
-    if(nb.list.length){ html+='<ul class="cw-conn-list">';
-      nb.list.forEach(function(c){ var o=nodeById[c.other];
-        html+="<li><span class=\"cw-arrow\">→</span> <span class=\"cw-conn-rel\">"+esc(c.rel)+"</span> <span class=\"cw-conn-target\">"+esc(fullName(o))+"</span><div class=\"cw-conn-why\">"+esc(c.why)+"</div></li>"; });
-      html+="</ul>";
-    } else { html+='<div class="cw-info-empty">No links recorded.</div>'; }
-    infoEl.innerHTML=html;
   }
-  function fullName(n){ var map={ n2:"Newton's 2nd Law",mom:"Momentum",imp:"Impulse",fbd:"Free-Body Diagram",col:"Collisions",ene:"Energy",fric:"Friction",grav:"Gravity",elec:"Electric Force" }; return map[n.id]||n.label; }
-  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]; }); }
+  function applyHighlight(id){
+    var r=neighborsOf(id), ns=r.ns, es=r.es;
+    nodes.forEach(function(n){ if(n.id===id)n._g.classList.add('selected'); else if(ns.has(n.id))n._g.classList.add('neighbor'); else n._g.classList.add('dim'); });
+    var eset=new Set(es);
+    edges.forEach(function(e,i){
+      if(eset.has(i)){ e._line.classList.remove('dim');
+        if(e.dir==='bi')e._line.classList.add('hotbi'); else if(e.final)e._line.classList.add('hotgold'); else e._line.classList.add('hot');
+        e._lbl.classList.add(e.final?'showgold':'show');
+        if(e.dir!=='bi')e._line.setAttribute('marker-end', e.final?'url(#cw2-arrowGold)':'url(#cw2-arrowHot)');
+      } else { e._line.classList.add('dim'); }
+    });
+  }
+  function selectNode(id){ selected=id; clearVisual(); applyHighlight(id); renderPanel(id); scrollTop(); }
+  function focusEdge(i){
+    selected=null; clearVisual(); var e=edges[i];
+    nodes.forEach(function(n){ if(n.id===e.a||n.id===e.b)n._g.classList.add('neighbor'); else n._g.classList.add('dim'); });
+    edges.forEach(function(ed,k){
+      if(k===i){ ed._line.classList.remove('dim');
+        if(ed.dir==='bi')ed._line.classList.add('hotbi'); else if(ed.final)ed._line.classList.add('hotgold'); else ed._line.classList.add('hot');
+        ed._lbl.classList.add(ed.final?'showgold':'show');
+        if(ed.dir!=='bi')ed._line.setAttribute('marker-end', ed.final?'url(#cw2-arrowGold)':'url(#cw2-arrowHot)');
+      } else ed._line.classList.add('dim');
+    });
+    renderEdgePanel(i); scrollTop();
+  }
+  function scrollTop(){ try{ panel.scrollTop=0; }catch(e){} }
+  function connectionCards(id){
+    var es=neighborsOf(id).es;
+    return es.map(function(i){
+      var e=edges[i], arrowChar, cls, target;
+      if(e.dir==='bi'){ arrowChar='↔'; cls='cw2-a-bi'; target=(e.a===id?e.b:e.a); }
+      else if(e.a===id){ arrowChar='→'; cls='cw2-a-out'; target=e.b; }
+      else { arrowChar='←'; cls='cw2-a-in'; target=e.a; }
+      var col = e.final?'#ffcf3f':(e.dir==='bi'?'#ff3df0':(e.a===id?'#00f0ff':'#39ff7a'));
+      return '<div class="cw2-conn-card'+(e.final?' cw2-final':'')+'" style="border-left-color:'+col+'">'+
+        '<div class="cw2-top"><span class="cw2-arrow '+cls+'">'+arrowChar+'</span>'+
+        (e.final?'<span class="cw2-star">⭐</span>':'')+
+        '<span class="cw2-type" style="color:'+col+'">'+esc(e.type)+'</span>'+
+        '<span class="cw2-target">'+esc(byId[target].name)+'</span></div>'+
+        '<div class="cw2-why">'+esc(e.why)+'</div></div>';
+    }).join('');
+  }
+  function renderPanel(id){
+    var n=byId[id], es=neighborsOf(id).es;
+    panel.innerHTML='<h2>'+esc(n.name)+(n.final?'<span class="cw2-star-badge">⭐ FINAL</span>':'')+'</h2>'+
+      '<div class="cw2-eq">'+esc(n.eq)+(n.core?'':' <small>(foundation)</small>')+'</div>'+
+      '<div class="cw2-hint">'+es.length+' connection'+(es.length!==1?'s':'')+' — read each card below.'+(n.final?' <b style="color:#ffcf3f">This concept is a strong bet for the final.</b>':'')+'</div>'+
+      connectionCards(id)+finalBlurb()+legend();
+  }
+  function renderEdgePanel(i){
+    var e=edges[i], A=byId[e.a], B=byId[e.b];
+    var col=e.final?'#ffcf3f':(e.dir==='bi'?'#ff3df0':'#00f0ff'), arrowChar=e.dir==='bi'?'↔':'→';
+    panel.innerHTML='<h2>Relationship'+(e.final?'<span class="cw2-star-badge">⭐ FINAL</span>':'')+'</h2>'+
+      '<div class="cw2-eq" style="font-size:16px">'+esc(A.name)+' <span style="color:'+col+'">'+arrowChar+'</span> '+esc(B.name)+'</div>'+
+      '<div class="cw2-conn-card'+(e.final?' cw2-final':'')+'" style="border-left-color:'+col+'">'+
+      '<div class="cw2-top"><span class="cw2-arrow" style="color:'+col+'">'+arrowChar+'</span>'+
+      (e.final?'<span class="cw2-star">⭐</span>':'')+'<span class="cw2-type" style="color:'+col+'">'+esc(e.type)+'</span></div>'+
+      '<div class="cw2-why">'+esc(e.why)+'</div></div>'+
+      '<div class="cw2-hint">'+esc(A.name)+': <b style="color:#9fd8ff">'+esc(A.eq)+'</b><br>'+esc(B.name)+': <b style="color:#9fd8ff">'+esc(B.eq)+'</b></div>'+
+      finalBlurb()+legend();
+  }
+  function finalBlurb(){
+    return '<div class="cw2-final-blurb"><h3>⭐ FOCUS FOR THE FINAL</h3><ul>'+
+      '<li><b>Momentum vs Energy</b> — the two conserved quantities; know which to use.</li>'+
+      '<li><b>Conservation of momentum</b> in collisions (elastic vs inelastic).</li>'+
+      '<li><b>Impulse-momentum theorem</b> J = FΔt = Δp.</li>'+
+      '<li><b>F = ma via free-body diagrams</b> — set ΣF = ma.</li>'+
+      '<li><b>Inverse-square forces</b> — gravity vs electric (1/r²).</li>'+
+      '<li><b>Work-energy theorem</b> W = Fd = ΔKE.</li></ul></div>';
+  }
+  function legend(){
+    return '<div class="cw2-legend"><h3>Legend</h3>'+
+      '<div class="cw2-lg-row"><span class="cw2-dot cw2-dot-sel"></span> Selected concept</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-dot cw2-dot-gold"></span> ⭐ Likely on the final</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-dot cw2-dot-core"></span> Connected neighbor</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-dot cw2-dot-found"></span> Foundation (prerequisite)</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-swatch cw2-sw-gold"></span> ⭐ Final-likely link</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-swatch cw2-sw-hot"></span> Directed link → (A leads to B)</div>'+
+      '<div class="cw2-lg-row"><span class="cw2-swatch cw2-sw-bi"></span> Two-way link ↔ (mutual / contrast)</div></div>';
+  }
+  function renderDefault(){
+    panel.innerHTML='<h2>Start Here</h2>'+
+      '<div class="cw2-hint" style="margin-bottom:10px">This map covers the big ideas of <b style="color:#9fd8ff">CPCS110, Chapters 1-6</b> and how they feed into each other.</div>'+
+      '<div class="cw2-conn-card" style="border-left-color:#ffe14d"><div class="cw2-why" style="opacity:1">'+
+      '<b style="color:#ffe14d">Tap a node</b> to spotlight its equation and every connection.<br><br>'+
+      '<b style="color:#ff3df0">Tap a line</b> to focus one relationship.<br><br><b>Tap empty space</b> to come back here.</div></div>'+
+      '<div class="cw2-hint">The two faded nodes on the left — <b>SI Units</b> &amp; <b>Vectors</b> — are the prerequisites everything else is built on.</div>'+
+      finalBlurb()+legend();
+  }
+
+  /* ---- popup open/close: relocate host stage into modal ---- */
+  var overlay, mbody, stage, placeholder=null, moved=false;
   function open(){
-    if(!svg){ svg=document.getElementById("cw-svg"); infoEl=document.getElementById("cw-info"); overlay=document.getElementById("cw-overlay"); }
     if(!built) build();
-    overlay.classList.add("cw-open"); overlay.setAttribute("aria-hidden","false"); document.body.style.overflow="hidden";
+    overlay=document.getElementById('cw2-overlay'); mbody=document.getElementById('cw2-mbody'); stage=document.getElementById('cw2-stage');
+    if(!moved){ placeholder=document.createComment('cw2-stage-home'); stage.parentNode.insertBefore(placeholder, stage); mbody.appendChild(stage); moved=true; }
+    document.body.classList.add('cw2-active');
+    overlay.classList.add('cw2-open'); overlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+    selected=null; clearVisual(); renderDefault();
   }
-  function close(){ if(!overlay) overlay=document.getElementById("cw-overlay"); overlay.classList.remove("cw-open"); overlay.setAttribute("aria-hidden","true"); document.body.style.overflow=""; }
-  document.getElementById("cw-overlay").addEventListener("click",function(e){ if(e.target===e.currentTarget) close(); });
-  document.addEventListener("keydown",function(e){ if(e.key==="Escape"||e.key==="Esc") close(); });
+  function close(){
+    if(!overlay) overlay=document.getElementById('cw2-overlay');
+    overlay.classList.remove('cw2-open'); overlay.setAttribute('aria-hidden','true');
+    document.body.classList.remove('cw2-active'); document.body.style.overflow='';
+    if(moved && placeholder){ placeholder.parentNode.insertBefore(stage, placeholder); placeholder.remove(); placeholder=null; moved=false; }
+  }
+  document.getElementById('cw2-overlay').addEventListener('click',function(e){ if(e.target===e.currentTarget) close(); });
+  document.addEventListener('keydown',function(e){ if((e.key==='Escape'||e.key==='Esc') && document.getElementById('cw2-overlay').classList.contains('cw2-open')) close(); });
   window.openConceptWeb=open; window.closeConceptWeb=close;
 })();
 </script>
@@ -1532,6 +2019,1734 @@ window.PhysicsAnims = {
 
 </script>
 
+<!-- ===================== ASSIGNMENTS 1-2-3 (inlined) ===================== -->
+<script>
+/* ================================================================
+   ASSIGNMENT PACKS 1, 2, 3  —  CPCS110 Physics
+   ----------------------------------------------------------------
+   Standalone drag-to-build data module. No imports.
+   Consumed by solver-quiz.html (same engine as question-bank.js).
+
+   Each question object follows the solver-quiz.html DATA SCHEMA exactly:
+   {
+     id, concept,                               // ids / short concept label
+     fromAssignment,                            // "From Assignment N, Qx" tag
+     prompt:    HTML string,                    // word problem (\\( ... \\) inline LaTeX)
+     inventory: [ {id, tex, label, relevant} ], // equation cards (LaTeX tex)
+     answerEqId:string,                         // correct card to drag down
+     dockedTex: LaTeX,                          // headline equation when docked
+     lhs:       LaTeX,                          // generalized left-hand symbol
+     joiner:    LaTeX between terms ("" product, "+" sum, "\\cdot" dot),
+     terms: [ {symbol(LaTeX), sub(LaTeX)} ],    // ORDERED right-hand terms
+     distractors:[ LaTeX, ... ],                // wrong chips (snap back)
+     result: { expression, substitution, answer }, // LaTeX final lines (FINAL = numbers)
+     mcq: { options:[LaTeX x4], correct:index, why:"one-line reason" }
+   }
+
+   Vectors use \\vec p = m\\vec v notation. The final substitution line
+   replaces ALL variables with numbers.
+
+   Export shape:
+     window.ASSIGN_1_2_3 = { a1:[...], a2:[...], a3:[...] }
+   ================================================================ */
+
+(function (root) {
+
+  const ASSIGN_1_2_3 = {
+
+    /* ============================================================
+       ASSIGNMENT 1  —  Ch 1 Interactions & Motion
+       (unit vectors, average velocity, momentum, Δp, acceleration)
+       ============================================================ */
+    a1: [
+
+      /* ---- A1, Q5 — unit vector  â = A/|A| ---- */
+      {
+        id: "a1q5-unitvec", concept: "Vectors", fromAssignment: "From Assignment 1, Q5",
+        prompt: '<b>From Assignment 1, Q5.</b> Given \\(\\vec A=\\langle 44,14,-19\\rangle\\) cm. ' +
+                '<span class="ask">Find the unit vector \\(\\hat A=\\dfrac{\\vec A}{|\\vec A|}\\).</span>',
+        inventory: [
+          { id: "unit", tex: "\\hat A = \\dfrac{\\vec A}{|\\vec A|}", label: "unit vector", relevant: true  },
+          { id: "pmv",  tex: "\\vec p = m\\vec v",                   label: "momentum",    relevant: false },
+          { id: "fma",  tex: "F = ma",                               label: "newton 2nd",  relevant: false },
+          { id: "vavg", tex: "\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}", label: "avg velocity", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",                    label: "kinetic E",   relevant: false }
+        ],
+        answerEqId: "unit", dockedTex: "\\hat A = \\dfrac{\\vec A}{|\\vec A|}", lhs: "\\hat A", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{\\vec A}{|\\vec A|}",
+            sub: "\\dfrac{\\langle 44,14,-19\\rangle}{\\sqrt{44^2+14^2+19^2}}" }
+        ],
+        distractors: ["|\\vec A|", "m", "\\tfrac12", "\\Delta t"],
+        result: {
+          expression:   "\\hat A = \\dfrac{\\vec A}{|\\vec A|}",
+          substitution: "\\hat A = \\dfrac{\\langle 44,14,-19\\rangle}{\\sqrt{1936+196+361}} = \\dfrac{\\langle 44,14,-19\\rangle}{49.93}",
+          answer:       "\\hat A = \\langle 0.881,\\ 0.280,\\ -0.381\\rangle"
+        },
+        mcq: {
+          options: [
+            "\\langle 0.881, 0.280, -0.381\\rangle",
+            "\\langle 44, 14, -19\\rangle",
+            "\\langle 0.620, 0.197, -0.268\\rangle",
+            "\\langle 0.881, 0.280, 0.381\\rangle"
+          ],
+          correct: 0,
+          why: "|A| = √(44²+14²+19²) = √2493 = 49.93; Â = ⟨44,14,-19⟩/49.93 = ⟨0.881,0.280,-0.381⟩."
+        }
+      },
+
+      /* ---- A1, Q8 — average velocity  v = Δr/Δt ---- */
+      {
+        id: "a1q8-avgvel", concept: "Velocity", fromAssignment: "From Assignment 1, Q8",
+        prompt: '<b>From Assignment 1, Q8.</b> An object moves through displacement ' +
+                '\\(\\Delta\\vec r=\\langle 6,8,0\\rangle\\) m in \\(\\Delta t=2\\,\\text{s}\\). ' +
+                '<span class="ask">Find the average velocity \\(\\vec v_{avg}=\\dfrac{\\Delta\\vec r}{\\Delta t}\\).</span>',
+        inventory: [
+          { id: "vavg", tex: "\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}", label: "avg velocity", relevant: true  },
+          { id: "pmv",  tex: "\\vec p = m\\vec v",                   label: "momentum",    relevant: false },
+          { id: "fma",  tex: "F = ma",                               label: "newton 2nd",  relevant: false },
+          { id: "unit", tex: "\\hat A = \\dfrac{\\vec A}{|\\vec A|}", label: "unit vector", relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",                       label: "impulse",     relevant: false }
+        ],
+        answerEqId: "vavg", dockedTex: "\\vec v_{avg} = \\dfrac{\\Delta\\vec r}{\\Delta t}", lhs: "\\vec v_{avg}", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{\\Delta\\vec r}{\\Delta t}", sub: "\\dfrac{\\langle 6,8,0\\rangle}{2}" }
+        ],
+        distractors: ["\\Delta t", "m", "\\tfrac12", "|\\vec A|"],
+        result: {
+          expression:   "\\vec v_{avg} = \\dfrac{\\Delta\\vec r}{\\Delta t}",
+          substitution: "\\vec v_{avg} = \\dfrac{\\langle 6,8,0\\rangle}{2\\,\\text{s}}",
+          answer:       "\\vec v_{avg} = \\langle 3,\\ 4,\\ 0\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 3, 4, 0\\rangle\\ \\text{m/s}",
+            "\\langle 12, 16, 0\\rangle\\ \\text{m/s}",
+            "\\langle 6, 8, 0\\rangle\\ \\text{m/s}",
+            "\\langle 1.5, 2, 0\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "v = Δr/Δt = ⟨6,8,0⟩/2 = ⟨3,4,0⟩ m/s."
+        }
+      },
+
+      /* ---- A1, Q11 — momentum  p = m v ---- */
+      {
+        id: "a1q11-momentum", concept: "Momentum", fromAssignment: "From Assignment 1, Q11",
+        prompt: '<b>From Assignment 1, Q11.</b> A baseball of mass <b>m = 0.146 kg</b> is thrown at ' +
+                '<b>33.5 m/s</b>. <span class="ask">Find the magnitude of its momentum \\(p\\).</span>',
+        inventory: [
+          { id: "pmv",  tex: "\\vec p = m\\vec v",    label: "momentum",   relevant: true  },
+          { id: "fma",  tex: "F = ma",                label: "newton 2nd", relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",        label: "impulse",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",  relevant: false },
+          { id: "vavg", tex: "\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}", label: "avg velocity", relevant: false }
+        ],
+        answerEqId: "pmv", dockedTex: "p = m\\,v", lhs: "p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m", sub: "(0.146\\,\\text{kg})" },
+          { symbol: "v", sub: "(33.5\\,\\tfrac{m}{s})" }
+        ],
+        distractors: ["a", "\\tfrac12", "\\mu_k", "g"],
+        result: {
+          expression:   "p = m\\cdot v",
+          substitution: "p = (0.146\\,\\text{kg})\\cdot(33.5\\,\\tfrac{m}{s})",
+          answer:       "p = 4.89\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["4.89\\ \\text{kg·m/s}", "33.6\\ \\text{kg·m/s}", "0.146\\ \\text{kg·m/s}", "229\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "p = m v = (0.146)(33.5) = 4.89 kg·m/s."
+        }
+      },
+
+      /* ---- A1, Q14 — change in momentum  Δp = m(v_f - v_i) ---- */
+      {
+        id: "a1q14-deltap", concept: "Impulse", fromAssignment: "From Assignment 1, Q14",
+        prompt: '<b>From Assignment 1, Q14.</b> A <b>57 g</b> (0.057 kg) tennis ball hits a wall; its ' +
+                'x-velocity changes from <b>+64 m/s</b> to <b>-58 m/s</b>. ' +
+                '<span class="ask">Find the change in momentum \\(\\Delta p = m(v_f - v_i)\\).</span>',
+        inventory: [
+          { id: "dp",   tex: "\\Delta p = m(v_f-v_i)", label: "Δ momentum", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",            label: "impulse",    relevant: false }
+        ],
+        answerEqId: "dp", dockedTex: "\\Delta p = m\\,(v_f - v_i)", lhs: "\\Delta p", joiner: "\\cdot",
+        terms: [
+          { symbol: "m",            sub: "(0.057\\,\\text{kg})" },
+          { symbol: "(v_f - v_i)",  sub: "(-58 - 64)\\,\\tfrac{m}{s}" }
+        ],
+        distractors: ["\\Delta t", "\\mu_k", "\\tfrac12", "a"],
+        result: {
+          expression:   "\\Delta p = m\\cdot (v_f - v_i)",
+          substitution: "\\Delta p = (0.057\\,\\text{kg})\\cdot(-58 - 64)\\,\\tfrac{m}{s} = (0.057)(-122)",
+          answer:       "\\Delta p = -6.95\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: ["-6.95\\ \\text{kg·m/s}", "0.34\\ \\text{kg·m/s}", "-3.31\\ \\text{kg·m/s}", "6.95\\ \\text{kg·m/s}"],
+          correct: 0,
+          why: "Δp = m(v_f - v_i) = 0.057(-58 - 64) = 0.057(-122) = -6.95 kg·m/s."
+        }
+      },
+
+      /* ---- A1, Q17 — average acceleration  a = Δv/Δt ---- */
+      {
+        id: "a1q17-accel", concept: "Acceleration", fromAssignment: "From Assignment 1, Q17",
+        prompt: '<b>From Assignment 1, Q17.</b> A Saturn V rocket reaches <b>2398 m/s</b> from rest in ' +
+                '<b>168 s</b>. <span class="ask">Find the average acceleration ' +
+                '\\(a = \\dfrac{\\Delta v}{\\Delta t}\\).</span>',
+        inventory: [
+          { id: "aacc", tex: "a = \\dfrac{\\Delta v}{\\Delta t}", label: "avg accel",  relevant: true  },
+          { id: "pmv",  tex: "\\vec p = m\\vec v",                label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F = ma",                            label: "newton 2nd", relevant: false },
+          { id: "vavg", tex: "\\vec v=\\dfrac{\\Delta\\vec r}{\\Delta t}", label: "avg velocity", relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",                    label: "impulse",    relevant: false }
+        ],
+        answerEqId: "aacc", dockedTex: "a = \\dfrac{\\Delta v}{\\Delta t}", lhs: "a", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{\\Delta v}{\\Delta t}", sub: "\\dfrac{2398 - 0}{168}" }
+        ],
+        distractors: ["\\Delta t", "m", "\\tfrac12", "g"],
+        result: {
+          expression:   "a = \\dfrac{\\Delta v}{\\Delta t}",
+          substitution: "a = \\dfrac{2398\\,\\tfrac{m}{s}}{168\\,\\text{s}}",
+          answer:       "a = 14.27\\ \\text{m/s}^2"
+        },
+        mcq: {
+          options: ["14.27\\ \\text{m/s}^2", "0.07\\ \\text{m/s}^2", "2398\\ \\text{m/s}^2", "402864\\ \\text{m/s}^2"],
+          correct: 0,
+          why: "a = Δv/Δt = 2398/168 = 14.27 m/s²."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 2  —  Ch 2 Momentum Principle + gravitation
+       (net force, impulse to stop, p_f = p_i + FΔt, impulse, gravity)
+       ============================================================ */
+    a2: [
+
+      /* ---- A2, Q3 — net force = sum of force vectors ---- */
+      {
+        id: "a2q3-netforce", concept: "Forces/FBD", fromAssignment: "From Assignment 2, Q3",
+        prompt: '<b>From Assignment 2, Q3.</b> Two forces act on a body: ' +
+                '\\(\\vec F_1=\\langle 17,-10,39\\rangle\\) N and \\(\\vec F_2=\\langle 23,-5,-28\\rangle\\) N. ' +
+                '<span class="ask">Find the net force \\(\\vec F_{net}=\\vec F_1+\\vec F_2\\).</span>',
+        inventory: [
+          { id: "fnet", tex: "\\vec F_{net}=\\sum\\vec F", label: "net force",  relevant: true  },
+          { id: "pmv",  tex: "\\vec p = m\\vec v",         label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F = ma",                     label: "newton 2nd", relevant: false },
+          { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}",    label: "gravity",    relevant: false },
+          { id: "imp",  tex: "J = F\\Delta t",             label: "impulse",    relevant: false }
+        ],
+        answerEqId: "fnet", dockedTex: "\\vec F_{net} = \\vec F_1 + \\vec F_2", lhs: "\\vec F_{net}", joiner: "+",
+        terms: [
+          { symbol: "\\vec F_1", sub: "\\langle 17,-10,39\\rangle" },
+          { symbol: "\\vec F_2", sub: "\\langle 23,-5,-28\\rangle" }
+        ],
+        distractors: ["m\\vec a", "\\Delta t", "-\\vec F_2", "g"],
+        result: {
+          expression:   "\\vec F_{net} = \\vec F_1 + \\vec F_2",
+          substitution: "\\vec F_{net} = \\langle 17,-10,39\\rangle + \\langle 23,-5,-28\\rangle",
+          answer:       "\\vec F_{net} = \\langle 40,\\ -15,\\ 11\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: [
+            "\\langle 40, -15, 11\\rangle\\ \\text{N}",
+            "\\langle -6, -5, 67\\rangle\\ \\text{N}",
+            "\\langle 40, 15, 11\\rangle\\ \\text{N}",
+            "\\langle 391, 50, -1092\\rangle\\ \\text{N}"
+          ],
+          correct: 0,
+          why: "F_net = ⟨17+23, -10-5, 39-28⟩ = ⟨40, -15, 11⟩ N."
+        }
+      },
+
+      /* ---- A2, Q5 — impulse to stop a puck  J = -p ---- */
+      {
+        id: "a2q5-stop", concept: "Impulse", fromAssignment: "From Assignment 2, Q5",
+        prompt: '<b>From Assignment 2, Q5.</b> A hockey puck with momentum ' +
+                '\\(\\vec p=\\langle 0,0,29\\rangle\\) kg·m/s slides on ice and slowly comes to a <b>stop</b>. ' +
+                '<span class="ask">Find the impulse delivered by the ice ' +
+                '\\(\\vec J=\\Delta\\vec p=\\vec p_f-\\vec p_i\\).</span>',
+        inventory: [
+          { id: "imp",  tex: "\\vec J=\\Delta\\vec p=\\vec p_f-\\vec p_i", label: "impulse",    relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "fnet", tex: "\\vec F_{net}=\\sum\\vec F", label: "net force",  relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "imp", dockedTex: "\\vec J = \\vec p_f - \\vec p_i", lhs: "\\vec J", joiner: "",
+        terms: [
+          { symbol: "\\vec p_f - \\vec p_i", sub: "\\langle 0,0,0\\rangle - \\langle 0,0,29\\rangle" }
+        ],
+        distractors: ["\\vec p_i", "m\\vec a", "\\Delta t", "+\\vec p"],
+        result: {
+          expression:   "\\vec J = \\vec p_f - \\vec p_i",
+          substitution: "\\vec J = \\langle 0,0,0\\rangle - \\langle 0,0,29\\rangle",
+          answer:       "\\vec J = \\langle 0,\\ 0,\\ -29\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 0, 0, -29\\rangle\\ \\text{kg·m/s}",
+            "\\langle 0, 0, 29\\rangle\\ \\text{kg·m/s}",
+            "\\langle 0, 0, 0\\rangle\\ \\text{kg·m/s}",
+            "\\langle 0, 0, 58\\rangle\\ \\text{kg·m/s}"
+          ],
+          correct: 0,
+          why: "J = p_f - p_i = ⟨0,0,0⟩ - ⟨0,0,29⟩ = ⟨0,0,-29⟩ kg·m/s (= -p)."
+        }
+      },
+
+      /* ---- A2, Q7 — momentum update  p_f = p_i + FΔt ---- */
+      {
+        id: "a2q7-update", concept: "Momentum", fromAssignment: "From Assignment 2, Q7",
+        prompt: '<b>From Assignment 2, Q7.</b> A particle has \\(\\vec p_i=\\langle 37,0,0\\rangle\\) kg·m/s. ' +
+                'A constant force \\(\\vec F=\\langle -11,8,0\\rangle\\) N acts for \\(\\Delta t=1\\,\\text{s}\\). ' +
+                '<span class="ask">Find the final momentum \\(\\vec p_f=\\vec p_i+\\vec F\\,\\Delta t\\).</span>',
+        inventory: [
+          { id: "pup",  tex: "\\vec p_f=\\vec p_i+\\vec F\\Delta t", label: "momentum update", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}", label: "gravity",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "pup", dockedTex: "\\vec p_f = \\vec p_i + \\vec F\\,\\Delta t", lhs: "\\vec p_f", joiner: "+",
+        terms: [
+          { symbol: "\\vec p_i",            sub: "\\langle 37,0,0\\rangle" },
+          { symbol: "\\vec F\\,\\Delta t",  sub: "\\langle -11,8,0\\rangle(1)" }
+        ],
+        distractors: ["m\\vec a", "-\\vec F\\Delta t", "\\tfrac12", "g"],
+        result: {
+          expression:   "\\vec p_f = \\vec p_i + \\vec F\\,\\Delta t",
+          substitution: "\\vec p_f = \\langle 37,0,0\\rangle + \\langle -11,8,0\\rangle(1\\,\\text{s})",
+          answer:       "\\vec p_f = \\langle 26,\\ 8,\\ 0\\rangle\\ \\text{kg·m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 26, 8, 0\\rangle\\ \\text{kg·m/s}",
+            "\\langle 48, -8, 0\\rangle\\ \\text{kg·m/s}",
+            "\\langle -11, 8, 0\\rangle\\ \\text{kg·m/s}",
+            "\\langle 26, -8, 0\\rangle\\ \\text{kg·m/s}"
+          ],
+          correct: 0,
+          why: "p_f = p_i + FΔt = ⟨37,0,0⟩ + ⟨-11,8,0⟩(1) = ⟨26,8,0⟩ kg·m/s."
+        }
+      },
+
+      /* ---- A2, Q9 — impulse  J = F Δt = Δp ---- */
+      {
+        id: "a2q9-impulse", concept: "Impulse", fromAssignment: "From Assignment 2, Q9",
+        prompt: '<b>From Assignment 2, Q9.</b> A bat strikes a <b>0.145 kg</b> baseball, reversing it. ' +
+                'Contact lasts <b>1.2 ms</b> with average force <b>1.35×10⁴ N</b>. ' +
+                '<span class="ask">Find the impulse \\(J = F\\,\\Delta t\\) (= \\(\\Delta p\\)).</span>',
+        inventory: [
+          { id: "imp",  tex: "J=F\\Delta t=\\Delta p", label: "impulse",    relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false },
+          { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}", label: "gravity",    relevant: false }
+        ],
+        answerEqId: "imp", dockedTex: "J = F\\,\\Delta t", lhs: "J", joiner: "\\cdot",
+        terms: [
+          { symbol: "F",          sub: "(1.35\\times10^4\\,\\text{N})" },
+          { symbol: "\\Delta t",  sub: "(1.2\\times10^{-3}\\,\\text{s})" }
+        ],
+        distractors: ["m", "\\vec v", "\\mu_k", "\\tfrac12"],
+        result: {
+          expression:   "J = F\\cdot \\Delta t",
+          substitution: "J = (1.35\\times10^4\\,\\text{N})\\cdot(1.2\\times10^{-3}\\,\\text{s})",
+          answer:       "J = 16.2\\ \\text{N·s}"
+        },
+        mcq: {
+          options: ["16.2\\ \\text{N·s}", "162\\ \\text{N·s}", "1.62\\ \\text{N·s}", "11250\\ \\text{N·s}"],
+          correct: 0,
+          why: "J = F Δt = (1.35e4)(1.2e-3) = 16.2 N·s (= magnitude of Δp)."
+        }
+      },
+
+      /* ---- A2, Q12 — gravitation  F = G m1 m2 / r^2 ---- */
+      {
+        id: "a2q12-gravity", concept: "Gravitation", fromAssignment: "From Assignment 2, Q12",
+        prompt: '<b>From Assignment 2, Q12.</b> The Sun (\\(2\\times10^{30}\\) kg) and Jupiter ' +
+                '(\\(1.9\\times10^{27}\\) kg) are separated by \\(r=7.8\\times10^{11}\\) m. ' +
+                '<span class="ask">Find the gravitational force ' +
+                '\\(F=\\dfrac{G m_1 m_2}{r^2}\\) (\\(G=6.674\\times10^{-11}\\)).</span>',
+        inventory: [
+          { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}", label: "gravity",    relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "coul", tex: "F=\\dfrac{kq_1q_2}{r^2}", label: "coulomb",    relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",            label: "impulse",    relevant: false }
+        ],
+        answerEqId: "grav", dockedTex: "F = \\dfrac{G\\,m_1\\,m_2}{r^2}", lhs: "F", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{G\\,m_1\\,m_2}{r^2}",
+            sub: "\\dfrac{(6.674\\times10^{-11})(2\\times10^{30})(1.9\\times10^{27})}{(7.8\\times10^{11})^2}" }
+        ],
+        distractors: ["k", "\\tfrac12", "q_1q_2", "\\Delta t"],
+        result: {
+          expression:   "F = \\dfrac{G\\,m_1\\,m_2}{r^2}",
+          substitution: "F = \\dfrac{(6.674\\times10^{-11})(2\\times10^{30})(1.9\\times10^{27})}{(7.8\\times10^{11})^2}",
+          answer:       "F = 4.17\\times10^{23}\\ \\text{N}"
+        },
+        mcq: {
+          options: [
+            "4.17\\times10^{23}\\ \\text{N}",
+            "3.25\\times10^{35}\\ \\text{N}",
+            "4.17\\times10^{11}\\ \\text{N}",
+            "2.54\\times10^{47}\\ \\text{N}"
+          ],
+          correct: 0,
+          why: "F = G m1 m2 / r² = (6.674e-11·2e30·1.9e27)/(7.8e11)² = 2.536e47/6.084e23 = 4.17e23 N."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 3  —  Ch 3 Fundamental Interactions
+       (Coulomb force, weight on a planet, sticky collision)
+       ============================================================ */
+    a3: [
+
+      /* ---- A3, Q2 — Coulomb force  F = k q1 q2 / r^2 ---- */
+      {
+        id: "a3q2-coulomb", concept: "Electric Force", fromAssignment: "From Assignment 3, Q2",
+        prompt: '<b>From Assignment 3, Q2.</b> Two charges \\(q_1=-6\\times10^{-9}\\) C and ' +
+                '\\(q_2=-8\\times10^{-9}\\) C are separated by \\(r=0.05\\) m. ' +
+                '<span class="ask">Find the magnitude of the Coulomb force ' +
+                '\\(F=\\dfrac{k\\,q_1 q_2}{r^2}\\) (\\(k=9\\times10^{9}\\)).</span>',
+        inventory: [
+          { id: "coul", tex: "F=\\dfrac{kq_1q_2}{r^2}", label: "coulomb",    relevant: true  },
+          { id: "grav", tex: "F=\\dfrac{Gm_1m_2}{r^2}", label: "gravity",    relevant: false },
+          { id: "fma",  tex: "F=ma",                    label: "newton 2nd", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",        label: "momentum",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",  relevant: false }
+        ],
+        answerEqId: "coul", dockedTex: "F = \\dfrac{k\\,q_1\\,q_2}{r^2}", lhs: "F", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{k\\,q_1\\,q_2}{r^2}",
+            sub: "\\dfrac{(9\\times10^{9})(6\\times10^{-9})(8\\times10^{-9})}{(0.05)^2}" }
+        ],
+        distractors: ["G", "m_1m_2", "\\tfrac12", "g"],
+        result: {
+          expression:   "F = \\dfrac{k\\,q_1\\,q_2}{r^2}",
+          substitution: "F = \\dfrac{(9\\times10^{9})(6\\times10^{-9})(8\\times10^{-9})}{(0.05)^2} = \\dfrac{4.32\\times10^{-7}}{2.5\\times10^{-3}}",
+          answer:       "F = 1.73\\times10^{-4}\\ \\text{N (repulsive)}"
+        },
+        mcq: {
+          options: [
+            "1.73\\times10^{-4}\\ \\text{N}",
+            "8.64\\times10^{-6}\\ \\text{N}",
+            "1.73\\times10^{-2}\\ \\text{N}",
+            "4.32\\times10^{-7}\\ \\text{N}"
+          ],
+          correct: 0,
+          why: "F = k q1 q2 / r² = (9e9·6e-9·8e-9)/(0.05²) = 4.32e-7/2.5e-3 = 1.73e-4 N (both negative → repulsive)."
+        }
+      },
+
+      /* ---- A3, Q4 — weight on a planet  F = G M m / R^2 ---- */
+      {
+        id: "a3q4-weight", concept: "Gravitation", fromAssignment: "From Assignment 3, Q4",
+        prompt: '<b>From Assignment 3, Q4.</b> A <b>74 kg</b> human stands on a planet of mass ' +
+                '\\(M=6.42\\times10^{23}\\) kg and radius \\(R=3.39\\times10^{6}\\) m (Mars). ' +
+                '<span class="ask">Find the weight \\(F=\\dfrac{G M m}{R^2}\\) (\\(G=6.674\\times10^{-11}\\)).</span>',
+        inventory: [
+          { id: "wgrav", tex: "F=\\dfrac{GMm}{R^2}",     label: "weight (grav)", relevant: true  },
+          { id: "coul",  tex: "F=\\dfrac{kq_1q_2}{r^2}", label: "coulomb",       relevant: false },
+          { id: "fma",   tex: "F=ma",                    label: "newton 2nd",    relevant: false },
+          { id: "pmv",   tex: "\\vec p=m\\vec v",        label: "momentum",      relevant: false },
+          { id: "ke",    tex: "KE=\\tfrac12 mv^2",       label: "kinetic E",     relevant: false }
+        ],
+        answerEqId: "wgrav", dockedTex: "F = \\dfrac{G\\,M\\,m}{R^2}", lhs: "F", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{G\\,M\\,m}{R^2}",
+            sub: "\\dfrac{(6.674\\times10^{-11})(6.42\\times10^{23})(74)}{(3.39\\times10^{6})^2}" }
+        ],
+        distractors: ["k", "q_1q_2", "\\tfrac12", "\\Delta t"],
+        result: {
+          expression:   "F = \\dfrac{G\\,M\\,m}{R^2}",
+          substitution: "F = \\dfrac{(6.674\\times10^{-11})(6.42\\times10^{23})(74)}{(3.39\\times10^{6})^2}",
+          answer:       "F = 275.9\\ \\text{N}"
+        },
+        mcq: {
+          options: ["275.9\\ \\text{N}", "725.2\\ \\text{N}", "3.73\\ \\text{N}", "935\\ \\text{N}"],
+          correct: 0,
+          why: "F = G M m / R² = (6.674e-11·6.42e23·74)/(3.39e6)² = 275.9 N (≈ Mars weight; g ≈ 3.73 m/s²)."
+        }
+      },
+
+      /* ---- A3, Q6 — sticky collision  v' = (m1 v1 + m2 v2)/(m1+m2) ---- */
+      {
+        id: "a3q6-stick", concept: "Collisions", fromAssignment: "From Assignment 3, Q6",
+        prompt: '<b>From Assignment 3, Q6.</b> Two clay lumps, <b>50 g each</b>, with velocities ' +
+                '\\(\\vec v_1=\\langle 2,6,-9\\rangle\\) and \\(\\vec v_2=\\langle -3,0,-6\\rangle\\) m/s, ' +
+                'collide and <b>stick</b>. <span class="ask">Find the final velocity \\(\\vec v\'\\). ' +
+                '(Equal masses \\(\\Rightarrow\\) the average.)</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",        label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",           label: "momentum",     relevant: false },
+          { id: "fma",  tex: "F=ma",                       label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",          label: "kinetic E",    relevant: false },
+          { id: "imp",  tex: "J=F\\Delta t",               label: "impulse",      relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(0.05)\\langle 2,6,-9\\rangle}{0.05+0.05}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(0.05)\\langle -3,0,-6\\rangle}{0.05+0.05}" }
+        ],
+        distractors: ["\\tfrac12 mv^2", "\\mu_k N", "-m_2\\vec v_2", "g"],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v' = \\dfrac{(0.05)\\langle 2,6,-9\\rangle+(0.05)\\langle -3,0,-6\\rangle}{0.05+0.05}",
+          answer:       "\\vec v' = \\langle -0.5,\\ 3,\\ -7.5\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle -0.5, 3, -7.5\\rangle\\ \\text{m/s}",
+            "\\langle -1, 6, -15\\rangle\\ \\text{m/s}",
+            "\\langle 5, 6, -3\\rangle\\ \\text{m/s}",
+            "\\langle -0.5, 3, 7.5\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "Equal masses: v' = (v1+v2)/2 = (⟨2,6,-9⟩+⟨-3,0,-6⟩)/2 = ⟨-0.5,3,-7.5⟩ m/s."
+        }
+      }
+    ]
+
+  };
+
+  /* expose globally (and as CommonJS if loaded under node) */
+  root.ASSIGN_1_2_3 = ASSIGN_1_2_3;
+  if (typeof module !== "undefined" && module.exports) module.exports = ASSIGN_1_2_3;
+
+})(typeof window !== "undefined" ? window : this);
+</script>
+
+<!-- ===================== ASSIGNMENTS 4-5 (inlined) ===================== -->
+<script>
+/* ================================================================
+   ASSIGNMENT 4 & 5 QUESTION PACKS  —  CPCS110 Physics, HARDER set
+   ----------------------------------------------------------------
+   Standalone data module. No imports. Consumed by solver-quiz.html.
+
+   Each question object follows the solver-quiz.html DATA SCHEMA exactly:
+   {
+     id, concept,                               // ids / short concept label
+     fromAssignment,                            // "From Assignment N" label
+     prompt:    HTML string,                    // word problem (\\( ... \\) inline LaTeX)
+     inventory: [ {id, tex, label, relevant} ], // equation cards (LaTeX tex)
+     answerEqId:string,                         // correct card to drag down
+     dockedTex: LaTeX,                          // headline equation when docked
+     lhs:       LaTeX,                          // generalized left-hand symbol
+     joiner:    LaTeX between terms ("" product/none, "+" sum, "\\cdot" dot),
+     terms: [ {symbol(LaTeX), sub(LaTeX)} ],    // ORDERED right-hand terms
+     distractors:[ LaTeX, ... ],                // wrong chips (snap back)
+     result: { expression, substitution, answer }, // LaTeX final lines (FINAL = numbers)
+     mcq: { options:[LaTeX x4], correct:index, why:"one-line reason" }
+   }
+
+   Collisions are staged as conservation of momentum:
+     P_i = P_f  ->  m1 v1 + m2 v2 = (m1 + m2) v'   (stick together)
+   The final substitution line replaces ALL variables with numbers.
+
+   A4  = Ch 3.8-4  : collisions (stick) + friction (static/kinetic), multi-step.
+   A5  = Ch 5 & 6  : forces-from-motion, circular motion, work, KE, work-energy.
+   A4 and A5 are kept DISTINCT (no shared problems).
+
+   Export shape:
+     window.ASSIGN_4_5 = { a4:[...], a5:[...] }
+   (also module.exports for node)
+   ================================================================ */
+
+(function (root) {
+
+  const ASSIGN_4_5 = {
+
+    /* ============================================================
+       ASSIGNMENT 4  —  COLLISIONS (stick) + FRICTION   (HARDER)
+       ============================================================ */
+    a4: [
+
+      /* ---- A4 Q1 : two rocks collide and STICK (2-D, unequal mass) ----
+         DECEPTIVE SLOTS: right side is a SUM of two PRODUCT-over-DIVISION
+         terms. The two chips look almost identical (m1 v1 / M  +  m2 v2 / M),
+         so she must read the subscripts and place them in order. */
+      {
+        id: "a4q1-rocks-stick", concept: "Collisions", fromAssignment: "From Assignment 4 (Q1)",
+        prompt: '<b>Assignment 4 — Q1.</b> Two rocks collide and <b>stick together</b>: a <b>23 kg</b> rock ' +
+                'moving \\(\\vec v_1=\\langle 11,-23,0\\rangle\\) m/s and a <b>43 kg</b> rock moving ' +
+                '\\(\\vec v_2=\\langle 28,6,0\\rangle\\) m/s. Use \\(\\vec P_i=\\vec P_f\\Rightarrow ' +
+                'm_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\vec v\'\\). ' +
+                '<span class="ask">Solve for the final velocity \\(\\vec v\'\\).</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",   label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",      label: "momentum",     relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",          label: "friction",     relevant: false },
+          { id: "fma",  tex: "F=ma",                  label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",    relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(23)\\langle 11,-23,0\\rangle}{23+43}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(43)\\langle 28,6,0\\rangle}{23+43}" }
+        ],
+        distractors: [
+          "\\dfrac{m_2\\vec v_2}{m_1+m_2}",
+          "-\\dfrac{m_1\\vec v_1}{m_1+m_2}",
+          "(m_1+m_2)\\vec v'",
+          "\\tfrac12 mv^2"
+        ],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2}",
+          substitution: "\\vec v' = \\dfrac{(23)\\langle 11,-23,0\\rangle+(43)\\langle 28,6,0\\rangle}{23+43} = \\dfrac{\\langle 1457,-271,0\\rangle}{66}",
+          answer:       "\\vec v' = \\langle 22.08,\\ -4.11,\\ 0\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 22.08, -4.11, 0\\rangle\\ \\text{m/s}",
+            "\\langle 39, -17, 0\\rangle\\ \\text{m/s}",
+            "\\langle 19.5, -8.5, 0\\rangle\\ \\text{m/s}",
+            "\\langle 22.08, 4.11, 0\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "v' = (23⟨11,-23,0⟩ + 43⟨28,6,0⟩)/(23+43) = ⟨1457,-271,0⟩/66 = ⟨22.08,-4.11,0⟩ m/s."
+        }
+      },
+
+      /* ---- A4 Q4 : two clay lumps (equal 37 g) STICK (3-D) ---- */
+      {
+        id: "a4q4-clay-stick", concept: "Collisions", fromAssignment: "From Assignment 4 (Q4)",
+        prompt: '<b>Assignment 4 — Q4.</b> Two lumps of clay, <b>37 g each</b>, with velocities ' +
+                '\\(\\vec v_1=\\langle 8,8,-5\\rangle\\) and \\(\\vec v_2=\\langle -5,0,-8\\rangle\\) m/s, ' +
+                'collide and <b>stick</b>. Use \\(m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\vec v\'\\). ' +
+                '<span class="ask">Solve for the final velocity \\(\\vec v\'\\). ' +
+                '(Equal masses \\(\\Rightarrow\\) the mass cancels.)</span>',
+        inventory: [
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",   label: "conservation", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",      label: "momentum",     relevant: false },
+          { id: "fric", tex: "f_k=\\mu_k N",          label: "friction",     relevant: false },
+          { id: "fma",  tex: "F=ma",                  label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",    relevant: false }
+        ],
+        answerEqId: "cons",
+        dockedTex: "m_1\\vec v_1+m_2\\vec v_2=(m_1+m_2)\\,\\vec v'",
+        lhs: "\\vec v'", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m_1\\vec v_1}{m_1+m_2}",  sub: "\\dfrac{(0.037)\\langle 8,8,-5\\rangle}{0.037+0.037}" },
+          { symbol: "+\\dfrac{m_2\\vec v_2}{m_1+m_2}", sub: "+\\dfrac{(0.037)\\langle -5,0,-8\\rangle}{0.037+0.037}" }
+        ],
+        distractors: [
+          "\\dfrac{m_2\\vec v_2}{m_1+m_2}",
+          "-\\dfrac{m_2\\vec v_2}{m_1+m_2}",
+          "(m_1+m_2)\\vec v'",
+          "\\mu_k N"
+        ],
+        result: {
+          expression:   "\\vec v' = \\dfrac{m_1\\vec v_1+m_2\\vec v_2}{m_1+m_2} = \\dfrac{\\vec v_1+\\vec v_2}{2}",
+          substitution: "\\vec v' = \\dfrac{\\langle 8,8,-5\\rangle+\\langle -5,0,-8\\rangle}{2} = \\dfrac{\\langle 3,8,-13\\rangle}{2}",
+          answer:       "\\vec v' = \\langle 1.5,\\ 4,\\ -6.5\\rangle\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "\\langle 1.5, 4, -6.5\\rangle\\ \\text{m/s}",
+            "\\langle 3, 8, -13\\rangle\\ \\text{m/s}",
+            "\\langle 1.5, 4, 6.5\\rangle\\ \\text{m/s}",
+            "\\langle 13, 8, -3\\rangle\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "Equal masses: v' = (v1+v2)/2 = (⟨8,8,-5⟩+⟨-5,0,-8⟩)/2 = ⟨3,8,-13⟩/2 = ⟨1.5,4,-6.5⟩ m/s."
+        }
+      },
+
+      /* ---- A4 Q5a : static-friction coefficient from break-away push ---- */
+      {
+        id: "a4q5-mus", concept: "Friction", fromAssignment: "From Assignment 4 (Q5a)",
+        prompt: '<b>Assignment 4 — Q5a.</b> A <b>4.2 kg</b> block on a level floor will not move until the ' +
+                'horizontal push exceeds <b>20.6 N</b>. At the verge of slipping the static friction is maxed: ' +
+                '\\(f_s=\\mu_s N\\) with \\(N=mg\\), \\(g=9.8\\). ' +
+                '<span class="ask">Solve for \\(\\mu_s=\\dfrac{20.6}{mg}\\).</span>',
+        inventory: [
+          { id: "musN", tex: "f_s=\\mu_s N=\\mu_s mg", label: "static friction",  relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k N",           label: "kinetic friction", relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",    label: "conservation",     relevant: false },
+          { id: "fma",  tex: "F=ma",                   label: "newton 2nd",       relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",        relevant: false }
+        ],
+        answerEqId: "musN", dockedTex: "\\mu_s = \\dfrac{f_s}{m\\,g}", lhs: "\\mu_s", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{f_s}{m\\,g}", sub: "\\dfrac{20.6}{(4.2)(9.8)}" }
+        ],
+        distractors: ["m\\,g", "\\mu_k", "\\tfrac12", "f_s\\,m\\,g"],
+        result: {
+          expression:   "\\mu_s = \\dfrac{f_s}{m\\,g}",
+          substitution: "\\mu_s = \\dfrac{20.6}{(4.2)(9.8)} = \\dfrac{20.6}{41.16}",
+          answer:       "\\mu_s = 0.50"
+        },
+        mcq: {
+          options: ["0.50", "4.90", "0.33", "0.21"],
+          correct: 0,
+          why: "μ_s = 20.6/(m g) = 20.6/(4.2·9.8) = 20.6/41.16 = 0.50."
+        }
+      },
+
+      /* ---- A4 Q5b : kinetic-friction coefficient from constant-speed push ---- */
+      {
+        id: "a4q5-muk", concept: "Friction", fromAssignment: "From Assignment 4 (Q5b)",
+        prompt: '<b>Assignment 4 — Q5b.</b> The same <b>4.2 kg</b> block then slides at ' +
+                '<b>constant speed</b> under a <b>13.6 N</b> push, so the net force is zero and ' +
+                '\\(f_k=13.6\\,\\text{N}=\\mu_k mg\\). ' +
+                '<span class="ask">Solve for \\(\\mu_k=\\dfrac{13.6}{mg}\\).</span>',
+        inventory: [
+          { id: "fric", tex: "f_k=\\mu_k N=\\mu_k mg", label: "kinetic friction", relevant: true  },
+          { id: "musN", tex: "f_s=\\mu_s N",           label: "static friction",  relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",    label: "conservation",     relevant: false },
+          { id: "fma",  tex: "F=ma",                   label: "newton 2nd",       relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",        relevant: false }
+        ],
+        answerEqId: "fric", dockedTex: "\\mu_k = \\dfrac{f_k}{m\\,g}", lhs: "\\mu_k", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{f_k}{m\\,g}", sub: "\\dfrac{13.6}{(4.2)(9.8)}" }
+        ],
+        distractors: ["m\\,g", "\\mu_s", "\\tfrac12", "f_k\\,m\\,g"],
+        result: {
+          expression:   "\\mu_k = \\dfrac{f_k}{m\\,g}",
+          substitution: "\\mu_k = \\dfrac{13.6}{(4.2)(9.8)} = \\dfrac{13.6}{41.16}",
+          answer:       "\\mu_k = 0.33"
+        },
+        mcq: {
+          options: ["0.33", "0.50", "3.23", "0.66"],
+          correct: 0,
+          why: "μ_k = 13.6/(m g) = 13.6/(4.2·9.8) = 13.6/41.16 = 0.33."
+        }
+      },
+
+      /* ---- A4 Q6a : max static friction force from given μ_s ---- */
+      {
+        id: "a4q6-fsmax", concept: "Friction", fromAssignment: "From Assignment 4 (Q6a)",
+        prompt: '<b>Assignment 4 — Q6a.</b> An <b>8.2 kg</b> box sits on a level floor with ' +
+                '\\(\\mu_s=0.8\\) and \\(\\mu_k=0.6\\) (\\(g=9.8\\)). The normal force is \\(N=mg\\). ' +
+                '<span class="ask">Find the maximum static friction force \\(f_{s,\\max}=\\mu_s\\,mg\\).</span>',
+        inventory: [
+          { id: "musN", tex: "f_{s,\\max}=\\mu_s mg", label: "max static",   relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k mg",         label: "kinetic",      relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",   label: "conservation", relevant: false },
+          { id: "fma",  tex: "F=ma",                  label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",    relevant: false }
+        ],
+        answerEqId: "musN", dockedTex: "f_{s,\\max} = \\mu_s\\,m\\,g", lhs: "f_{s,\\max}", joiner: "\\cdot",
+        terms: [
+          { symbol: "\\mu_s", sub: "(0.8)" },
+          { symbol: "m",      sub: "(8.2\\,\\text{kg})" },
+          { symbol: "g",      sub: "(9.8\\,\\tfrac{m}{s^2})" }
+        ],
+        distractors: ["\\mu_k", "\\tfrac12", "a", "N^2"],
+        result: {
+          expression:   "f_{s,\\max} = \\mu_s\\cdot m\\cdot g",
+          substitution: "f_{s,\\max} = (0.8)\\cdot(8.2\\,\\text{kg})\\cdot(9.8\\,\\tfrac{m}{s^2})",
+          answer:       "f_{s,\\max} = 64.29\\ \\text{N}"
+        },
+        mcq: {
+          options: ["64.29\\ \\text{N}", "48.22\\ \\text{N}", "80.36\\ \\text{N}", "6.56\\ \\text{N}"],
+          correct: 0,
+          why: "f_s,max = μ_s m g = (0.8)(8.2)(9.8) = 0.8·80.36 = 64.29 N."
+        }
+      },
+
+      /* ---- A4 Q6b : kinetic friction force from given μ_k ---- */
+      {
+        id: "a4q6-fk", concept: "Friction", fromAssignment: "From Assignment 4 (Q6b)",
+        prompt: '<b>Assignment 4 — Q6b.</b> Once the same <b>8.2 kg</b> box is sliding, kinetic friction ' +
+                'governs (\\(\\mu_k=0.6\\), \\(g=9.8\\), \\(N=mg\\)). ' +
+                '<span class="ask">Find the kinetic friction force \\(f_k=\\mu_k\\,mg\\).</span>',
+        inventory: [
+          { id: "fric", tex: "f_k=\\mu_k mg",         label: "kinetic",      relevant: true  },
+          { id: "musN", tex: "f_{s,\\max}=\\mu_s mg", label: "max static",   relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",   label: "conservation", relevant: false },
+          { id: "fma",  tex: "F=ma",                  label: "newton 2nd",   relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",     label: "kinetic E",    relevant: false }
+        ],
+        answerEqId: "fric", dockedTex: "f_k = \\mu_k\\,m\\,g", lhs: "f_k", joiner: "\\cdot",
+        terms: [
+          { symbol: "\\mu_k", sub: "(0.6)" },
+          { symbol: "m",      sub: "(8.2\\,\\text{kg})" },
+          { symbol: "g",      sub: "(9.8\\,\\tfrac{m}{s^2})" }
+        ],
+        distractors: ["\\mu_s", "\\tfrac12", "a", "N^2"],
+        result: {
+          expression:   "f_k = \\mu_k\\cdot m\\cdot g",
+          substitution: "f_k = (0.6)\\cdot(8.2\\,\\text{kg})\\cdot(9.8\\,\\tfrac{m}{s^2})",
+          answer:       "f_k = 48.22\\ \\text{N}"
+        },
+        mcq: {
+          options: ["48.22\\ \\text{N}", "64.29\\ \\text{N}", "80.36\\ \\text{N}", "4.92\\ \\text{N}"],
+          correct: 0,
+          why: "f_k = μ_k m g = (0.6)(8.2)(9.8) = 0.6·80.36 = 48.22 N."
+        }
+      },
+
+      /* ---- A4 Q7 : HARDER multi-step — push vs kinetic friction → acceleration ---- */
+      {
+        id: "a4q7-push-accel", concept: "Friction+FBD", fromAssignment: "Assignment 4 — combo",
+        prompt: '<b>Assignment 4 — Combo.</b> The same <b>8.2 kg</b> box (\\(\\mu_k=0.6\\), \\(g=9.8\\)) is ' +
+                'shoved horizontally with a steady <b>70 N</b> push while sliding. Net force ' +
+                '\\(F_{net}=F_{push}-f_k\\), then \\(a=F_{net}/m\\). ' +
+                '<span class="ask">Find the acceleration \\(a=\\dfrac{F_{push}-\\mu_k mg}{m}\\).</span>',
+        inventory: [
+          { id: "net",  tex: "a=\\dfrac{F_{push}-\\mu_k mg}{m}", label: "net 2nd law", relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k mg",                    label: "kinetic",     relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",              label: "conservation",relevant: false },
+          { id: "musN", tex: "f_s=\\mu_s mg",                    label: "static",      relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",                label: "kinetic E",   relevant: false }
+        ],
+        answerEqId: "net", dockedTex: "a = \\dfrac{F_{push}-\\mu_k m g}{m}", lhs: "a", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{F_{push}-\\mu_k m g}{m}", sub: "\\dfrac{70-(0.6)(8.2)(9.8)}{8.2}" }
+        ],
+        distractors: [
+          "\\dfrac{F_{push}+\\mu_k m g}{m}",
+          "F_{push}-\\mu_k m g",
+          "\\mu_k g",
+          "\\dfrac{F_{push}}{m}"
+        ],
+        result: {
+          expression:   "a = \\dfrac{F_{push}-\\mu_k m g}{m}",
+          substitution: "a = \\dfrac{70-(0.6)(8.2)(9.8)}{8.2} = \\dfrac{70-48.22}{8.2} = \\dfrac{21.78}{8.2}",
+          answer:       "a = 2.66\\ \\text{m/s}^2"
+        },
+        mcq: {
+          options: ["2.66\\ \\text{m/s}^2", "8.54\\ \\text{m/s}^2", "1.84\\ \\text{m/s}^2", "5.88\\ \\text{m/s}^2"],
+          correct: 0,
+          why: "f_k = 0.6·8.2·9.8 = 48.22 N; F_net = 70 − 48.22 = 21.78 N; a = 21.78/8.2 = 2.66 m/s²."
+        }
+      },
+
+      /* ---- A4 Q8 : HARDER multi-step — sliding stop distance from kinetic friction ---- */
+      {
+        id: "a4q8-stop-distance", concept: "Friction+Kinematics", fromAssignment: "Assignment 4 — combo",
+        prompt: '<b>Assignment 4 — Combo.</b> A <b>2.0 kg</b> puck is launched across a level floor at ' +
+                '<b>6.0 m/s</b>; \\(\\mu_k=0.25\\), \\(g=9.8\\). Friction decelerates it at ' +
+                '\\(a=\\mu_k g\\), and it stops after \\(d=\\dfrac{v_0^2}{2\\mu_k g}\\). ' +
+                '<span class="ask">Find the stopping distance \\(d\\).</span>',
+        inventory: [
+          { id: "stop", tex: "d=\\dfrac{v_0^2}{2\\mu_k g}", label: "stop distance", relevant: true  },
+          { id: "fric", tex: "f_k=\\mu_k mg",               label: "kinetic",       relevant: false },
+          { id: "cons", tex: "\\vec P_i=\\vec P_f",         label: "conservation",  relevant: false },
+          { id: "fma",  tex: "F=ma",                        label: "newton 2nd",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",           label: "kinetic E",     relevant: false }
+        ],
+        answerEqId: "stop", dockedTex: "d = \\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}", lhs: "d", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}", sub: "\\dfrac{(6.0)^2}{2(0.25)(9.8)}" }
+        ],
+        distractors: [
+          "\\dfrac{v_0}{2\\,\\mu_k\\,g}",
+          "\\dfrac{v_0^{2}}{\\mu_k\\,g}",
+          "\\mu_k g",
+          "2\\,\\mu_k\\,g\\,v_0^{2}"
+        ],
+        result: {
+          expression:   "d = \\dfrac{v_0^{2}}{2\\,\\mu_k\\,g}",
+          substitution: "d = \\dfrac{(6.0)^2}{2(0.25)(9.8)} = \\dfrac{36}{4.9}",
+          answer:       "d = 7.35\\ \\text{m}"
+        },
+        mcq: {
+          options: ["7.35\\ \\text{m}", "3.67\\ \\text{m}", "14.69\\ \\text{m}", "2.45\\ \\text{m}"],
+          correct: 0,
+          why: "a = μ_k g = 0.25·9.8 = 2.45 m/s²; d = v₀²/(2a) = 36/4.9 = 7.35 m."
+        }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 5  —  FORCES FROM MOTION (Ch 5) + ENERGY (Ch 6)
+       Authored representative problems on the official topics.   (HARDER)
+       ============================================================ */
+    a5: [
+
+      /* ---- A5 Q1 : deduce an unknown force from ΣF = m a (vector) ---- */
+      {
+        id: "a5q1-unknown-force", concept: "Forces from Motion", fromAssignment: "Assignment 5 (Ch 5)",
+        prompt: '<b>Assignment 5 — Q1.</b> A <b>6.0 kg</b> object is acted on by two known forces ' +
+                '\\(\\vec F_1=\\langle 12,0,0\\rangle\\) N and \\(\\vec F_2=\\langle 0,-9,0\\rangle\\) N, plus an ' +
+                'unknown \\(\\vec F_3\\). Its acceleration is \\(\\vec a=\\langle 3,2,0\\rangle\\) m/s². From ' +
+                '\\(\\sum\\vec F=m\\vec a\\): ' +
+                '<span class="ask">Solve for \\(\\vec F_3=m\\vec a-\\vec F_1-\\vec F_2\\).</span>',
+        inventory: [
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",  label: "net 2nd law", relevant: true  },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",       label: "momentum",    relevant: false },
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",       label: "work",        relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",   relevant: false },
+          { id: "circ", tex: "F=\\dfrac{mv^2}{r}",     label: "centripetal", relevant: false }
+        ],
+        answerEqId: "net",
+        dockedTex: "\\vec F_3 = m\\vec a-\\vec F_1-\\vec F_2",
+        lhs: "\\vec F_3", joiner: "",
+        terms: [
+          { symbol: "m\\vec a",   sub: "(6)\\langle 3,2,0\\rangle" },
+          { symbol: "-\\vec F_1", sub: "-\\langle 12,0,0\\rangle" },
+          { symbol: "-\\vec F_2", sub: "-\\langle 0,-9,0\\rangle" }
+        ],
+        distractors: [
+          "+\\vec F_1",
+          "+\\vec F_2",
+          "\\dfrac{\\vec a}{m}",
+          "\\tfrac12 mv^2"
+        ],
+        result: {
+          expression:   "\\vec F_3 = m\\vec a-\\vec F_1-\\vec F_2",
+          substitution: "\\vec F_3 = (6)\\langle 3,2,0\\rangle-\\langle 12,0,0\\rangle-\\langle 0,-9,0\\rangle = \\langle 18,12,0\\rangle-\\langle 12,0,0\\rangle-\\langle 0,-9,0\\rangle",
+          answer:       "\\vec F_3 = \\langle 6,\\ 21,\\ 0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: [
+            "\\langle 6, 21, 0\\rangle\\ \\text{N}",
+            "\\langle 30, 21, 0\\rangle\\ \\text{N}",
+            "\\langle 6, 3, 0\\rangle\\ \\text{N}",
+            "\\langle 18, 12, 0\\rangle\\ \\text{N}"
+          ],
+          correct: 0,
+          why: "F₃ = m a − F₁ − F₂ = ⟨18,12,0⟩ − ⟨12,0,0⟩ − ⟨0,-9,0⟩ = ⟨6,21,0⟩ N."
+        }
+      },
+
+      /* ---- A5 Q2 : circular motion at constant speed (centripetal) ---- */
+      {
+        id: "a5q2-centripetal", concept: "Circular Motion", fromAssignment: "Assignment 5 (Ch 5)",
+        prompt: '<b>Assignment 5 — Q2.</b> A <b>0.50 kg</b> ball whirls in a horizontal circle of radius ' +
+                '<b>0.80 m</b> at a constant speed of <b>4.0 m/s</b>. The speed is constant, so the net force ' +
+                'points to the center with magnitude \\(F=\\dfrac{mv^2}{r}\\). ' +
+                '<span class="ask">Find the net (centripetal) force.</span>',
+        inventory: [
+          { id: "circ", tex: "F=\\dfrac{mv^2}{r}",   label: "centripetal", relevant: true  },
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",label: "net 2nd law", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",     label: "momentum",    relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",    label: "kinetic E",   relevant: false },
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",     label: "work",        relevant: false }
+        ],
+        answerEqId: "circ", dockedTex: "F = \\dfrac{m\\,v^2}{r}", lhs: "F", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{m\\,v^2}{r}", sub: "\\dfrac{(0.5)(4.0)^2}{0.8}" }
+        ],
+        distractors: [
+          "\\dfrac{m\\,v}{r}",
+          "\\dfrac{m\\,v^2}{r^2}",
+          "m\\,v^2\\,r",
+          "\\tfrac12 m v^2"
+        ],
+        result: {
+          expression:   "F = \\dfrac{m\\,v^2}{r}",
+          substitution: "F = \\dfrac{(0.5\\,\\text{kg})(4.0\\,\\tfrac{m}{s})^2}{0.8\\,\\text{m}} = \\dfrac{(0.5)(16)}{0.8}",
+          answer:       "F = 10\\ \\text{N (toward center)}"
+        },
+        mcq: {
+          options: ["10\\ \\text{N}", "2.5\\ \\text{N}", "2.0\\ \\text{N}", "20\\ \\text{N}"],
+          correct: 0,
+          why: "F = m v²/r = (0.5)(4²)/0.8 = (0.5)(16)/0.8 = 8/0.8 = 10 N toward the center."
+        }
+      },
+
+      /* ---- A5 Q3 : work done by a force at an angle ---- */
+      {
+        id: "a5q3-work-angle", concept: "Work", fromAssignment: "Assignment 5 (Ch 6)",
+        prompt: '<b>Assignment 5 — Q3.</b> A <b>50 N</b> force pulls a sled <b>8.0 m</b>, but the rope is held ' +
+                'at <b>30°</b> above the horizontal. Only the component along the motion does work: ' +
+                '\\(W=F\\,d\\cos\\theta\\). ' +
+                '<span class="ask">Find the work done.</span>',
+        inventory: [
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",     label: "work",        relevant: true  },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",    label: "kinetic E",   relevant: false },
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",label: "net 2nd law", relevant: false },
+          { id: "circ", tex: "F=\\dfrac{mv^2}{r}",   label: "centripetal", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",     label: "momentum",    relevant: false }
+        ],
+        answerEqId: "wfd", dockedTex: "W = F\\,d\\,\\cos\\theta", lhs: "W", joiner: "\\cdot",
+        terms: [
+          { symbol: "F",          sub: "(50\\,\\text{N})" },
+          { symbol: "d",          sub: "(8.0\\,\\text{m})" },
+          { symbol: "\\cos\\theta", sub: "\\cos 30^\\circ" }
+        ],
+        distractors: ["\\sin\\theta", "\\tfrac12", "m", "v^2"],
+        result: {
+          expression:   "W = F\\cdot d\\cdot \\cos\\theta",
+          substitution: "W = (50\\,\\text{N})\\cdot(8.0\\,\\text{m})\\cdot\\cos 30^\\circ = 400\\cdot 0.866",
+          answer:       "W = 346.4\\ \\text{J}"
+        },
+        mcq: {
+          options: ["346.4\\ \\text{J}", "400\\ \\text{J}", "200\\ \\text{J}", "692.8\\ \\text{J}"],
+          correct: 0,
+          why: "W = F d cosθ = (50)(8)cos30° = 400·0.866 = 346.4 J."
+        }
+      },
+
+      /* ---- A5 Q4 : kinetic energy ---- */
+      {
+        id: "a5q4-ke", concept: "Kinetic Energy", fromAssignment: "Assignment 5 (Ch 6)",
+        prompt: '<b>Assignment 5 — Q4.</b> A <b>1200 kg</b> car travels at <b>25 m/s</b>. ' +
+                '<span class="ask">Find its kinetic energy \\(KE=\\tfrac12 m v^2\\).</span>',
+        inventory: [
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",    label: "kinetic E",   relevant: true  },
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",     label: "work",        relevant: false },
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",label: "net 2nd law", relevant: false },
+          { id: "circ", tex: "F=\\dfrac{mv^2}{r}",   label: "centripetal", relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",     label: "momentum",    relevant: false }
+        ],
+        answerEqId: "ke", dockedTex: "KE = \\tfrac12\\,m\\,v^2", lhs: "KE", joiner: "\\cdot",
+        terms: [
+          { symbol: "\\tfrac12", sub: "\\tfrac12" },
+          { symbol: "m",         sub: "(1200\\,\\text{kg})" },
+          { symbol: "v^2",       sub: "(25\\,\\tfrac{m}{s})^2" }
+        ],
+        distractors: ["v", "a", "\\cos\\theta", "r"],
+        result: {
+          expression:   "KE = \\tfrac12\\cdot m\\cdot v^2",
+          substitution: "KE = \\tfrac12\\cdot(1200\\,\\text{kg})\\cdot(25\\,\\tfrac{m}{s})^2 = \\tfrac12\\cdot 1200\\cdot 625",
+          answer:       "KE = 375000\\ \\text{J}\\ (=375\\ \\text{kJ})"
+        },
+        mcq: {
+          options: ["375000\\ \\text{J}", "15000\\ \\text{J}", "750000\\ \\text{J}", "30000\\ \\text{J}"],
+          correct: 0,
+          why: "KE = ½ m v² = ½(1200)(25²) = ½(1200)(625) = 375000 J = 375 kJ."
+        }
+      },
+
+      /* ---- A5 Q5 : work-energy theorem  W_net = ΔKE ---- */
+      {
+        id: "a5q5-work-energy", concept: "Work-Energy Theorem", fromAssignment: "Assignment 5 (Ch 6)",
+        prompt: '<b>Assignment 5 — Q5.</b> A <b>3.0 kg</b> block speeds up from <b>2.0 m/s</b> to ' +
+                '<b>8.0 m/s</b>. By the energy principle, the net work equals the change in kinetic energy: ' +
+                '\\(W_{net}=\\Delta KE=\\tfrac12 m v_f^2-\\tfrac12 m v_i^2\\). ' +
+                '<span class="ask">Find \\(W_{net}\\).</span>',
+        inventory: [
+          { id: "wke",  tex: "W_{net}=\\Delta KE",   label: "energy principle", relevant: true  },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",    label: "kinetic E",        relevant: false },
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",     label: "work",             relevant: false },
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",label: "net 2nd law",      relevant: false },
+          { id: "pmv",  tex: "\\vec p=m\\vec v",     label: "momentum",         relevant: false }
+        ],
+        answerEqId: "wke",
+        dockedTex: "W_{net} = \\tfrac12 m v_f^2 - \\tfrac12 m v_i^2",
+        lhs: "W_{net}", joiner: "",
+        terms: [
+          { symbol: "\\tfrac12 m v_f^2",  sub: "\\tfrac12(3)(8)^2" },
+          { symbol: "-\\tfrac12 m v_i^2", sub: "-\\tfrac12(3)(2)^2" }
+        ],
+        distractors: [
+          "+\\tfrac12 m v_i^2",
+          "\\tfrac12 m (v_f-v_i)^2",
+          "m(v_f-v_i)",
+          "Fd\\cos\\theta"
+        ],
+        result: {
+          expression:   "W_{net} = \\tfrac12 m v_f^2 - \\tfrac12 m v_i^2",
+          substitution: "W_{net} = \\tfrac12(3)(8)^2 - \\tfrac12(3)(2)^2 = \\tfrac12(3)(64-4) = \\tfrac12(3)(60)",
+          answer:       "W_{net} = 90\\ \\text{J}"
+        },
+        mcq: {
+          options: ["90\\ \\text{J}", "108\\ \\text{J}", "54\\ \\text{J}", "30\\ \\text{J}"],
+          correct: 0,
+          why: "W_net = ½ m(v_f² − v_i²) = ½(3)(64 − 4) = ½(3)(60) = 90 J."
+        }
+      },
+
+      /* ---- A5 Q6 : HARDER combo — braking distance via work-energy + friction ---- */
+      {
+        id: "a5q6-braking-energy", concept: "Work-Energy + Friction", fromAssignment: "Assignment 5 — combo",
+        prompt: '<b>Assignment 5 — Combo.</b> A <b>1500 kg</b> car at <b>30 m/s</b> brakes to a stop on a level ' +
+                'road with \\(\\mu_k=0.70\\) (\\(g=9.8\\)). Friction does negative work that removes all the KE: ' +
+                '\\(\\mu_k mg\\,d=\\tfrac12 m v^2\\Rightarrow d=\\dfrac{v^2}{2\\mu_k g}\\) (mass cancels). ' +
+                '<span class="ask">Find the braking distance \\(d\\).</span>',
+        inventory: [
+          { id: "brake", tex: "d=\\dfrac{v^2}{2\\mu_k g}", label: "energy → distance", relevant: true  },
+          { id: "wke",   tex: "W_{net}=\\Delta KE",        label: "energy principle",  relevant: false },
+          { id: "ke",    tex: "KE=\\tfrac12 mv^2",         label: "kinetic E",         relevant: false },
+          { id: "circ",  tex: "F=\\dfrac{mv^2}{r}",        label: "centripetal",       relevant: false },
+          { id: "pmv",   tex: "\\vec p=m\\vec v",          label: "momentum",          relevant: false }
+        ],
+        answerEqId: "brake", dockedTex: "d = \\dfrac{v^{2}}{2\\,\\mu_k\\,g}", lhs: "d", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{v^{2}}{2\\,\\mu_k\\,g}", sub: "\\dfrac{(30)^2}{2(0.70)(9.8)}" }
+        ],
+        distractors: [
+          "\\dfrac{v}{2\\,\\mu_k\\,g}",
+          "\\dfrac{m v^{2}}{2\\,\\mu_k\\,g}",
+          "\\dfrac{v^{2}}{\\mu_k\\,g}",
+          "2\\,\\mu_k\\,g\\,v^{2}"
+        ],
+        result: {
+          expression:   "d = \\dfrac{v^{2}}{2\\,\\mu_k\\,g}",
+          substitution: "d = \\dfrac{(30)^2}{2(0.70)(9.8)} = \\dfrac{900}{13.72}",
+          answer:       "d = 65.6\\ \\text{m}"
+        },
+        mcq: {
+          options: ["65.6\\ \\text{m}", "32.8\\ \\text{m}", "131.2\\ \\text{m}", "45.9\\ \\text{m}"],
+          correct: 0,
+          why: "½ m v² = μ_k m g d ⇒ d = v²/(2μ_k g) = 900/(2·0.70·9.8) = 900/13.72 = 65.6 m."
+        }
+      },
+
+      /* ---- A5 Q7 : HARDER combo — force from changing velocity (vector ΔV / Δt) ---- */
+      {
+        id: "a5q7-force-from-dv", concept: "Forces from Motion", fromAssignment: "Assignment 5 — combo",
+        prompt: '<b>Assignment 5 — Combo.</b> A <b>2.0 kg</b> puck\'s velocity changes from ' +
+                '\\(\\vec v_i=\\langle 1,2,0\\rangle\\) to \\(\\vec v_f=\\langle 7,-2,0\\rangle\\) m/s over ' +
+                '<b>3.0 s</b>. The net force is \\(\\vec F=m\\vec a=m\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}\\). ' +
+                '<span class="ask">Find the net force \\(\\vec F\\).</span>',
+        inventory: [
+          { id: "fdv",  tex: "\\vec F=m\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}", label: "force from Δv", relevant: true  },
+          { id: "net",  tex: "\\sum\\vec F=m\\vec a",  label: "net 2nd law", relevant: false },
+          { id: "ke",   tex: "KE=\\tfrac12 mv^2",      label: "kinetic E",   relevant: false },
+          { id: "wfd",  tex: "W=Fd\\cos\\theta",       label: "work",        relevant: false },
+          { id: "circ", tex: "F=\\dfrac{mv^2}{r}",     label: "centripetal", relevant: false }
+        ],
+        answerEqId: "fdv",
+        dockedTex: "\\vec F = m\\,\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}",
+        lhs: "\\vec F", joiner: "\\cdot",
+        terms: [
+          { symbol: "m",                                sub: "(2.0\\,\\text{kg})" },
+          { symbol: "\\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}", sub: "\\dfrac{\\langle 7,-2,0\\rangle-\\langle 1,2,0\\rangle}{3.0}" }
+        ],
+        distractors: [
+          "\\dfrac{\\Delta t}{\\vec v_f-\\vec v_i}",
+          "(\\vec v_f-\\vec v_i)",
+          "\\tfrac12",
+          "\\dfrac{\\vec v_f+\\vec v_i}{\\Delta t}"
+        ],
+        result: {
+          expression:   "\\vec F = m\\cdot \\dfrac{\\vec v_f-\\vec v_i}{\\Delta t}",
+          substitution: "\\vec F = (2.0)\\cdot\\dfrac{\\langle 7,-2,0\\rangle-\\langle 1,2,0\\rangle}{3.0} = (2.0)\\cdot\\dfrac{\\langle 6,-4,0\\rangle}{3.0} = (2.0)\\langle 2,-1.33,0\\rangle",
+          answer:       "\\vec F = \\langle 4,\\ -2.67,\\ 0\\rangle\\ \\text{N}"
+        },
+        mcq: {
+          options: [
+            "\\langle 4, -2.67, 0\\rangle\\ \\text{N}",
+            "\\langle 2, -1.33, 0\\rangle\\ \\text{N}",
+            "\\langle 12, -8, 0\\rangle\\ \\text{N}",
+            "\\langle 16, 0, 0\\rangle\\ \\text{N}"
+          ],
+          correct: 0,
+          why: "a = (v_f − v_i)/Δt = ⟨6,-4,0⟩/3 = ⟨2,-1.33,0⟩; F = m a = 2·⟨2,-1.33,0⟩ = ⟨4,-2.67,0⟩ N."
+        }
+      }
+    ]
+
+  };
+
+  /* expose globally (and as CommonJS if loaded under node) */
+  root.ASSIGN_4_5 = ASSIGN_4_5;
+  if (typeof module !== "undefined" && module.exports) module.exports = ASSIGN_4_5;
+
+})(typeof window !== "undefined" ? window : this);
+</script>
+
+<!-- ===================== PRACTICE ENGINE (inlined) ===================== -->
+<script>
+/* ================================================================
+   PRACTICE ENGINE  —  Adaptive practice + scoring for the Physics app
+   ----------------------------------------------------------------
+   Self-contained, framework-free, persists to localStorage.
+   Exposes window.PracticeEngine (and module.exports for Node tests).
+
+   USAGE (host app):
+     const eng = new PracticeEngine();              // loads saved state
+     eng.recordAttempt({questionId, concept, correct, ...});
+     const q   = eng.nextWeakItem(questionPool);    // adaptive pick
+     const msg = eng.feedbackFor(questionId, correct);
+     const s   = eng.getScore();   // {xp,...}
+     const r   = eng.getRank();    // {tier, ...}
+     const st  = eng.getStats();   // dashboard data
+     eng.resetProgress();
+
+   ----------------------------------------------------------------
+   localStorage SCHEMA  (key: "lucy_progress_v1")
+   ----------------------------------------------------------------
+   {
+     version: 1,
+     createdAt: <ms epoch>,
+     updatedAt: <ms epoch>,
+
+     attempts: [                         // full append-only log
+       { questionId, concept, assignment, mode,
+         correct:bool, hintsUsed:int, ms:int, at:<ms epoch> },
+       ...
+     ],
+
+     concepts: {                         // rolling per-concept aggregates
+       "<concept>": {
+         attempts:int, correct:int,
+         recent:[bool,...],              // last N (<=ROLLING_WINDOW) results
+         lastSeen:<ms epoch>,
+         curStreak:int                   // (per-concept consecutive corrects)
+       }, ...
+     },
+
+     questions: {                        // rolling per-question aggregates
+       "<questionId>": {
+         concept, attempts:int, correct:int,
+         recent:[bool,...], lastSeen:<ms epoch>,
+         hintsTotal:int
+       }, ...
+     },
+
+     score: {
+       xp:int,                           // cumulative
+       streak:int,                       // current global consecutive corrects
+       bestStreak:int,
+       totalCorrect:int, totalAttempts:int
+     }
+   }
+   ================================================================ */
+
+(function (root) {
+  "use strict";
+
+  var STORAGE_KEY    = "lucy_progress_v1";
+  var SCHEMA_VERSION = 1;
+  var ROLLING_WINDOW = 10;     // how many recent results feed rolling accuracy
+
+  /* XP economy */
+  var XP_CORRECT      = 10;    // base reward for a correct answer
+  var XP_HINT_PENALTY = 2;     // subtracted per hint used (correct answers only)
+  var XP_STREAK_STEP  = 2;     // bonus per streak length beyond 1
+  var XP_STREAK_CAP   = 20;    // max streak bonus per question
+
+  /* Rank tiers (ordered low -> high). minXp is inclusive floor. */
+  var RANKS = [
+    { tier: "Bronze",       minXp: 0,    neon: "#cd7f32" },
+    { tier: "Silver",       minXp: 100,  neon: "#c0c0c0" },
+    { tier: "Gold",         minXp: 300,  neon: "#ffd700" },
+    { tier: "Platinum",     minXp: 600,  neon: "#67e8f9" },
+    { tier: "Physics Boss", minXp: 1000, neon: "#ff4fd8" }
+  ];
+
+  /* ---------------------------------------------------------------
+     Storage shim: use real localStorage if present, else in-memory.
+     Lets the same code run in browser and in Node tests.
+  --------------------------------------------------------------- */
+  function resolveStorage() {
+    try {
+      if (typeof root !== "undefined" && root.localStorage) {
+        // probe — some environments throw on access (private mode, etc.)
+        var probe = "__pe_probe__";
+        root.localStorage.setItem(probe, "1");
+        root.localStorage.removeItem(probe);
+        return root.localStorage;
+      }
+    } catch (e) { /* fall through to memory */ }
+
+    var mem = {};
+    return {
+      getItem:    function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+      setItem:    function (k, v) { mem[k] = String(v); },
+      removeItem: function (k) { delete mem[k]; }
+    };
+  }
+
+  function now() { return Date.now(); }
+
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+  /* fresh, valid empty state */
+  function blankState() {
+    var t = now();
+    return {
+      version:   SCHEMA_VERSION,
+      createdAt: t,
+      updatedAt: t,
+      attempts:  [],
+      concepts:  {},
+      questions: {},
+      score: {
+        xp: 0, streak: 0, bestStreak: 0,
+        totalCorrect: 0, totalAttempts: 0
+      }
+    };
+  }
+
+  /* Defensive normalize: ensures every expected field exists & has the right
+     type, repairing partially-corrupt state instead of throwing. */
+  function normalizeState(raw) {
+    var s = blankState();
+    if (!raw || typeof raw !== "object") return s;
+
+    if (typeof raw.createdAt === "number") s.createdAt = raw.createdAt;
+    if (typeof raw.updatedAt === "number") s.updatedAt = raw.updatedAt;
+
+    if (Array.isArray(raw.attempts)) {
+      s.attempts = raw.attempts.filter(function (a) {
+        return a && typeof a === "object" && typeof a.questionId !== "undefined";
+      });
+    }
+    if (raw.concepts && typeof raw.concepts === "object")  s.concepts  = raw.concepts;
+    if (raw.questions && typeof raw.questions === "object") s.questions = raw.questions;
+
+    if (raw.score && typeof raw.score === "object") {
+      var rs = raw.score;
+      s.score.xp           = num(rs.xp);
+      s.score.streak       = num(rs.streak);
+      s.score.bestStreak   = num(rs.bestStreak);
+      s.score.totalCorrect = num(rs.totalCorrect);
+      s.score.totalAttempts= num(rs.totalAttempts);
+    }
+    return s;
+  }
+
+  function num(v) { return (typeof v === "number" && isFinite(v)) ? v : 0; }
+
+  /* ===============================================================
+     PracticeEngine
+  =============================================================== */
+  function PracticeEngine(opts) {
+    opts = opts || {};
+    this.key     = opts.storageKey || STORAGE_KEY;
+    this.storage = opts.storage || resolveStorage();
+    this.state   = this._load();
+  }
+
+  /* ---- persistence ---- */
+  PracticeEngine.prototype._load = function () {
+    var raw = null;
+    try {
+      raw = this.storage.getItem(this.key);
+    } catch (e) { raw = null; }
+
+    if (!raw) return blankState();
+
+    var parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      // corrupt JSON — start clean rather than crash the app
+      return blankState();
+    }
+    return normalizeState(parsed);
+  };
+
+  PracticeEngine.prototype._save = function () {
+    this.state.updatedAt = now();
+    try {
+      this.storage.setItem(this.key, JSON.stringify(this.state));
+      return true;
+    } catch (e) {
+      // quota / serialization failure — keep running on in-memory state
+      return false;
+    }
+  };
+
+  /* ---- internal: rolling-window helpers ---- */
+  function pushRecent(arr, val) {
+    arr.push(!!val);
+    while (arr.length > ROLLING_WINDOW) arr.shift();
+    return arr;
+  }
+
+  function rollingAcc(rec) {
+    if (!rec || !rec.recent || rec.recent.length === 0) return null;
+    var c = 0;
+    for (var i = 0; i < rec.recent.length; i++) if (rec.recent[i]) c++;
+    return c / rec.recent.length;
+  }
+
+  /* ===============================================================
+     recordAttempt — the single write entry point
+  =============================================================== */
+  PracticeEngine.prototype.recordAttempt = function (a) {
+    a = a || {};
+    var questionId = a.questionId != null ? String(a.questionId) : "unknown";
+    var concept    = a.concept    != null ? String(a.concept)    : "General";
+    var assignment = a.assignment != null ? String(a.assignment) : null;
+    var mode       = a.mode       != null ? String(a.mode)       : "practice";
+    var correct    = !!a.correct;
+    var hintsUsed  = num(a.hintsUsed);
+    var ms         = num(a.ms);
+    var at         = now();
+
+    /* 1) append to log */
+    this.state.attempts.push({
+      questionId: questionId, concept: concept, assignment: assignment,
+      mode: mode, correct: correct, hintsUsed: hintsUsed, ms: ms, at: at
+    });
+
+    /* 2) per-concept aggregate */
+    var c = this.state.concepts[concept];
+    if (!c) { c = { attempts: 0, correct: 0, recent: [], lastSeen: 0, curStreak: 0 }; this.state.concepts[concept] = c; }
+    c.attempts++;
+    if (correct) { c.correct++; c.curStreak++; } else { c.curStreak = 0; }
+    pushRecent(c.recent, correct);
+    c.lastSeen = at;
+
+    /* 3) per-question aggregate */
+    var q = this.state.questions[questionId];
+    if (!q) { q = { concept: concept, attempts: 0, correct: 0, recent: [], lastSeen: 0, hintsTotal: 0 }; this.state.questions[questionId] = q; }
+    q.concept = concept;
+    q.attempts++;
+    if (correct) q.correct++;
+    q.hintsTotal += hintsUsed;
+    pushRecent(q.recent, correct);
+    q.lastSeen = at;
+
+    /* 4) score / streaks */
+    var sc = this.state.score;
+    sc.totalAttempts++;
+    if (correct) {
+      sc.totalCorrect++;
+      sc.streak++;
+      if (sc.streak > sc.bestStreak) sc.bestStreak = sc.streak;
+      var streakBonus = clamp((sc.streak - 1) * XP_STREAK_STEP, 0, XP_STREAK_CAP);
+      var gain = XP_CORRECT + streakBonus - (hintsUsed * XP_HINT_PENALTY);
+      sc.xp += Math.max(0, gain);   // never go negative on a correct
+    } else {
+      sc.streak = 0;
+    }
+
+    this._save();
+    return this.getScore();
+  };
+
+  /* ===============================================================
+     WEAKNESS SCORING + ADAPTIVE PICK
+     Higher weakness => student needs it more.
+       - low rolling accuracy  -> higher
+       - more wrong answers     -> higher
+       - older lastSeen (due)   -> higher  (spaced-repetition nudge)
+       - never-seen items get a strong default so they surface
+  =============================================================== */
+  PracticeEngine.prototype.conceptWeakness = function (concept) {
+    var c = this.state.concepts[concept];
+    if (!c || c.attempts === 0) return 1.0;            // unseen -> high priority
+    var acc = rollingAcc(c) != null ? rollingAcc(c) : (c.correct / c.attempts);
+    var inaccuracy = 1 - acc;                          // 0..1
+    var ageDays = (now() - c.lastSeen) / 86400000;
+    var recency = clamp(ageDays / 7, 0, 1);            // 0..1 over a week
+    // weight inaccuracy heaviest, recency a gentle nudge
+    return clamp(0.7 * inaccuracy + 0.3 * recency, 0, 1);
+  };
+
+  PracticeEngine.prototype.questionWeakness = function (questionId) {
+    var q = this.state.questions[questionId];
+    if (!q || q.attempts === 0) return 1.0;            // unseen -> high priority
+    var acc = rollingAcc(q) != null ? rollingAcc(q) : (q.correct / q.attempts);
+    var inaccuracy = 1 - acc;
+    var ageDays = (now() - q.lastSeen) / 86400000;
+    var recency = clamp(ageDays / 7, 0, 1);
+    return clamp(0.65 * inaccuracy + 0.35 * recency, 0, 1);
+  };
+
+  /* Rank a pool of questions and return the single weakest/most-due one.
+     pool items may be {id, concept} or {questionId, concept}.
+     Combines question-level and concept-level weakness so a brand-new
+     question in a weak concept still surfaces. */
+  PracticeEngine.prototype.rankPool = function (pool) {
+    var self = this;
+    if (!Array.isArray(pool)) return [];
+    return pool.map(function (item) {
+      var qid     = item.id != null ? String(item.id)
+                  : (item.questionId != null ? String(item.questionId) : null);
+      var concept = item.concept != null ? String(item.concept) : "General";
+      var qw = qid ? self.questionWeakness(qid) : 1.0;
+      var cw = self.conceptWeakness(concept);
+      var priority = 0.6 * qw + 0.4 * cw;
+      return { item: item, questionId: qid, concept: concept, priority: priority };
+    }).sort(function (x, y) { return y.priority - x.priority; });
+  };
+
+  PracticeEngine.prototype.nextWeakItem = function (pool) {
+    var ranked = this.rankPool(pool);
+    return ranked.length ? ranked[0].item : null;
+  };
+
+  /* ===============================================================
+     FEEDBACK
+  =============================================================== */
+  var PRAISE = [
+    "Nailed it!", "Boom — correct!", "That's the one!",
+    "Clean solve!", "You crushed that!", "Spot on!"
+  ];
+  var WHY = [
+    "Notice how the units lined up — that's your sanity check.",
+    "You picked the right relationship before plugging in numbers.",
+    "Conservation laws did the heavy lifting there.",
+    "Setting equal-before to equal-after is exactly the move.",
+    "Keeping signs straight on the vectors is what sealed it."
+  ];
+  var GENTLE = [
+    "Not quite — but you're close.",
+    "Almost! Small slip, easy fix.",
+    "No worries, this one's tricky.",
+    "Good attempt — let's tighten it up."
+  ];
+
+  function pick(arr, seed) {
+    // deterministic-ish pick so the same question feels consistent
+    var idx = Math.abs(hashStr(seed)) % arr.length;
+    return arr[idx];
+  }
+  function hashStr(s) {
+    s = String(s); var h = 0;
+    for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+    return h;
+  }
+
+  PracticeEngine.prototype.feedbackFor = function (questionId, correct) {
+    var qid = questionId != null ? String(questionId) : "unknown";
+    var q   = this.state.questions[qid];
+    var concept = q ? q.concept : null;
+
+    if (correct) {
+      var msg = pick(PRAISE, qid) + " " + pick(WHY, qid + "w");
+      if (concept) {
+        var acc = q ? (rollingAcc(q) != null ? rollingAcc(q) : q.correct / q.attempts) : null;
+        if (acc != null && acc >= 0.8 && q.attempts >= 3) {
+          msg += " You're basically mastering " + concept + ".";
+        }
+      }
+      return msg;
+    }
+
+    // wrong
+    var hint = pick(GENTLE, qid);
+    if (concept) {
+      hint += " Go back and review " + concept + " — focus on which equation applies before solving.";
+    } else {
+      hint += " Re-read the setup and check which principle applies.";
+    }
+    return hint;
+  };
+
+  /* ===============================================================
+     SCORE / RANK / STATS
+  =============================================================== */
+  PracticeEngine.prototype.getScore = function () {
+    var sc = this.state.score;
+    var accuracy = sc.totalAttempts ? sc.totalCorrect / sc.totalAttempts : 0;
+    return {
+      xp:            sc.xp,
+      streak:        sc.streak,
+      bestStreak:    sc.bestStreak,
+      totalCorrect:  sc.totalCorrect,
+      totalAttempts: sc.totalAttempts,
+      accuracy:      accuracy
+    };
+  };
+
+  PracticeEngine.prototype.getRank = function () {
+    var xp = this.state.score.xp;
+    var current = RANKS[0], next = null;
+    for (var i = 0; i < RANKS.length; i++) {
+      if (xp >= RANKS[i].minXp) { current = RANKS[i]; next = RANKS[i + 1] || null; }
+    }
+    var toNext = next ? Math.max(0, next.minXp - xp) : 0;
+    var progress; // 0..1 toward next tier
+    if (next) {
+      var span = next.minXp - current.minXp;
+      progress = span > 0 ? clamp((xp - current.minXp) / span, 0, 1) : 1;
+    } else {
+      progress = 1;
+    }
+    return {
+      tier:      current.tier,
+      neon:      current.neon,
+      minXp:     current.minXp,
+      xp:        xp,
+      nextTier:  next ? next.tier : null,
+      xpToNext:  toNext,
+      progress:  progress
+    };
+  };
+
+  PracticeEngine.prototype.getStats = function () {
+    var concepts = {};
+    var worst = null, worstW = -1;
+    for (var name in this.state.concepts) {
+      if (!Object.prototype.hasOwnProperty.call(this.state.concepts, name)) continue;
+      var c = this.state.concepts[name];
+      var acc = c.attempts ? c.correct / c.attempts : 0;
+      var roll = rollingAcc(c);
+      var weakness = this.conceptWeakness(name);
+      concepts[name] = {
+        attempts:        c.attempts,
+        correct:         c.correct,
+        accuracy:        acc,
+        rollingAccuracy: roll != null ? roll : acc,
+        lastSeen:        c.lastSeen,
+        weakness:        weakness
+      };
+      if (weakness > worstW) { worstW = weakness; worst = name; }
+    }
+    var sc = this.state.score;
+    return {
+      concepts:       concepts,
+      weakestConcept: worst,
+      totalAttempts:  sc.totalAttempts,
+      totalCorrect:   sc.totalCorrect,
+      accuracy:       sc.totalAttempts ? sc.totalCorrect / sc.totalAttempts : 0,
+      bestStreak:     sc.bestStreak,
+      currentStreak:  sc.streak,
+      xp:             sc.xp,
+      rank:           this.getRank().tier,
+      attemptCount:   this.state.attempts.length
+    };
+  };
+
+  /* ---- reset ---- */
+  PracticeEngine.prototype.resetProgress = function () {
+    this.state = blankState();
+    try { this.storage.removeItem(this.key); } catch (e) {}
+    this._save();
+    return true;
+  };
+
+  /* expose constants for the host UI / tests */
+  PracticeEngine.RANKS          = RANKS;
+  PracticeEngine.STORAGE_KEY    = STORAGE_KEY;
+  PracticeEngine.SCHEMA_VERSION = SCHEMA_VERSION;
+  PracticeEngine.ROLLING_WINDOW = ROLLING_WINDOW;
+
+  /* ---- export ---- */
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = PracticeEngine;
+  }
+  if (typeof root !== "undefined") {
+    root.PracticeEngine = PracticeEngine;
+  }
+
+})(typeof window !== "undefined" ? window : (typeof globalThis !== "undefined" ? globalThis : this));
+</script>
+
+<!-- ===================== VECTOR DRAG (component-slot mode, vz- namespaced) ===================== -->
+<script>
+(function(){
+  "use strict";
+  /* Public API: window.loadVector(problemObj) + window.vzOnSolve callback hook.
+     Schema: { prompt, vectors:[{label, comps:[x,y,z]}], op:"add"|"subtract", answer:[x,y,z] } */
+  function $(id){ return document.getElementById(id); }
+  function vecLabelHTML(label){ return '<span class="vz-vlabel"><span class="va">'+label+'</span></span>'; }
+  function angleHTML(arr){ return '<span class="vz-angle">⟨'+arr.join(', ')+'⟩</span>'; }
+  function magnitude(arr){ return Math.sqrt(arr.reduce(function(s,v){return s+v*v;},0)); }
+  function htmlNode(html){ var d=document.createElement('div'); d.innerHTML=html; return d.firstChild; }
+
+  var CURRENT=null, DIM=3, solvedCount=0, drag=null;
+
+  function computeAnswer(p){
+    var sign=p.op==='subtract'?-1:1;
+    return p.vectors[0].comps.map(function(_,i){
+      var s=p.vectors[0].comps[i];
+      for(var k=1;k<p.vectors.length;k++) s+=sign*p.vectors[k].comps[i];
+      return s;
+    });
+  }
+  function buildComponentMode(p){
+    DIM=p.vectors[0].comps.length;
+    var answer=(p.answer && p.answer.length===DIM)?p.answer:computeAnswer(p);
+    p._answer=answer; solvedCount=0;
+    $('vz-prompt').innerHTML = p.prompt || 'Add the vectors component by component.';
+    $('vz-given').innerHTML = p.vectors.map(function(v){ return '<span class="vz-vec">'+vecLabelHTML(v.label)+' = '+angleHTML(v.comps)+'</span>'; }).join('');
+    var opWord=p.op==='subtract'?'−':'+';
+    $('vz-opline').innerHTML='Find '+vecLabelHTML('R')+' = '+p.vectors.map(function(v){return vecLabelHTML(v.label);}).join(' '+opWord+' ');
+    var rr=$('vz-resultRow'); rr.innerHTML='';
+    rr.appendChild(htmlNode('<span class="vz-vlabel" style="margin-right:4px"><span class="va">R</span> =</span>'));
+    rr.appendChild(htmlNode('<span class="vz-comma">⟨</span>'));
+    for(var i=0;i<DIM;i++){
+      var slot=document.createElement('div'); slot.className='vz-slot'; slot.dataset.idx=i; slot.dataset.answer=answer[i]; slot.textContent='_';
+      rr.appendChild(slot);
+      if(i<DIM-1) rr.appendChild(htmlNode('<span class="vz-comma">,</span>'));
+    }
+    rr.appendChild(htmlNode('<span class="vz-comma">⟩</span>'));
+    buildBank(p, answer);
+    $('vz-finale').classList.remove('vz-show');
+  }
+  function buildBank(p, answer){
+    var bank=$('vz-bank'); bank.innerHTML='';
+    var values=new Set(), chips=[];
+    answer.forEach(function(val,i){ chips.push({val:val, idx:i}); values.add(val); });
+    var sign=p.op==='subtract'?-1:1;
+    answer.forEach(function(val,i){
+      var cands=[ p.vectors[0].comps[i]-sign*(p.vectors[1]?p.vectors[1].comps[i]:0), val+(i%2===0?10:-10), -val, val+1 ];
+      for(var c=0;c<cands.length;c++){ var cand=cands[c]; if(!values.has(cand) && Number.isFinite(cand)){ chips.push({val:cand, idx:-1}); values.add(cand); break; } }
+    });
+    for(var i=chips.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=chips[i]; chips[i]=chips[j]; chips[j]=tmp; }
+    chips.forEach(function(c,k){
+      var el=document.createElement('div'); el.className='vz-chip'; el.dataset.val=c.val; el.dataset.idx=c.idx; el.dataset.cid=k;
+      el.textContent=c.val; bank.appendChild(el); attachDrag(el);
+    });
+  }
+  function attachDrag(chip){
+    chip.addEventListener('pointerdown',function(e){
+      if(chip.classList.contains('vz-placed')) return; e.preventDefault();
+      var rect=chip.getBoundingClientRect();
+      drag={ chip:chip, ghost:null, offX:e.clientX-rect.left, offY:e.clientY-rect.top };
+      var ghost=chip.cloneNode(true); ghost.classList.add('vz-dragging');
+      ghost.style.position='fixed'; ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
+      ghost.style.width=rect.width+'px'; ghost.style.margin='0'; ghost.style.pointerEvents='none';
+      $('vz-floatLayer').appendChild(ghost); drag.ghost=ghost; chip.style.opacity='0.25';
+      try{ chip.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    chip.addEventListener('pointermove',function(e){ if(!drag||drag.chip!==chip) return; e.preventDefault(); moveGhost(e.clientX,e.clientY); highlightSlot(e.clientX,e.clientY); });
+    chip.addEventListener('pointerup',function(e){ if(!drag||drag.chip!==chip) return; e.preventDefault(); endDrag(e.clientX,e.clientY); });
+    chip.addEventListener('pointercancel',function(){ if(!drag||drag.chip!==chip) return; endDrag(-9999,-9999); });
+  }
+  function moveGhost(x,y){ if(!drag||!drag.ghost) return; drag.ghost.style.left=(x-drag.offX)+'px'; drag.ghost.style.top=(y-drag.offY)+'px'; }
+  function slotAt(x,y){
+    var slots=document.querySelectorAll('#vz-root .vz-slot');
+    for(var i=0;i<slots.length;i++){ var r=slots[i].getBoundingClientRect();
+      if(x>=r.left-12&&x<=r.right+12&&y>=r.top-12&&y<=r.bottom+12) return slots[i]; }
+    return null;
+  }
+  function highlightSlot(x,y){
+    document.querySelectorAll('#vz-root .vz-slot').forEach(function(s){ s.classList.remove('vz-hover'); });
+    var s=slotAt(x,y); if(s && !s.classList.contains('vz-filled')) s.classList.add('vz-hover');
+  }
+  function endDrag(x,y){
+    var chip=drag.chip;
+    document.querySelectorAll('#vz-root .vz-slot').forEach(function(s){ s.classList.remove('vz-hover'); });
+    var slot=slotAt(x,y); if(drag.ghost) drag.ghost.remove(); chip.style.opacity=''; drag=null;
+    if(slot && !slot.classList.contains('vz-filled')){ if(!tryDrop(chip,slot)) rejectChip(chip); }
+  }
+  function tryDrop(chip,slot){
+    var val=Number(chip.dataset.val), need=Number(slot.dataset.answer), idx=Number(slot.dataset.idx);
+    if(val===need){
+      slot.classList.add('vz-filled'); slot.classList.remove('vz-hover'); slot.textContent=val; chip.classList.add('vz-placed');
+      var w=document.createElement('div'); w.className='vz-work'; w.textContent=buildWork(CURRENT,idx); slot.appendChild(w);
+      solvedCount++; if(solvedCount===DIM) showFinale(CURRENT);
+      return true;
+    }
+    return false;
+  }
+  function buildWork(p,idx){
+    var expr=p.vectors.map(function(v,i){
+      var n=v.comps[idx];
+      if(i===0) return ''+n;
+      if(p.op==='subtract') return n<0?'− ('+n+')':'− '+n;
+      return n<0?'+ ('+n+')':'+ '+n;
+    }).join(' ');
+    return expr+' = '+p._answer[idx];
+  }
+  function rejectChip(chip){ chip.classList.add('vz-reject'); setTimeout(function(){ chip.classList.remove('vz-reject'); },360); }
+  function showFinale(p){
+    var f=$('vz-finale');
+    $('vz-finaleVec').innerHTML=vecLabelHTML('R')+' = '+angleHTML(p._answer);
+    var m=magnitude(p._answer);
+    $('vz-finaleMag').innerHTML='|'+vecLabelHTML('R')+'| = √('+p._answer.map(function(v){return v+'²';}).join(' + ')+') = <b>'+m.toFixed(2)+'</b>';
+    f.classList.add('vz-show');
+    if(typeof window.vzOnSolve==='function'){ try{ window.vzOnSolve(p); }catch(_){} }
+  }
+  function loadVector(problemObj){
+    CURRENT=JSON.parse(JSON.stringify(problemObj));
+    if(!CURRENT.answer) CURRENT.answer=computeAnswer(CURRENT);
+    buildComponentMode(CURRENT);
+    return CURRENT;
+  }
+  window.loadVector=loadVector;
+})();
+</script>
+
 <script>
 /* ===================== CONTENT MODEL ===================== */
 const CONCEPTS = [
@@ -2006,6 +4221,9 @@ const Solver = (function(){
   let list=[], Q=null, qIndex=0, ownerStep=0;
   let mode="build", stageS="equation", termIndex=0, workLine=null, subLine=null;
   let drag=null, cueTimer=null, vbeatDone=false;
+  /* host hooks: when set, the solver reports solve events here instead of (or
+     in addition to) markSolved(step). Used by Assignments/Practice/Exam modes. */
+  let onSolveCb=null, showPager=true, hideMode=false;
 
   /* ---- serialized MathJax typeset (fixes NaN viewBox races) ---- */
   let mjQueue = Promise.resolve();
@@ -2023,8 +4241,9 @@ const Solver = (function(){
     return mjTypeset(node);
   }
 
-  /* ---- PUBLIC: attach to a concept (bankKey) for a given step ---- */
+  /* ---- PUBLIC: attach to a concept (bankKey) for a given step (LEARN mode) ---- */
   function attach(bankKey, step){
+    onSolveCb=null; showPager=true; hideMode=false;
     list = (BANK[bankKey] && BANK[bankKey].length) ? BANK[bankKey] : [];
     ownerStep = step;
     qIndex = 0;
@@ -2034,8 +4253,35 @@ const Solver = (function(){
     else { let tries=0; const t=setInterval(()=>{ if(window.__mjReady||(window.MathJax&&MathJax.typesetPromise)||tries++>80){ clearInterval(t); go(); } },60); }
   }
 
+  /* ---- PUBLIC: load an arbitrary list of question objects (Assignments / Exam) ----
+     opts: { onSolve(question, idx), startIndex, pager(bool), modeToggle(bool), mode } */
+  function loadList(questions, opts){
+    opts = opts || {};
+    onSolveCb = typeof opts.onSolve==="function" ? opts.onSolve : null;
+    showPager = opts.pager!==false;
+    hideMode  = opts.modeToggle===false;
+    list = Array.isArray(questions) ? questions.slice() : [];
+    ownerStep = -1;
+    qIndex = Math.max(0, Math.min(list.length-1, opts.startIndex|0));
+    mode = (opts.mode==="mcq")?"mcq":"build";
+    if(!list.length){ els.prompt.textContent="No question available."; return; }
+    const go=()=>{ buildQNav(); loadQuestion(qIndex); };
+    if(window.__mjReady || (window.MathJax && MathJax.typesetPromise)) go();
+    else { let tries=0; const t=setInterval(()=>{ if(window.__mjReady||(window.MathJax&&MathJax.typesetPromise)||tries++>80){ clearInterval(t); go(); } },60); }
+  }
+  /* ---- PUBLIC: load a single question object (Practice) ---- */
+  function loadOne(question, opts){ loadList([question], opts); }
+
+  /* central solve dispatch */
+  function reportSolved(){
+    if(ownerStep>=0 && window.markSolved) window.markSolved(ownerStep);
+    if(onSolveCb){ try{ onSolveCb(Q, qIndex); }catch(_){ } }
+  }
+
   function buildQNav(){
     els.qnav.innerHTML="";
+    els.qnav.style.display = showPager ? "" : "none";
+    if(!showPager){ return; }
     list.forEach((q,i)=>{
       const b=document.createElement("button");
       b.className="qdot"+(i===qIndex?" active":"");
@@ -2050,6 +4296,7 @@ const Solver = (function(){
     }
   }
   function refreshQNav(){
+    if(!showPager) return;
     Array.prototype.forEach.call(els.qnav.querySelectorAll(".qdot"),(b,i)=>b.classList.toggle("active",i===qIndex));
     const old=els.qnav.querySelector(".qtag"); if(old) old.remove();
     const cur=list[qIndex];
@@ -2065,6 +4312,7 @@ const Solver = (function(){
     stageS="equation"; termIndex=0; workLine=subLine=null; vbeatDone=false;
     refreshQNav();
     els.prompt.innerHTML=Q.prompt; mjTypeset(els.prompt);
+    els.modeToggle.style.display = hideMode ? "none" : "";
     buildInventory(); resetAnswerArea(); buildMCQ();
     setMode(mode);
   }
@@ -2214,7 +4462,7 @@ const Solver = (function(){
     const ans=document.createElement("div"); mj(ans,Q.result.answer,"mjx-good"); fa.appendChild(ans);
     els.answerArea.appendChild(fa); requestAnimationFrame(()=> fa.classList.add("show"));
     showCue("🎉 Solved!",true); els.termBank.classList.remove("show");
-    if(window.markSolved) window.markSolved(ownerStep);
+    reportSolved();
   }
 
   /* ---- MCQ ---- */
@@ -2236,8 +4484,9 @@ const Solver = (function(){
       row.classList.add("correct");
       all.forEach(r=>{ r.classList.add("locked"); if(r!==row) r.classList.add("dimmed"); });
       showCue("🎉 Correct!",true);
-      if(window.markSolved) window.markSolved(ownerStep);
+      reportSolved();
     } else {
+      if(onSolveCb){ try{ onSolveCb(Q, qIndex, false); }catch(_){ } }
       row.classList.add("wrong","locked");
       showCue("Try again",false);
       setTimeout(()=>{ row.classList.remove("wrong","locked"); },700);
@@ -2269,13 +4518,14 @@ const Solver = (function(){
   });
   els.resetBtn.addEventListener("click",()=>{ if(Q) loadQuestion(qIndex); });
 
-  return { attach };
+  return { attach, loadList, loadOne, currentIndex:()=>qIndex, count:()=>list.length };
 })();
 
 /* ===================== TIPS DRAWER ===================== */
 const drawer=document.getElementById('drawer');
 const backdrop=document.getElementById('backdrop');
 function openDrawer(){ drawer.classList.add('open'); backdrop.classList.add('open'); drawer.setAttribute('aria-hidden','false'); }
+window.openDrawer=openDrawer;
 function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
 document.getElementById('tipsBtn').addEventListener('click', openDrawer);
 document.getElementById('drawerClose').addEventListener('click', closeDrawer);
@@ -2313,11 +4563,331 @@ stage.addEventListener('click',(e)=>{
   if(e.target.closest('[data-conceptweb]')){ e.preventDefault(); if(window.openConceptWeb) window.openConceptWeb(); }
 });
 
+/* =====================================================================
+   MULTI-MODE ROUTER  (hub / learn / assignments / modules / runner / practice)
+   ===================================================================== */
+const ModeApp = (function(){
+  const layer = document.getElementById('modeLayer');
+  const body = document.body;
+  const MODES = ["hub","learn","assignments","modules","runner","practice"];
+  let mode = "hub";
+
+  /* park the shared solver block back on <body> so any host is left clean */
+  function parkSolver(){
+    const sb=document.getElementById('solverBlock');
+    if(sb && sb.parentNode!==document.body){ sb.hidden=true; document.body.appendChild(sb); }
+  }
+  function mountSolverInto(hostEl, questions, opts){
+    parkSolver();
+    const sb=document.getElementById('solverBlock');
+    hostEl.appendChild(sb); sb.hidden=false;
+    Solver.loadList(questions, opts);
+  }
+  function mountVectorInto(hostEl){
+    const vz=document.getElementById('vz-root');
+    vz.hidden=false; hostEl.appendChild(vz);
+  }
+  function parkVector(){
+    const vz=document.getElementById('vz-root');
+    if(vz && vz.parentNode!==layer){ vz.hidden=true; layer.appendChild(vz); }
+  }
+
+  function showScreen(id){
+    layer.querySelectorAll('.mz-screen').forEach(s=>s.classList.toggle('on', s.id===id));
+    layer.scrollTop=0;
+  }
+  function setBodyMode(m){
+    MODES.forEach(x=>body.classList.toggle('mode-'+x, x===m));
+    mode=m;
+  }
+
+  /* ---- LEARN ---- */
+  function goLearn(){
+    parkSolver(); parkVector();
+    setBodyMode("learn");
+    /* ensure a learn panel is visible */
+    if(!panels.some(p=>p.classList.contains('active'))){ show(0,1); }
+    updateChrome();
+  }
+
+  /* ---- HUB ---- */
+  function goHub(){
+    parkSolver(); parkVector();
+    setBodyMode("hub");
+    showScreen("mz-hub");
+  }
+
+  /* ---- ASSIGNMENTS MENU ---- */
+  const A123 = window.ASSIGN_1_2_3 || {};
+  const A45  = window.ASSIGN_4_5 || {};
+  function assignmentList(){
+    return [
+      { key:"a1", label:"A1", title:"Ch 1 — Interactions & Motion", set:A123.a1||[] },
+      { key:"a2", label:"A2", title:"Ch 2-3 — Forces, Momentum & Gravity", set:A123.a2||[] },
+      { key:"a3", label:"A3", title:"Ch 3 — Electric Force, Weight, Collisions", set:A123.a3||[] },
+      { key:"a4", label:"A4", title:"Ch 4 — Collisions & Friction", set:A45.a4||[], distinct:true },
+      { key:"a5", label:"A5", title:"Ch 5-6 — Forces, Circular Motion & Energy", set:A45.a5||[], distinct:true }
+    ];
+  }
+  function buildAssignMenu(){
+    const list=assignmentList();
+    const menu=document.getElementById('mz-assignMenu');
+    menu.innerHTML="";
+    const grouped=document.createElement('div');
+    grouped.innerHTML='<div class="mz-group-label">A1–A3 · grouped by concept</div>';
+    const gl=document.createElement('div'); gl.className='mz-alist';
+    list.filter(a=>!a.distinct).forEach(a=> gl.appendChild(assignItem(a)));
+    grouped.appendChild(gl);
+    menu.appendChild(grouped);
+    const distinctWrap=document.createElement('div');
+    distinctWrap.innerHTML='<div class="mz-group-label" style="color:var(--yellow);text-shadow:0 0 6px var(--yellow)">A4 &amp; A5 · listed distinctly</div>';
+    const dl=document.createElement('div'); dl.className='mz-alist';
+    list.filter(a=>a.distinct).forEach(a=> dl.appendChild(assignItem(a)));
+    distinctWrap.appendChild(dl);
+    menu.appendChild(distinctWrap);
+  }
+  function assignItem(a){
+    const it=document.createElement('button');
+    it.className='mz-aitem'+(a.distinct?' distinct':'');
+    it.innerHTML='<span class="an">'+a.label+'</span><span class="am">'+a.title+'<small>'+a.set.length+' question'+(a.set.length!==1?'s':'')+'</small></span>';
+    it.addEventListener('click',()=> runAssignment(a));
+    return it;
+  }
+  function goAssignments(){
+    parkSolver(); parkVector();
+    setBodyMode("assignments");
+    buildAssignMenu();
+    showScreen("mz-assignments");
+  }
+
+  /* ---- GENERIC RUNNER (assignments + exam) ---- */
+  let runner=null; // {questions, idx, title, scored, eng, vectorAt, results}
+  function runAssignment(a){
+    runner={ questions:a.set.slice(), idx:0, title:"📋 "+a.label+" — "+a.title, scored:false, results:[] };
+    enterRunner();
+  }
+  function enterRunner(){
+    parkVector();
+    setBodyMode("runner");
+    document.getElementById('mz-runnerTitle').textContent = runner.title;
+    document.getElementById('mz-runnerScore').style.display = runner.scored ? "" : "none";
+    showScreen("mz-runner");
+    loadRunnerQuestion();
+  }
+  function loadRunnerQuestion(){
+    const host=document.getElementById('mz-runnerHost');
+    const nextBtn2=document.getElementById('mz-runnerNext');
+    nextBtn2.disabled=true;
+    document.getElementById('mz-runnerProg').innerHTML='Question <b>'+(runner.idx+1)+'</b> of '+runner.questions.length;
+    const q=runner.questions[runner.idx];
+    if(q && q.__vector){
+      // vector problem (exam): use the vector-drag component
+      parkSolver();
+      host.innerHTML="";
+      mountVectorInto(host);
+      window.loadVector(q.vector);
+      window.vzOnSolve=()=>{ onRunnerSolved(q); };
+    } else {
+      parkVector();
+      mountSolverInto(host, [q], { pager:false, onSolve:()=> onRunnerSolved(q) });
+    }
+  }
+  function onRunnerSolved(q){
+    const nextBtn2=document.getElementById('mz-runnerNext');
+    nextBtn2.disabled=false;
+    if(runner.scored && runner.eng){
+      if(!q.__recorded){
+        q.__recorded=true;
+        runner.eng.recordAttempt({ questionId:q.id||q.__id||("exam-"+runner.idx), concept:q.concept||"General", mode:"exam", correct:true });
+        refreshRunnerScore();
+      }
+    }
+    nextBtn2.textContent = (runner.idx>=runner.questions.length-1) ? "SEE RESULTS →" : "NEXT →";
+  }
+  function refreshRunnerScore(){
+    if(!runner.eng) return;
+    const r=runner.eng.getRank(), s=runner.eng.getScore();
+    const rk=document.getElementById('mz-runnerRank');
+    rk.textContent=r.tier; rk.style.color=r.neon;
+    document.getElementById('mz-runnerXp').textContent=s.xp;
+  }
+  function runnerNext(){
+    if(runner.idx>=runner.questions.length-1){ finishRunner(); return; }
+    runner.questions[runner.idx].__recorded=false;
+    runner.idx++;
+    loadRunnerQuestion();
+  }
+  function finishRunner(){
+    const host=document.getElementById('mz-runnerHost');
+    parkSolver(); parkVector();
+    host.innerHTML="";
+    document.getElementById('mz-runnerNext').disabled=true;
+    document.getElementById('mz-runnerProg').textContent="";
+    const summary=document.createElement('div');
+    summary.className='mz-summary';
+    if(runner.scored && runner.eng){
+      const s=runner.eng.getScore(), r=runner.eng.getRank();
+      summary.innerHTML='<div class="bigemoji">🏆</div>'+
+        '<h2 class="head" style="font-size:14px">EXAM COMPLETE</h2>'+
+        '<p class="lead">You worked through all '+runner.questions.length+' problems.</p>'+
+        '<div class="mz-scorebar" style="justify-content:center"><span class="mz-rank" style="color:'+r.neon+'">'+r.tier+'</span>'+
+        '<span class="mz-score">XP <b>'+s.xp+'</b> · best streak '+s.bestStreak+'</span></div>'+
+        '<button class="btn big magenta" id="mz-examAgain">↻ RETRY EXAM</button>';
+    } else {
+      summary.innerHTML='<div class="bigemoji">✅</div><h2 class="head" style="font-size:14px">ASSIGNMENT DONE</h2>'+
+        '<p class="lead">You solved all '+runner.questions.length+' questions.</p>'+
+        '<button class="btn big magenta" id="mz-examAgain">↻ DO IT AGAIN</button>';
+    }
+    host.appendChild(summary);
+    const again=document.getElementById('mz-examAgain');
+    if(again) again.addEventListener('click',()=>{ runner.idx=0; runner.questions.forEach(q=>{q.__recorded=false;}); enterRunner(); });
+  }
+
+  /* ---- EXAM ---- */
+  function buildExamSet(){
+    const QB=window.QUESTION_BANK||{};
+    const pick=(arr,n)=> (arr||[]).slice(0,n);
+    const set=[];
+    // pull a mixed set across assignments + question bank
+    (A123.a1||[]).slice(0,1).forEach(q=>set.push(q));
+    (A123.a2||[]).slice(0,1).forEach(q=>set.push(q));
+    (A123.a3||[]).slice(0,1).forEach(q=>set.push(q));
+    (A45.a4||[]).slice(0,2).forEach(q=>set.push(q));
+    (A45.a5||[]).slice(0,2).forEach(q=>set.push(q));
+    pick(QB.momentum,1).forEach(q=>set.push(q));
+    pick(QB.energy,1).forEach(q=>set.push(q));
+    // a vector-add problem (via loadVector)
+    set.splice(Math.min(3,set.length),0,{ __vector:true, id:"exam-vector", concept:"Vectors",
+      vector:{ prompt:'<b>Exam — Vectors.</b> Add the 3-D vectors <span class="va">A</span> and <span class="va">B</span> component-wise to find the resultant <span class="va">R</span>.',
+        vectors:[{label:'A',comps:[44,14,-19]},{label:'B',comps:[23,-5,-28]}], op:'add', answer:[67,9,-47] } });
+    return set;
+  }
+  function goExam(){
+    parkSolver(); parkVector();
+    const eng = window.PracticeEngine ? new PracticeEngine({ storageKey:"lucy_exam_v1" }) : null;
+    if(eng) eng.resetProgress();
+    runner={ questions:buildExamSet(), idx:0, title:"📝 EXAM — Mixed Set", scored:true, eng, results:[] };
+    refreshRunnerScore();
+    enterRunner();
+  }
+
+  /* ---- PRACTICE ---- */
+  let pracEng=null, pracQ=null;
+  function buildPracticePool(){
+    const QB=window.QUESTION_BANK||{}, pool=[];
+    const add=(arr)=> (arr||[]).forEach(q=>{ if(q && q.id) pool.push(q); });
+    Object.keys(QB).forEach(k=> add(QB[k]));
+    ["a1","a2","a3"].forEach(k=> add(A123[k]));
+    ["a4","a5"].forEach(k=> add(A45[k]));
+    return pool;
+  }
+  let PRAC_POOL=[];
+  function goPractice(){
+    parkVector();
+    setBodyMode("practice");
+    if(!pracEng) pracEng = window.PracticeEngine ? new PracticeEngine() : null;
+    if(!PRAC_POOL.length) PRAC_POOL = buildPracticePool();
+    showScreen("mz-practice");
+    refreshPracticeScore();
+    document.getElementById('mz-pracFeedback').className='mz-feedback';
+    servePracticeItem();
+  }
+  function servePracticeItem(){
+    const host=document.getElementById('mz-pracHost');
+    document.getElementById('mz-pracNext').disabled=true;
+    document.getElementById('mz-pracFeedback').className='mz-feedback';
+    pracQ = pracEng ? pracEng.nextWeakItem(PRAC_POOL) : (PRAC_POOL[Math.floor(Math.random()*PRAC_POOL.length)]);
+    if(!pracQ){ host.innerHTML='<p class="lead">No practice questions available.</p>'; return; }
+    mountSolverInto(host, [pracQ], { pager:false, onSolve:(q,idx,wrong)=> onPracticeAnswer(q, wrong!==false) });
+  }
+  function onPracticeAnswer(q, correct){
+    if(!pracEng){ document.getElementById('mz-pracNext').disabled=false; return; }
+    const qid=q.id||"prac";
+    pracEng.recordAttempt({ questionId:qid, concept:q.concept||"General", mode:"practice", correct:!!correct });
+    if(correct){
+      const fb=document.getElementById('mz-pracFeedback');
+      fb.className='mz-feedback show';
+      fb.innerHTML=pracEng.feedbackFor(qid, true);
+      document.getElementById('mz-pracNext').disabled=false;
+      refreshPracticeScore();
+    } else {
+      const fb=document.getElementById('mz-pracFeedback');
+      fb.className='mz-feedback bad show';
+      fb.innerHTML=pracEng.feedbackFor(qid, false);
+      refreshPracticeScore();
+    }
+  }
+  function refreshPracticeScore(){
+    if(!pracEng) return;
+    const r=pracEng.getRank(), s=pracEng.getScore(), st=pracEng.getStats();
+    const rk=document.getElementById('mz-pracRank');
+    rk.textContent=r.tier; rk.style.color=r.neon; rk.style.borderColor=r.neon;
+    document.getElementById('mz-pracXp').textContent=s.xp;
+    document.getElementById('mz-pracStreak').textContent=s.streak;
+    document.getElementById('mz-pracProg').style.width=Math.round(r.progress*100)+'%';
+    const weakEl=document.getElementById('mz-pracWeak');
+    if(st.weakestConcept && st.totalAttempts>0){
+      weakEl.innerHTML='Weakest concept: <b>'+st.weakestConcept+'</b> · '+st.totalCorrect+'/'+st.totalAttempts+' correct';
+    } else {
+      weakEl.textContent='Solve a few to reveal your weak spots.';
+    }
+  }
+
+  /* ---- MODULES (P1: jump to any single concept teach+quiz) ---- */
+  function buildModuleMenu(){
+    const menu=document.getElementById('mz-moduleMenu');
+    menu.innerHTML="";
+    CONCEPTS.forEach((c)=>{
+      const teachStep = STEPS.findIndex(s=> s.type==="teach" && s.c===c);
+      const it=document.createElement('button');
+      it.className='mz-aitem';
+      it.innerHTML='<span class="an">'+c.n+'</span><span class="am">'+c.title.charAt(0)+c.title.slice(1).toLowerCase()+'<small>teach + build-the-equation quiz</small></span>';
+      it.addEventListener('click',()=>{ goLearn(); show(teachStep,1); });
+      menu.appendChild(it);
+    });
+  }
+  function goModules(){
+    parkSolver(); parkVector();
+    setBodyMode("modules");
+    buildModuleMenu();
+    showScreen("mz-modules");
+  }
+
+  /* ---- ROUTING ---- */
+  function go(target){
+    switch(target){
+      case "hub": goHub(); break;
+      case "learn": goLearn(); break;
+      case "assignments": goAssignments(); break;
+      case "modules": goModules(); break;
+      case "exam": goExam(); break;
+      case "practice": goPractice(); break;
+      default: goHub();
+    }
+  }
+
+  /* ---- WIRE UP ---- */
+  function init(){
+    layer.querySelectorAll('[data-go]').forEach(b=> b.addEventListener('click',()=> go(b.dataset.go)));
+    document.getElementById('hubBtn').addEventListener('click', goHub);
+    document.getElementById('mz-runnerNext').addEventListener('click', runnerNext);
+    document.getElementById('mz-pracNext').addEventListener('click', servePracticeItem);
+    document.getElementById('mz-conceptmap').addEventListener('click',()=>{ if(window.openConceptWeb) window.openConceptWeb(); });
+    document.getElementById('mz-formula').addEventListener('click',()=>{ if(window.openDrawer) window.openDrawer(); });
+    const pr=document.getElementById('mz-pracReset');
+    if(pr) pr.addEventListener('click',()=>{ if(pracEng){ pracEng.resetProgress(); refreshPracticeScore(); document.getElementById('mz-pracFeedback').className='mz-feedback'; } });
+    goHub();
+  }
+  return { init, go, goHub };
+})();
+
 /* ===================== INIT ===================== */
+/* boot into the HUB (Learn is now one mode among several) */
 panels[0].classList.add('active');
 panels[0].style.transform='translateX(0)';
 panels[0].style.opacity='1';
 updateChrome();
+ModeApp.init();
 
 /* typeset once MathJax is ready */
 function waitMJ(){
