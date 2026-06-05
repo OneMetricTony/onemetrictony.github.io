@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔗 CONCEPT WEB — CPCS110 Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#06060f; --bg1:#0c0c1f; --panel:#10102a; --panel-edge:#23234d;
+    --neon:#00f0ff; --neon-dim:#0a5560; --sel:#ffe14d; --sel-glow:#ffcc00;
+    --mag:#ff3df0; --green:#39ff7a; --txt:#dfe6ff; --muted:#7d83b5;
+    --edge:#3a3a6e; --edge-hot:#00f0ff; --foundation:#5a4d8a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg0);}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 700px at 70% -10%, #16163a 0%, transparent 60%),
+      radial-gradient(900px 600px at 10% 110%, #1a0b2e 0%, transparent 55%),
+      linear-gradient(180deg,var(--bg1),var(--bg0));
+    display:flex;flex-direction:column;
+  }
+  /* ---- Header ---- */
+  header{
+    flex:0 0 auto;padding:14px 22px 10px;
+    border-bottom:1px solid var(--panel-edge);
+    background:linear-gradient(180deg,rgba(10,10,30,.85),rgba(10,10,30,.25));
+    backdrop-filter:blur(4px);
+  }
+  h1{
+    font-family:'Press Start 2P',monospace;
+    font-size:clamp(13px,2.1vw,26px);
+    margin:0 0 8px;letter-spacing:1px;
+    color:#fff;
+    text-shadow:0 0 6px var(--neon),0 0 14px var(--neon),0 0 30px #007a8a;
+  }
+  .tagline{font-size:13px;color:var(--muted);margin:0;}
+  .tagline b{color:var(--neon);font-weight:600;}
+  /* ---- Layout ---- */
+  .stage{flex:1 1 auto;display:flex;min-height:0;}
+  .canvas-wrap{position:relative;flex:1 1 auto;min-width:0;}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  /* ---- Side panel ---- */
+  aside{
+    flex:0 0 340px;max-width:36vw;
+    background:linear-gradient(180deg,var(--panel),#0b0b1e);
+    border-left:1px solid var(--panel-edge);
+    padding:18px 18px 22px;overflow-y:auto;
+  }
+  aside h2{
+    font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.6;
+    margin:0 0 4px;color:var(--sel);text-shadow:0 0 8px var(--sel-glow);
+  }
+  .eq{
+    font-size:20px;color:#fff;margin:2px 0 14px;
+    font-family:'Cambria Math','Segoe UI',serif;letter-spacing:.5px;
+  }
+  .eq small{color:var(--muted);font-size:13px;}
+  .hint{color:var(--muted);font-size:13px;line-height:1.65;}
+  .conn-card{
+    border:1px solid var(--panel-edge);border-left:4px solid var(--neon);
+    background:rgba(0,240,255,.04);border-radius:8px;
+    padding:9px 11px;margin:9px 0;animation:pop .25s ease;
+  }
+  .conn-card .top{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+  .arrow{font-size:17px;font-weight:700;line-height:1;}
+  .a-out{color:var(--neon);} .a-in{color:var(--green);} .a-bi{color:var(--mag);}
+  .conn-card .type{
+    font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    padding:2px 7px;border-radius:20px;border:1px solid currentColor;
+  }
+  .conn-card .target{font-weight:700;color:#fff;font-size:14px;margin-left:auto;}
+  .conn-card .why{font-size:12.5px;color:var(--txt);opacity:.85;line-height:1.5;}
+  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  /* ---- Legend ---- */
+  .legend{
+    margin-top:18px;padding-top:14px;border-top:1px dashed var(--panel-edge);
+    font-size:12px;color:var(--muted);
+  }
+  .legend h3{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 8px;}
+  .lg-row{display:flex;align-items:center;gap:9px;margin:6px 0;}
+  .swatch{width:26px;height:0;border-top:3px solid var(--edge);flex:0 0 auto;border-radius:2px;}
+  .sw-hot{border-top-color:var(--edge-hot);box-shadow:0 0 6px var(--edge-hot);}
+  .sw-bi{border-top:3px dashed var(--mag);}
+  .dot{width:13px;height:13px;border-radius:50%;flex:0 0 auto;}
+  .dot-core{background:var(--neon);box-shadow:0 0 8px var(--neon);}
+  .dot-sel{background:var(--sel);box-shadow:0 0 8px var(--sel-glow);}
+  .dot-found{background:var(--foundation);opacity:.6;}
+  /* ---- SVG element styles ---- */
+  .edge{stroke:var(--edge);stroke-width:2;fill:none;transition:stroke .18s,stroke-width .18s,opacity .18s;cursor:pointer;}
+  .edge.bi{stroke-dasharray:7 5;}
+  .edge.hot{stroke:var(--edge-hot);stroke-width:3.2;filter:drop-shadow(0 0 4px var(--edge-hot));}
+  .edge.hotbi{stroke:var(--mag);stroke-width:3.2;filter:drop-shadow(0 0 4px var(--mag));}
+  .edge.dim{opacity:.12;}
+  .elabel{font-size:10px;fill:var(--muted);pointer-events:none;opacity:0;transition:opacity .18s;text-anchor:middle;}
+  .elabel.show{opacity:1;fill:#cfe9ff;}
+  .node{cursor:pointer;}
+  .node circle{
+    fill:url(#nodeGrad);stroke:var(--neon);stroke-width:2.2;
+    filter:drop-shadow(0 0 7px rgba(0,240,255,.6));
+    transition:stroke .18s,stroke-width .18s,filter .18s,opacity .18s;
+  }
+  .node.foundation circle{
+    stroke:var(--foundation);fill:url(#foundGrad);
+    filter:drop-shadow(0 0 5px rgba(90,77,138,.5));opacity:.62;
+  }
+  .node text{fill:#eef3ff;text-anchor:middle;pointer-events:none;transition:opacity .18s;}
+  .node .nm{font-size:12.5px;font-weight:700;}
+  .node .eqn{font-size:11px;fill:#9fd8ff;font-family:'Cambria Math',serif;}
+  .node.foundation .nm{font-size:11px;fill:#b9aee6;}
+  .node.foundation .eqn{fill:#8d80c0;}
+  .node.neighbor circle{stroke:#bfefff;stroke-width:2.6;filter:drop-shadow(0 0 11px var(--neon));}
+  .node.selected circle{
+    stroke:var(--sel);stroke-width:3.4;fill:url(#selGrad);
+    filter:drop-shadow(0 0 16px var(--sel-glow));
+  }
+  .node.dim{opacity:.18;}
+  .node.dim circle{filter:none;}
+  /* pulse for selected */
+  @keyframes pulse{0%,100%{r:var(--r);}50%{r:calc(var(--r) + 3px);}}
+  .footer-note{position:absolute;left:14px;bottom:10px;font-size:11px;color:var(--muted);pointer-events:none;
+    background:rgba(6,6,15,.5);padding:4px 9px;border-radius:6px;}
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:#26264f;border-radius:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔗 CONCEPT WEB — CPCS110 Physics</h1>
+  <p class="tagline">Chapters 1–5 at a glance. <b>Click a node</b> to light up how every idea connects — hover to preview, click an edge to focus one relationship, click empty space to reset.</p>
+</header>
+
+<div class="stage">
+  <div class="canvas-wrap">
+    <svg id="web" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <radialGradient id="nodeGrad" cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stop-color="#123a55"/>
+          <stop offset="60%" stop-color="#0a1a36"/>
+          <stop offset="100%" stop-color="#070d22"/>
+        </radialGradient>
+        <radialGradient id="selGrad" cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stop-color="#4a3d10"/>
+          <stop offset="60%" stop-color="#2a230a"/>
+          <stop offset="100%" stop-color="#140f04"/>
+        </radialGradient>
+        <radialGradient id="foundGrad" cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stop-color="#241b3d"/>
+          <stop offset="100%" stop-color="#0d0920"/>
+        </radialGradient>
+        <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L9,4 L0,8 Z" fill="var(--edge)"/>
+        </marker>
+        <marker id="arrowHot" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L10,4 L0,8 Z" fill="#00f0ff"/>
+        </marker>
+      </defs>
+      <g id="edgeLayer"></g>
+      <g id="labelLayer"></g>
+      <g id="nodeLayer"></g>
+    </svg>
+    <div class="footer-note">12 connections · 9 core concepts · 2 foundations</div>
+  </div>
+
+  <aside id="panel">
+    <!-- default content injected by JS -->
+  </aside>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const nodes = [
+  {id:'n2l',  name:"Newton's 2nd Law", eq:"F = ma",          x:500, y:130, core:true},
+  {id:'mom',  name:"Momentum",         eq:"p = mv",           x:235, y:215, core:true},
+  {id:'imp',  name:"Impulse",          eq:"J = Δp",           x:430, y:340, core:true},
+  {id:'col',  name:"Collisions",       eq:"Σp conserved",     x:210, y:430, core:true},
+  {id:'fbd',  name:"Free-Body Diagram",eq:"ΣF",               x:720, y:300, core:true},
+  {id:'fric', name:"Friction",         eq:"f = μN",           x:780, y:500, core:true},
+  {id:'grav', name:"Gravity",          eq:"F = Gm₁m₂/r²",     x:880, y:165, core:true},
+  {id:'elec', name:"Electric Force",   eq:"F = kq₁q₂/r²",     x:610, y:540, core:true},
+  {id:'en',   name:"Energy",           eq:"½mv²",             x:450, y:620, core:true},
+  // foundations (faded prerequisites)
+  {id:'vec',  name:"Vectors",          eq:"prerequisite",     x:80,  y:120, core:false},
+  {id:'si',   name:"SI Units",         eq:"prerequisite",     x:80,  y:330, core:false},
+];
+
+// dir: 'out' (a→b),  'bi' (a↔b)
+const edges = [
+  {a:'mom',  b:'col',  type:'leads to',       dir:'out', why:'Total momentum is conserved in a collision.'},
+  {a:'mom',  b:'imp',  type:'leads to',       dir:'out', why:'Impulse is the change in momentum.'},
+  {a:'n2l',  b:'imp',  type:'generalizes to', dir:'out', why:'J = F·Δt is Newton’s 2nd Law integrated over time.'},
+  {a:'n2l',  b:'fbd',  type:'applied in',     dir:'out', why:'Sum the forces on the diagram, then apply F = ma.'},
+  {a:'imp',  b:'col',  type:'explains',       dir:'out', why:'Contact forces change each object’s momentum.'},
+  {a:'grav', b:'elec', type:'same form',      dir:'bi',  why:'Both are 1/r² inverse-square laws; mass only attracts, charge attracts OR repels.'},
+  {a:'grav', b:'fbd',  type:'is an example of',dir:'out', why:'Gravity appears as a force arrow in the diagram.'},
+  {a:'elec', b:'fbd',  type:'is an example of',dir:'out', why:'The electric force appears as a force arrow in the diagram.'},
+  {a:'fric', b:'fbd',  type:'is an example of',dir:'out', why:'Friction appears as a contact-force arrow in the diagram.'},
+  {a:'fric', b:'en',   type:'removes',        dir:'out', why:'Kinetic energy is lost as heat.'},
+  {a:'col',  b:'en',   type:'contrast',       dir:'bi',  why:'KE is kept in elastic but lost in inelastic collisions; momentum is ALWAYS conserved.'},
+  {a:'imp',  b:'en',   type:'contrast',       dir:'bi',  why:'Momentum and energy are two DIFFERENT conserved quantities.'},
+  // faded foundation edges
+  {a:'vec',  b:'n2l',  type:'foundation',     dir:'out', why:'Forces are vectors — you add them by components.', foundation:true},
+  {a:'vec',  b:'mom',  type:'foundation',     dir:'out', why:'Momentum is a vector quantity.', foundation:true},
+  {a:'vec',  b:'fbd',  type:'foundation',     dir:'out', why:'A free-body diagram is built from vector arrows.', foundation:true},
+  {a:'si',   b:'n2l',  type:'foundation',     dir:'out', why:'Force in newtons = kg·m/s² comes from SI base units.', foundation:true},
+  {a:'si',   b:'en',   type:'foundation',     dir:'out', why:'Energy in joules is defined from SI units.', foundation:true},
+];
+
+const NR = 50;       // core node radius
+const FR = 36;       // foundation radius
+const byId = Object.fromEntries(nodes.map(n=>[n.id,n]));
+const radius = n => n.core ? NR : FR;
+
+/* ===================== BUILD SVG ===================== */
+const NS='http://www.w3.org/2000/svg';
+const edgeLayer=document.getElementById('edgeLayer');
+const labelLayer=document.getElementById('labelLayer');
+const nodeLayer=document.getElementById('nodeLayer');
+const panel=document.getElementById('panel');
+
+// shorten a segment so it stops at each node's rim
+function trimmed(a,b){
+  const A=byId[a], B=byId[b];
+  const dx=B.x-A.x, dy=B.y-A.y, d=Math.hypot(dx,dy)||1;
+  const ux=dx/d, uy=dy/d;
+  const ra=radius(A)+4, rb=radius(B)+9; // extra gap at head for arrow
+  return {x1:A.x+ux*ra, y1:A.y+uy*ra, x2:B.x-ux*rb, y2:B.y-uy*rb,
+          mx:(A.x+B.x)/2, my:(A.y+B.y)/2};
+}
+
+edges.forEach((e,i)=>{
+  const t=trimmed(e.a,e.b);
+  const line=document.createElementNS(NS,'line');
+  line.setAttribute('x1',t.x1);line.setAttribute('y1',t.y1);
+  line.setAttribute('x2',t.x2);line.setAttribute('y2',t.y2);
+  line.setAttribute('class','edge'+(e.dir==='bi'?' bi':'')+(e.foundation?' dim':''));
+  if(e.foundation){line.style.stroke='var(--foundation)';line.style.opacity='.28';line.style.strokeWidth='1.5';}
+  if(e.dir!=='bi' && !e.foundation) line.setAttribute('marker-end','url(#arrow)');
+  if(e.dir!=='bi' && e.foundation) line.setAttribute('marker-end','url(#arrow)');
+  line.dataset.idx=i;
+  line.addEventListener('click',ev=>{ev.stopPropagation();focusEdge(i);});
+  edgeLayer.appendChild(line);
+  e._line=line;
+
+  const lbl=document.createElementNS(NS,'text');
+  lbl.setAttribute('x',t.mx);lbl.setAttribute('y',t.my-4);
+  lbl.setAttribute('class','elabel');
+  lbl.textContent=e.type;
+  labelLayer.appendChild(lbl);
+  e._lbl=lbl;
+});
+
+nodes.forEach(n=>{
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('class','node'+(n.core?'':' foundation'));
+  g.setAttribute('transform',`translate(${n.x},${n.y})`);
+  const c=document.createElementNS(NS,'circle');
+  c.setAttribute('r',radius(n));
+  g.appendChild(c);
+  // multi-line name
+  const words=n.name.split(' ');
+  const lines=[];
+  if(n.name.length>13 && words.length>1){
+    let mid=Math.ceil(words.length/2);
+    lines.push(words.slice(0,mid).join(' '));
+    lines.push(words.slice(mid).join(' '));
+  } else lines.push(n.name);
+  const startY = -(lines.length-1)*7 - 4;
+  lines.forEach((ln,k)=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('class','nm');t.setAttribute('y',startY+k*14);
+    t.textContent=ln;g.appendChild(t);
+  });
+  const eqt=document.createElementNS(NS,'text');
+  eqt.setAttribute('class','eqn');eqt.setAttribute('y',startY+lines.length*14+6);
+  eqt.textContent=n.eq;g.appendChild(eqt);
+
+  g.addEventListener('click',ev=>{ev.stopPropagation();selectNode(n.id);});
+  g.addEventListener('mouseenter',()=>{if(!selected)preview(n.id);});
+  g.addEventListener('mouseleave',()=>{if(!selected)clearVisual();});
+  nodeLayer.appendChild(g);
+  n._g=g;
+});
+
+/* ===================== INTERACTION ===================== */
+let selected=null;
+
+function neighborsOf(id){
+  const ns=new Set(), es=[];
+  edges.forEach((e,i)=>{
+    if(e.foundation && (e.a!==id && e.b!==id)) return;
+    if(e.a===id){ns.add(e.b);es.push(i);}
+    else if(e.b===id){ns.add(e.a);es.push(i);}
+  });
+  return {ns,es};
+}
+
+function clearVisual(){
+  nodes.forEach(n=>n._g.classList.remove('selected','neighbor','dim'));
+  edges.forEach(e=>{
+    e._line.classList.remove('hot','hotbi','dim');
+    e._lbl.classList.remove('show');
+    if(e.foundation){e._line.classList.add('dim');}
+    e._line.setAttribute('marker-end', e.dir==='bi'?'':'url(#arrow)');
+  });
+}
+
+function applyHighlight(id){
+  const {ns,es}=neighborsOf(id);
+  nodes.forEach(n=>{
+    if(n.id===id) n._g.classList.add('selected');
+    else if(ns.has(n.id)) n._g.classList.add('neighbor');
+    else n._g.classList.add('dim');
+  });
+  const eset=new Set(es);
+  edges.forEach((e,i)=>{
+    if(eset.has(i)){
+      e._line.classList.remove('dim');
+      e._line.classList.add(e.dir==='bi'?'hotbi':'hot');
+      e._lbl.classList.add('show');
+      if(e.dir!=='bi') e._line.setAttribute('marker-end','url(#arrowHot)');
+    }else{
+      e._line.classList.add('dim');
+    }
+  });
+}
+
+function selectNode(id){
+  selected=id;
+  clearVisual();
+  applyHighlight(id);
+  renderPanel(id);
+}
+
+function preview(id){
+  clearVisual();
+  applyHighlight(id);
+}
+
+function focusEdge(i){
+  selected=null;
+  clearVisual();
+  const e=edges[i];
+  nodes.forEach(n=>{
+    if(n.id===e.a||n.id===e.b) n._g.classList.add('neighbor');
+    else n._g.classList.add('dim');
+  });
+  edges.forEach((ed,k)=>{
+    if(k===i){
+      ed._line.classList.remove('dim');
+      ed._line.classList.add(ed.dir==='bi'?'hotbi':'hot');
+      ed._lbl.classList.add('show');
+      if(ed.dir!=='bi') ed._line.setAttribute('marker-end','url(#arrowHot)');
+    }else ed._line.classList.add('dim');
+  });
+  renderEdgePanel(i);
+}
+
+/* ===================== PANEL ===================== */
+function connectionCards(id){
+  const {es}=neighborsOf(id);
+  return es.map(i=>{
+    const e=edges[i];
+    let arrowChar, cls, target;
+    if(e.dir==='bi'){ arrowChar='↔'; cls='a-bi'; target=(e.a===id?e.b:e.a); }
+    else if(e.a===id){ arrowChar='→'; cls='a-out'; target=e.b; }
+    else { arrowChar='←'; cls='a-in'; target=e.a; }
+    const col = e.dir==='bi' ? 'var(--mag)' : (e.a===id?'var(--neon)':'var(--green)');
+    return `<div class="conn-card" style="border-left-color:${col}">
+        <div class="top">
+          <span class="arrow ${cls}">${arrowChar}</span>
+          <span class="type" style="color:${col}">${e.type}</span>
+          <span class="target">${byId[target].name}</span>
+        </div>
+        <div class="why">${e.why}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderPanel(id){
+  const n=byId[id];
+  const {es}=neighborsOf(id);
+  panel.innerHTML=`
+    <h2>${n.name}</h2>
+    <div class="eq">${n.eq}${n.core?'':' <small>(foundation)</small>'}</div>
+    <div class="hint">${es.length} connection${es.length!==1?'s':''} — read each card below.</div>
+    ${connectionCards(id)}
+    ${legendHTML()}`;
+}
+
+function renderEdgePanel(i){
+  const e=edges[i];
+  const A=byId[e.a], B=byId[e.b];
+  const col = e.dir==='bi' ? 'var(--mag)' : 'var(--neon)';
+  const arrowChar = e.dir==='bi' ? '↔' : '→';
+  panel.innerHTML=`
+    <h2>Relationship</h2>
+    <div class="eq" style="font-size:16px">${A.name} <span style="color:${col}">${arrowChar}</span> ${B.name}</div>
+    <div class="conn-card" style="border-left-color:${col}">
+      <div class="top">
+        <span class="arrow" style="color:${col}">${arrowChar}</span>
+        <span class="type" style="color:${col}">${e.type}</span>
+      </div>
+      <div class="why">${e.why}</div>
+    </div>
+    <div class="hint">${A.name}: <b style="color:#9fd8ff">${A.eq}</b><br>${B.name}: <b style="color:#9fd8ff">${B.eq}</b></div>
+    ${legendHTML()}`;
+}
+
+function legendHTML(){
+  return `<div class="legend">
+    <h3>Legend</h3>
+    <div class="lg-row"><span class="dot dot-sel"></span> Selected concept</div>
+    <div class="lg-row"><span class="dot dot-core"></span> Connected neighbor</div>
+    <div class="lg-row"><span class="dot dot-found"></span> Foundation (prerequisite)</div>
+    <div class="lg-row"><span class="swatch sw-hot"></span> Directed link  →  (A leads to B)</div>
+    <div class="lg-row"><span class="swatch sw-bi"></span> Two-way link  ↔  (mutual / contrast)</div>
+    <div class="lg-row"><span class="arrow a-out" style="margin-left:4px">→</span>&nbsp;out&nbsp;
+        <span class="arrow a-in">←</span>&nbsp;in&nbsp;
+        <span class="arrow a-bi">↔</span>&nbsp;both</div>
+  </div>`;
+}
+
+function renderDefault(){
+  panel.innerHTML=`
+    <h2>Start Here</h2>
+    <div class="hint" style="margin-bottom:10px">
+      This web maps the big ideas of <b style="color:#9fd8ff">CPCS110, Chapters 1–5</b>
+      and how they feed into each other.
+    </div>
+    <div class="conn-card" style="border-left-color:var(--sel)">
+      <div class="why" style="opacity:1">
+        <b style="color:var(--sel)">Click a node</b> to spotlight its equation and every connection.<br><br>
+        <b style="color:var(--neon)">Hover a node</b> for a quick preview.<br><br>
+        <b style="color:var(--mag)">Click a line</b> to focus one relationship.<br><br>
+        <b>Click empty space</b> to come back here.
+      </div>
+    </div>
+    <div class="hint">The two faded nodes on the left — <b>Vectors</b> &amp; <b>SI Units</b> —
+      are the prerequisites everything else is built on.</div>
+    ${legendHTML()}`;
+}
+
+/* background click deselects */
+document.getElementById('web').addEventListener('click',()=>{
+  selected=null; clearVisual(); renderDefault();
+});
+
+/* ===================== INIT ===================== */
+clearVisual();
+renderDefault();
+</script>
+</body>
+</html>
