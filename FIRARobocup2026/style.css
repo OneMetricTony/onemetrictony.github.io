@@ -118,6 +118,18 @@ h1,h2,h3,h4 {
   display: flex; gap: .25rem; margin-left: auto;
   list-style: none; padding: 0;
 }
+
+/* Animated CNRS organizer mark (self-animating SVG + page-level float/glow) */
+.cnrs-mark {
+  width: auto; height: 120px; display: block; margin-bottom: 1.4rem;
+  animation: cnrsFloat 5s ease-in-out infinite, cnrsGlow 3.2s ease-in-out infinite;
+}
+@keyframes cnrsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes cnrsGlow {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(240,57,78,.30)); }
+  50%     { filter: drop-shadow(0 0 22px rgba(240,57,78,.65)); }
+}
+@media (prefers-reduced-motion: reduce) { .cnrs-mark { animation: none; } }
 .nav__link {
   position: relative;
   font-family: var(--font-head); font-weight: 600;
