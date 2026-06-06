@@ -98,42 +98,48 @@
   50%      { filter: drop-shadow(0 0 8px rgba(240, 57, 78, .75)); }
 }
 
-/* ---------- C. CTA BAND — breathing corner sponsor chips ------- */
-.cta-sponsors { pointer-events: none; }
+/* ---------- C. CTA BAND — ambient breathing sponsor field ------ */
+.cta-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+/* keep the CTA copy crisply above the logo field */
+.cta-band--fx > .eyebrow,
+.cta-band--fx > h2,
+.cta-band--fx > p,
+.cta-band--fx > .cta-actions { position: relative; z-index: 2; }
 
-.sponsor-chip {
+/* faint ghosted background logos — desaturated to soft light marks,
+   each with its own base transparency (--o) and a gentle breathing pulse */
+.cta-ghost {
   position: absolute;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  height: auto;
+  filter: grayscale(1) brightness(1.75) contrast(.85);
+  opacity: var(--o, .14);
+  will-change: transform, opacity;
+  animation: cta-breathe 7s ease-in-out infinite;
+}
+/* MSI + York at the front — full colour on a white chamfered chip */
+.cta-front {
+  position: absolute;
+  display: inline-flex; align-items: center;
   background: var(--c-accent-2);
-  padding: 4px 7px;
-  opacity: .42;
-  /* echo .brand-logo chamfered chip */
+  padding: 5px 9px;
+  opacity: var(--o, .9);
   clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px),
     calc(100% - 6px) 100%, 0 100%, 0 6px);
   will-change: transform, opacity;
+  animation: cta-breathe 5.6s ease-in-out infinite;
 }
-.sponsor-chip svg { height: 18px; width: auto; display: block; }
-.sponsor-chip img { height: 18px; width: auto; display: block; }
+.cta-front img { height: 22px; width: auto; display: block; }
 
-.sponsor-chip--tl { top: 12px;  left: 14px;  }
-.sponsor-chip--tr { top: 12px;  right: 14px; }
-.sponsor-chip--bl { bottom: 12px; left: 14px; }
-
-.sponsor-chip--tl { animation: chip-breathe 5.5s ease-in-out infinite; }
-.sponsor-chip--tr { animation: chip-breathe 5.5s ease-in-out infinite; animation-delay: 1.8s; }
-.sponsor-chip--bl { animation: chip-breathe 5.5s ease-in-out infinite; animation-delay: 3.6s; }
-
-@keyframes chip-breathe {
-  0%, 100% { transform: scale(.94); opacity: .34; }
-  50%      { transform: scale(1.04); opacity: .58; }
+/* breathe = subtle scale pulse + opacity drift around each logo's own --o */
+@keyframes cta-breathe {
+  0%, 100% { transform: scale(.95); opacity: calc(var(--o, .14) * .6); }
+  50%      { transform: scale(1.05); opacity: var(--o, .14); }
 }
 
-/* hide the corner chips on narrow screens so they never crowd the CTA copy */
+/* on narrow screens, drop the faint field but keep MSI + York */
 @media (max-width: 560px) {
-  .cta-sponsors { display: none; }
+  .cta-ghost { display: none; }
+  .cta-front img { height: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -143,11 +149,12 @@
   .cta-band--fx::after,
   .cta-band--fx > .hud-frame__tr,
   .cta-band--fx > .hud-frame__bl,
-  .sponsor-chip--tl,
-  .sponsor-chip--tr,
-  .sponsor-chip--bl {
+  .cta-ghost,
+  .cta-front {
     animation: none;
   }
+  .cta-ghost { opacity: var(--o, .14); }
+  .cta-front { opacity: var(--o, .9); }
   /* keep the scanlines from sitting frozen mid-frame */
   .cta-scan { opacity: 0; }
 }
