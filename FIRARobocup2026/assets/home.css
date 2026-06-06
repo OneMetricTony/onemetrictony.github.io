@@ -1,0 +1,153 @@
+/* =============================================================
+   home.css — index.html only.
+   Owns: IG-figure hover lift, CTA-band animated HUD edges,
+   breathing corner sponsor-logo chips.
+   Reuses tokens from style.css :root (do NOT edit style.css).
+   Every animation is disabled under prefers-reduced-motion.
+   ============================================================= */
+
+/* ---------- A. FROM THE COMMUNITY — clickable figures ---------- */
+/* Each figure now wraps its <img> in an <a> to its Instagram post.
+   Signal interactivity with a subtle lift + image zoom. */
+.ig-figure--link > a {
+  display: block;
+  height: 100%;
+  color: inherit;
+}
+.ig-figure--link > a img {
+  transition: transform .35s var(--ease, ease);
+}
+.ig-figure--link {
+  transition: transform .25s var(--ease, ease),
+              border-color .25s var(--ease, ease),
+              box-shadow .25s var(--ease, ease);
+}
+.ig-figure--link:hover,
+.ig-figure--link:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--c-accent);
+  box-shadow: var(--glow);
+}
+.ig-figure--link:hover > a img,
+.ig-figure--link:focus-within > a img {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-figure--link,
+  .ig-figure--link > a img {
+    transition: none;
+  }
+  .ig-figure--link:hover,
+  .ig-figure--link:focus-within {
+    transform: none;
+  }
+  .ig-figure--link:hover > a img,
+  .ig-figure--link:focus-within > a img {
+    transform: none;
+  }
+}
+
+/* ---------- B. CTA BAND — animated HUD edges ------------------- */
+.cta-band--fx {
+  position: relative;
+  overflow: hidden;          /* keep scanlines inside the chamfered frame */
+}
+
+/* thin scanline travelling down the left & right edges */
+.cta-scan {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 38%;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--c-accent) 45%,
+    var(--c-accent-2) 50%,
+    var(--c-accent) 55%,
+    transparent);
+  filter: drop-shadow(0 0 6px rgba(240, 57, 78, .65));
+  opacity: .85;
+}
+.cta-scan--l { left: 3px;  animation: cta-scan-run 4.2s linear infinite; }
+.cta-scan--r { right: 3px; animation: cta-scan-run 4.2s linear infinite; animation-delay: 2.1s; }
+
+@keyframes cta-scan-run {
+  0%   { transform: translateY(-110%); opacity: 0; }
+  12%  { opacity: .85; }
+  88%  { opacity: .85; }
+  100% { transform: translateY(360%); opacity: 0; }
+}
+
+/* soft glowing pulse on the chamfer corner brackets */
+.cta-band--fx::before,
+.cta-band--fx::after,
+.cta-band--fx > .hud-frame__tr,
+.cta-band--fx > .hud-frame__bl {
+  animation: cta-corner-pulse 3.4s ease-in-out infinite;
+}
+.cta-band--fx::after               { animation-delay: .85s; }
+.cta-band--fx > .hud-frame__tr     { animation-delay: 1.7s; }
+.cta-band--fx > .hud-frame__bl     { animation-delay: 2.55s; }
+
+@keyframes cta-corner-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(240, 57, 78, 0)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(240, 57, 78, .75)); }
+}
+
+/* ---------- C. CTA BAND — breathing corner sponsor chips ------- */
+.cta-sponsors { pointer-events: none; }
+
+.sponsor-chip {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-accent-2);
+  padding: 4px 7px;
+  opacity: .42;
+  /* echo .brand-logo chamfered chip */
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px),
+    calc(100% - 6px) 100%, 0 100%, 0 6px);
+  will-change: transform, opacity;
+}
+.sponsor-chip svg { height: 18px; width: auto; display: block; }
+.sponsor-chip img { height: 18px; width: auto; display: block; }
+
+.sponsor-chip--tl { top: 12px;  left: 14px;  }
+.sponsor-chip--tr { top: 12px;  right: 14px; }
+.sponsor-chip--bl { bottom: 12px; left: 14px; }
+
+.sponsor-chip--tl { animation: chip-breathe 5.5s ease-in-out infinite; }
+.sponsor-chip--tr { animation: chip-breathe 5.5s ease-in-out infinite; animation-delay: 1.8s; }
+.sponsor-chip--bl { animation: chip-breathe 5.5s ease-in-out infinite; animation-delay: 3.6s; }
+
+@keyframes chip-breathe {
+  0%, 100% { transform: scale(.94); opacity: .34; }
+  50%      { transform: scale(1.04); opacity: .58; }
+}
+
+/* hide the corner chips on narrow screens so they never crowd the CTA copy */
+@media (max-width: 560px) {
+  .cta-sponsors { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-scan--l,
+  .cta-scan--r,
+  .cta-band--fx::before,
+  .cta-band--fx::after,
+  .cta-band--fx > .hud-frame__tr,
+  .cta-band--fx > .hud-frame__bl,
+  .sponsor-chip--tl,
+  .sponsor-chip--tr,
+  .sponsor-chip--bl {
+    animation: none;
+  }
+  /* keep the scanlines from sitting frozen mid-frame */
+  .cta-scan { opacity: 0; }
+}

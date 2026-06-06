@@ -1,0 +1,42 @@
+/* ============================================================
+   awards.css — certificate preview thumbnails for kavosh.html
+   Owns: .award-card__thumb (and its <img>) inside .award-card
+   Reuses tokens from style.css; does NOT modify style.css.
+   ============================================================ */
+
+/* Chamfered preview frame at the top of each award card */
+.award-card__thumb {
+  display: block;
+  position: relative;
+  margin: -0.3rem 0 0.95rem;       /* pull up tight under card padding */
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--c-bg-3);
+  border: 1px solid var(--c-line);
+  clip-path: polygon(
+    var(--chamfer) 0, 100% 0,
+    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+    0 100%, 0 var(--chamfer));
+  transition: border-color .2s var(--ease);
+}
+
+.award-card__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform .35s var(--ease);
+}
+
+/* Gentle hover zoom — driven by hovering the whole card link */
+.award-card:hover .award-card__thumb { border-color: var(--c-accent); }
+.award-card:hover .award-card__thumb img { transform: scale(1.06); }
+
+/* Featured (Prime Minister) card: keep the corner badge clear of the image */
+.award-card--top .award-card__thumb { margin-top: 0.2rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .award-card__thumb img { transition: none; animation: none; }
+  .award-card:hover .award-card__thumb img { transform: none; }
+}

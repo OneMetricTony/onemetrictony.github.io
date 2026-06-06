@@ -6,6 +6,7 @@
 <title>FIRA RoboWorld Cup 2026 · The World Stage for Robotics</title>
 <link rel="icon" href="assets/emblem.svg">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/jarvis.css">
 <style>
   /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
   @media (max-width: 760px) {
@@ -50,11 +51,11 @@
 <body>
 
   <nav class="nav">
-    <a class="nav__brand" href="index.html"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</a>
+    <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
       <a class="nav__link" href="index.html">Home</a>
-      <a class="nav__link" href="robocup.html" aria-current="page">RoboCup 2026</a>
+      <a class="nav__link" href="robocup.html" aria-current="page">RoboWorld Cup</a>
       <a class="nav__link" href="kavosh.html">Kavosh</a>
       <a class="nav__link" href="sponsorship.html">Sponsorship</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
@@ -64,9 +65,91 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero">
+
+  <!-- JARVIS / Iron-Man HUD layer: decorative, behind the headline -->
+  <div class="hero__jarvis" aria-hidden="true">
+
+    <!-- faint left-side circuit traces -->
+    <svg class="hero__circuit" viewBox="0 0 600 400" fill="none" preserveAspectRatio="xMidYMid slice"
+         stroke="var(--c-accent)" stroke-width="1.4">
+      <defs><filter id="jglow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2.4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter></defs>
+      <!-- solid glowing traces (were grey dotted) -->
+      <g opacity=".85" filter="url(#jglow)" stroke-linecap="round">
+        <path d="M0 90 H120 L150 60 H240" />
+        <path d="M0 160 H80 L110 190 H210 L240 160 H330" />
+        <path d="M0 250 H140 L170 220 H260" />
+        <path d="M0 330 H100 L130 300 H200" />
+        <path stroke="var(--c-accent-2)" d="M0 120 H180 L210 150 H360" />
+        <path stroke="var(--c-accent-2)" d="M0 290 H160 L190 260 H300" />
+      </g>
+      <g fill="var(--c-accent)" stroke="none">
+        <circle cx="150" cy="60" r="3" class="j-pulse" />
+        <circle cx="110" cy="190" r="3" class="j-pulse-slow" />
+        <circle cx="170" cy="220" r="2.5" class="j-pulse" />
+        <circle cx="130" cy="300" r="2.5" class="j-pulse-slow" />
+      </g>
+    </svg>
+
+    <!-- concentric rotating reticle -->
+    <svg class="hero__reticle" viewBox="0 0 400 400" fill="none">
+      <defs><filter id="jglow2" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="2.6" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter></defs>
+      <!-- Ring 1 — outermost, slow, with tick marks -->
+      <g class="j-spin j-ring-1" filter="url(#jglow2)" stroke="var(--c-accent)" stroke-width="1.4">
+        <circle cx="200" cy="200" r="190" opacity=".45" />
+        <g stroke="var(--c-accent-2)" opacity=".6">
+          <line x1="200" y1="6"   x2="200" y2="26" />
+          <line x1="200" y1="374" x2="200" y2="394" />
+          <line x1="6"   y1="200" x2="26"  y2="200" />
+          <line x1="374" y1="200" x2="394" y2="200" />
+        </g>
+      </g>
+
+      <!-- Ring 2 — solid glowing, counter-rotating -->
+      <g class="j-spin-r j-ring-2" filter="url(#jglow2)" stroke="var(--c-accent)" stroke-width="2">
+        <circle cx="200" cy="200" r="158" opacity=".7" />
+      </g>
+
+      <!-- Ring 3 — bracketed arcs, rotating -->
+      <g class="j-spin j-ring-3" filter="url(#jglow2)" stroke="var(--c-accent-2)" stroke-width="2" opacity=".6">
+        <path d="M200 70 A130 130 0 0 1 330 200" />
+        <path d="M200 330 A130 130 0 0 1 70 200" />
+      </g>
+
+      <!-- Ring 4 — fast inner core, solid glowing -->
+      <g class="j-spin j-ring-4" filter="url(#jglow2)" stroke="var(--c-accent)" stroke-width="1.8">
+        <circle cx="200" cy="200" r="96" opacity=".85" />
+      </g>
+
+      <!-- core crosshair -->
+      <g stroke="var(--c-accent-2)" stroke-width="1.4" opacity=".45" filter="url(#jglow2)">
+        <line x1="200" y1="178" x2="200" y2="222" />
+        <line x1="178" y1="200" x2="222" y2="200" />
+        <circle class="j-pulse" cx="200" cy="200" r="6" fill="var(--c-accent)" stroke="none" />
+      </g>
+
+      <!-- orbiting nodes on an outer ring -->
+      <g class="j-spin j-orbit">
+        <circle cx="200" cy="40"  r="5" fill="var(--c-accent-2)" />
+        <circle cx="200" cy="360" r="4" fill="var(--c-accent)" />
+      </g>
+      <!-- orbiting nodes on an inner ring, opposite direction -->
+      <g class="j-spin-r j-orbit-2">
+        <circle cx="200" cy="122" r="4" fill="var(--c-accent)" />
+        <circle cx="200" cy="278" r="3" fill="var(--c-accent-2)" />
+      </g>
+    </svg>
+
+  </div>
+
   <div class="container hero__inner">
     <p class="eyebrow">FIRA RoboWorld Cup 2026 · Markham, Canada</p>
-    <h1>The World Stage for <span>Robotics</span> — FIRA RoboWorld Cup 2026</h1>
+    <h1 class="hero__title">The World Stage for Robotics<br><span class="hero__title-big">RoboWorld&nbsp;Cup</span><span class="hero__title-yr">2026</span></h1>
     <p>The world's brightest student and research robotics teams compete head-to-head. In 2026 the FIRA RoboWorld Cup — run by the Federation of International RoboSports Association — comes to Markham, Ontario for the first time ever in Canada, co-organized with the Canadian National Robotic Society.</p>
     <div class="hero__actions">
       <a class="angled-btn" href="sponsorship.html">Become a Sponsor</a>
@@ -166,10 +249,19 @@
   <div class="section-divider"></div>
   <div class="hud-frame">
     <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
-    <blockquote class="pull-quote">
-      &ldquo;Hosting the FIRA RoboWorld Cup 2026 in Canada is a milestone achievement that highlights our country's growing influence.&rdquo;
-      <cite>— Samia Karimi Dastjerdi, President, FIRA Canada</cite>
-    </blockquote>
+    <div class="j-testimonial">
+      <figure class="j-avatar">
+        <span class="j-avatar__ring" aria-hidden="true"></span>
+        <span class="j-avatar__bracket j-avatar__bracket--tr" aria-hidden="true"></span>
+        <span class="j-avatar__bracket j-avatar__bracket--bl" aria-hidden="true"></span>
+        <img class="j-avatar__img" src="assets/people/samia.svg"
+             alt="Samia Karimi Dastjerdi, President of FIRA Canada">
+      </figure>
+      <blockquote class="pull-quote">
+        &ldquo;Hosting the FIRA RoboWorld Cup 2026 in Canada is a milestone achievement that highlights our country's growing influence.&rdquo;
+        <cite>— Samia Karimi Dastjerdi, President, FIRA Canada</cite>
+      </blockquote>
+    </div>
   </div>
 
   <!-- ===== CTA BAND ===== -->
@@ -177,7 +269,7 @@
   <div class="hud-panel hud-panel--accent cta-band">
     <h2>Put Your Brand on the World Stage</h2>
     <p>Join us in bringing the FIRA RoboWorld Cup to Canada and championing the engineers of tomorrow.</p>
-    <a class="angled-btn angled-btn--white" href="sponsorship.html">Become a Sponsor</a>
+    <a class="angled-btn angled-btn--white" href="sponsorship.html">View Sponsorship Tiers</a>
   </div>
 
 </main>
@@ -186,14 +278,14 @@
 <footer class="footer">
   <div class="container footer__inner">
     <div>
-      <div class="footer__brand"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</div>
+      <div class="footer__brand">FIRA RoboWorld Cup</div>
       <p style="color:var(--c-text-mute);max-width:32ch;font-size:.88rem">The 31st FIRA RoboWorld Cup &amp; Summit — Markham, Canada. Organized by FIRA Canada / Canadian National Robotic Society.</p>
     </div>
     <div class="footer__cols">
       <div>
         <h4>Explore</h4>
         <a href="index.html">Home</a>
-        <a href="robocup.html">RoboCup 2026</a>
+        <a href="robocup.html">RoboWorld Cup</a>
         <a href="kavosh.html">Kavosh</a>
         <a href="sponsorship.html">Sponsorship</a>
         <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->

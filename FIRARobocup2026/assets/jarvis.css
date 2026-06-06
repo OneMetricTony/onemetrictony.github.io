@@ -1,0 +1,215 @@
+/* =============================================================
+   jarvis.css — Iron-Man / JARVIS-style HUD treatment for the
+   robocup.html hero. Spinning reticle rings, dashed orbits,
+   orbiting nodes + faint circuit traces. Red/white HUD palette.
+   All rules + @keyframes live HERE (style.css untouched).
+   ============================================================= */
+
+/* ---- Hero JARVIS layer (behind the text, decorative only) ---- */
+.hero__jarvis {
+  position: absolute;
+  inset: 0;
+  z-index: 0;            /* sits above .hero bg, below .hero__inner */
+  pointer-events: none;
+  overflow: hidden;
+  /* Streamline: isolate the HUD's repaints (the travelling-dash traces
+     repaint each frame) into its own layer so they never invalidate the
+     hero/page, and promote it to a GPU compositor layer. Pure rendering
+     hints — zero change to the visuals. */
+  contain: layout paint style;
+  transform: translateZ(0);
+}
+/* keep the headline + actions above the HUD */
+.hero .hero__inner { z-index: 2; }
+
+/* The big concentric reticle parks to the right of the copy on
+   wide screens; on narrow screens it drifts behind everything. */
+.hero__reticle {
+  position: absolute;
+  top: 50%;
+  right: -6%;
+  width: clamp(420px, 52vw, 760px);
+  height: clamp(420px, 52vw, 760px);
+  transform: translateY(-50%) translateZ(0);
+  will-change: transform;
+  opacity: .5;
+}
+/* faint left-side circuit traces */
+.hero__circuit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .28;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ---- Hero headline: make "RoboWorld Cup" the dominant wordmark */
+.hero h1.hero__title {
+  position: relative;
+  z-index: 2;
+  line-height: 1.02;
+  /* lead line stays modest + dimmed; big span overrides below */
+  font-size: clamp(1rem, 2.6vw, 1.5rem);
+  letter-spacing: .18em;
+  color: var(--c-text-dim);
+}
+/* THE big span — dominant, very large, white with a crimson edge */
+.hero h1 span.hero__title-big {
+  display: block;
+  margin-top: .12em;
+  font-size: clamp(3rem, 12vw, 8rem);
+  line-height: .92;
+  letter-spacing: .01em;
+  color: var(--c-accent-2);
+  text-shadow:
+    0 0 1px var(--c-accent),
+    0 0 22px rgba(240, 57, 78, .35);
+}
+/* the year — crimson, sits to the side as a HUD tag */
+.hero h1 span.hero__title-yr {
+  display: inline-block;
+  margin-top: .25em;
+  font-size: clamp(1.4rem, 4vw, 2.6rem);
+  letter-spacing: .3em;
+  color: var(--c-accent);
+}
+
+/* ---- Shared spin helpers ------------------------------------- */
+.j-spin   { transform-box: fill-box; transform-origin: center; will-change: transform; animation: j-rotate 60s linear infinite; }
+.j-spin-r { transform-box: fill-box; transform-origin: center; will-change: transform; animation: j-rotate 60s linear infinite reverse; }
+
+.j-ring-1 { animation-duration: 90s; }                 /* outermost, slow */
+.j-ring-2 { animation-duration: 48s; }                 /* mid, reverse via class */
+.j-ring-3 { animation-duration: 26s; }                 /* inner ticks */
+.j-ring-4 { animation-duration: 14s; }                 /* core fast */
+.j-orbit  { animation-duration: 32s; }                 /* node carrier */
+.j-orbit-2{ animation-duration: 20s; }                 /* inner node carrier */
+
+.j-pulse  { transform-box: fill-box; transform-origin: center; animation: j-pulse 4.5s ease-in-out infinite; }
+.j-pulse-slow { transform-box: fill-box; transform-origin: center; animation: j-pulse 7s ease-in-out infinite; }
+
+.j-dash   { animation: j-dash 5s linear infinite; }    /* travelling dashes on traces */
+
+/* ---- Keyframes ----------------------------------------------- */
+@keyframes j-rotate {
+  to { transform: rotate(360deg); }
+}
+@keyframes j-pulse {
+  0%, 100% { opacity: .35; }
+  50%      { opacity: .9; }
+}
+@keyframes j-dash {
+  to { stroke-dashoffset: -200; }
+}
+
+/* ---- Reduced-motion guard (REQUIRED) ------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .j-spin, .j-spin-r,
+  .j-ring-1, .j-ring-2, .j-ring-3, .j-ring-4,
+  .j-orbit, .j-orbit-2,
+  .j-pulse, .j-pulse-slow,
+  .j-dash {
+    animation: none;
+  }
+}
+
+/* On small screens dial the HUD back so it never fights the copy */
+@media (max-width: 760px) {
+  .hero__reticle { opacity: .3; right: -28%; }
+  .hero__circuit { opacity: .16; }
+}
+
+/* =============================================================
+   Testimonial card — framed circular HUD avatar + pull quote
+   (Samia Karimi Dastjerdi). Crimson ring + chamfered brackets.
+   ============================================================= */
+.j-testimonial {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  flex-wrap: wrap;
+}
+.j-testimonial .pull-quote {
+  flex: 1 1 320px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* avatar frame — circle image, crimson ring, soft glow */
+.j-avatar {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(108px, 16vw, 150px);
+  height: clamp(108px, 16vw, 150px);
+  margin: 0;
+}
+.j-avatar__img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid var(--c-line);
+  background: var(--c-bg-3);
+}
+/* crimson HUD ring + glow orbiting the portrait */
+.j-avatar__ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--c-accent);
+  box-shadow: var(--glow);
+  pointer-events: none;
+  z-index: 2;
+  animation: j-avatar-pulse 4.5s ease-in-out infinite;
+}
+.j-avatar__ring::before {
+  /* solid glowing inner orbit (was dashed) */
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 57, 78, .55);
+  box-shadow: 0 0 8px rgba(240, 57, 78, .45);
+}
+/* chamfered corner brackets framing the round avatar */
+.j-avatar__bracket {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  z-index: 3;
+  pointer-events: none;
+  border: 2px solid var(--c-accent-2);
+}
+.j-avatar__bracket--tr {
+  top: -10px;
+  right: -10px;
+  border-left: 0;
+  border-bottom: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.j-avatar__bracket--bl {
+  bottom: -10px;
+  left: -10px;
+  border-right: 0;
+  border-top: 0;
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+
+@keyframes j-avatar-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(240,57,78,.40), 0 0 14px rgba(240,57,78,.18); }
+  50%      { box-shadow: 0 0 0 1px rgba(240,57,78,.65), 0 0 26px rgba(240,57,78,.40); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .j-avatar__ring { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .j-testimonial { flex-direction: column; text-align: center; }
+  .j-testimonial .pull-quote { flex-basis: auto; }
+}

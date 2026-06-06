@@ -6,6 +6,7 @@
   <title>Become a Sponsor — FIRA RoboWorld Cup 2026, Markham</title>
   <link rel="icon" href="assets/emblem.svg">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/sponsors.css">
   <style>
     /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
     @media (max-width: 760px) {
@@ -55,11 +56,11 @@
 <body>
 
   <nav class="nav">
-    <a class="nav__brand" href="index.html"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</a>
+    <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
       <a class="nav__link" href="index.html">Home</a>
-      <a class="nav__link" href="robocup.html">RoboCup 2026</a>
+      <a class="nav__link" href="robocup.html">RoboWorld Cup</a>
       <a class="nav__link" href="kavosh.html">Kavosh</a>
       <a class="nav__link" href="sponsorship.html" aria-current="page">Sponsorship</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
@@ -246,6 +247,136 @@
     </div>
   </section>
 
+  <!-- OUR SPONSORS & PARTNERS -->
+  <section class="section" id="sponsors">
+    <div class="container">
+      <p class="eyebrow">Our Sponsors &amp; Partners</p>
+      <h2>Trusted by Leaders in Tech &amp; Education</h2>
+      <p>A constellation of partners powering robotics, AI and youth innovation on the world stage.</p>
+
+      <!--
+        TIERED SPONSOR CLUSTER — real FIRA 2025 sponsor logos extracted from the
+        official deck (assets/sponsors/*.png). Four labeled tiers, Diamond (largest)
+        → Silver (smallest). Each logo sits on a white chamfered .brand-logo chip so
+        it stays crisp on the dark red field; chips breathe via the staggered
+        sponsor-breathe loop in assets/sponsors.css. To add a sponsor, copy one
+        ".sponsor-chip" <div> into the matching tier row.
+
+        SKIPPED CROPS (caught stray "SPONSOR" header text and/or overlapping
+        partial logos — left out to keep the cluster clean):
+          • diamond_00.png — GEMTERRA wordmark, but with "DIAMOND SPONSOR" header
+            + partial Titan/Cando bleed.
+          • diamond_03.png — MSI logo, but with "PLATINUM/GOLD SPONSOR" header text.
+          • gold_09.png  — BEETA + KONJ DENJ overlap (clean singles used instead).
+          • gold_12.png / gold_13.png — header text + SFU/China-Telecom partials.
+          • silver_17.png / silver_18.png — multi-logo crest jumble + partials.
+          • silver_24.png — Arkana + Pattern Studio overlap (clean singles used).
+          • silver_29.png — AIBAO fragment.
+        SPONSORS NAMED IN THE DECK BUT WITHOUT A CLEAN ISOLATED CROP (so not shown
+        as logos here): GEMTERRA (Diamond) and MSI (Platinum) — both only exist on
+        crops that also caught the printed tier-header text; SFU / Simon Fraser
+        University (Silver) — only appears on crops with header text + overlapping
+        crests.
+        NOTE: "Navmo Code" in the brief is the DaVinci Code academy mark in the deck
+        (silver_22.png); the deck's gold "A2Z.GLOBAL" mark fills the AZE Global slot.
+      -->
+      <div class="sponsor-tiers" aria-label="Previous sponsors and partners">
+
+        <!-- ============ DIAMOND ============ -->
+        <div class="sponsor-tier sponsor-tier--diamond">
+          <h3 class="sponsor-tier__label">Diamond</h3>
+          <div class="sponsor-cluster" role="list" aria-label="Diamond sponsors">
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/diamond_02.png" alt="Titan Group (天一集团)" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/diamond_01.png" alt="Cando Kids" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PLATINUM ============ -->
+        <div class="sponsor-tier sponsor-tier--platinum">
+          <h3 class="sponsor-tier__label">Platinum</h3>
+          <div class="sponsor-cluster" role="list" aria-label="Platinum sponsors">
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/platinum_04.png" alt="KAVOSH AI &amp; Robotics Academy" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/platinum_05.png" alt="The Justin Poy Agency" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ GOLD ============ -->
+        <div class="sponsor-tier sponsor-tier--gold">
+          <h3 class="sponsor-tier__label">Gold</h3>
+          <div class="sponsor-cluster" role="list" aria-label="Gold sponsors">
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_07.png" alt="One Deal Outlet" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_08.png" alt="Bright Eyes Optometry" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_14.png" alt="BEETA" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_10.png" alt="Konj Denj" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_06.png" alt="Mingde College" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/gold_11.png" alt="A2Z Global (AZE Global)" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ SILVER ============ -->
+        <div class="sponsor-tier sponsor-tier--silver">
+          <h3 class="sponsor-tier__label">Silver</h3>
+          <div class="sponsor-cluster" role="list" aria-label="Silver sponsors">
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_15.png" alt="EventGo" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_16.png" alt="Destination Markham" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_19.png" alt="Hilton" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_21.png" alt="China Telecom &amp; TEXCEL" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_20.png" alt="Fun Up Academy" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_28.png" alt="Sparks Academy" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_27.png" alt="AIBAO (愛保保險)" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_26.png" alt="Hit" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_25.png" alt="Pattern Studio" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_22.png" alt="DaVinci Code" loading="lazy">
+            </div>
+            <div class="sponsor-chip" role="listitem">
+              <img class="brand-logo sponsor-logo" src="assets/sponsors/silver_23.png" alt="Arkana Education Sudbury" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- CONTACT -->
   <section class="section" id="contact">
     <div class="container">
@@ -279,12 +410,12 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__inner">
-        <div class="footer__brand"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</div>
+        <div class="footer__brand">FIRA RoboWorld Cup</div>
         <div class="footer__cols">
           <div>
             <h4>Explore</h4>
             <a href="index.html">Home</a>
-            <a href="robocup.html">RoboCup 2026</a>
+            <a href="robocup.html">RoboWorld Cup</a>
             <a href="kavosh.html">Kavosh</a>
             <a href="sponsorship.html">Sponsorship</a>
             <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->

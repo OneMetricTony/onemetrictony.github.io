@@ -6,6 +6,7 @@
   <title>FIRA RoboWorld Cup 2026 · Markham, Canada — Sponsorship</title>
   <link rel="icon" href="assets/emblem.svg">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/home.css">
   <style>
     /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
     @media (max-width: 760px) {
@@ -27,11 +28,11 @@
 <body>
 
   <nav class="nav">
-    <a class="nav__brand" href="index.html"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</a>
+    <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
       <a class="nav__link" href="index.html" aria-current="page">Home</a>
-      <a class="nav__link" href="robocup.html">RoboCup 2026</a>
+      <a class="nav__link" href="robocup.html">RoboWorld Cup</a>
       <a class="nav__link" href="kavosh.html">Kavosh</a>
       <a class="nav__link" href="sponsorship.html">Sponsorship</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
@@ -48,7 +49,7 @@
       <p>The FIRA RoboWorld Cup lands in Markham, Ontario for the first time ever — a global stage where the world's elite student and research robotics teams compete. Partner with us and put your brand at the heart of the future of robotics and AI.</p>
       <div class="hero__actions">
         <a class="angled-btn" href="sponsorship.html">Become a Sponsor</a>
-        <a class="angled-btn angled-btn--ghost" href="robocup.html">Explore RoboCup 2026</a>
+        <a class="angled-btn angled-btn--ghost" href="robocup.html">Explore RoboWorld Cup</a>
       </div>
     </div>
   </header>
@@ -75,7 +76,7 @@
         <a class="hud-panel" href="robocup.html" style="color:inherit">
           <h3>What is the FIRA RoboWorld Cup</h3>
           <p>The international championship of fully autonomous robots — humanoid decathlons, robot soccer, flying drones and more — now in its 31st edition.</p>
-          <span class="panel-link">Discover RoboCup 2026 →</span>
+          <span class="panel-link">Discover RoboWorld Cup →</span>
         </a>
         <a class="hud-panel hud-panel--accent" href="kavosh.html" style="color:inherit">
           <h3>Meet Kavosh</h3>
@@ -96,16 +97,22 @@
     <div class="container">
       <div class="section-divider"><span>From the Community</span></div>
       <div class="media-grid">
-        <figure class="ig-figure ig-figure--tall">
-          <img src="assets/ig/countdown-40.jpg" alt="Countdown graphic announcing 40 days to go until the 31st FIRA RoboWorld Cup 2026" loading="lazy">
+        <figure class="ig-figure ig-figure--square ig-figure--link">
+          <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
+            <img src="assets/ig/countdown-40.jpg" alt="Countdown graphic announcing 40 days to go until the 31st FIRA RoboWorld Cup 2026" loading="lazy">
+          </a>
           <figcaption>40 Days to Go</figcaption>
         </figure>
-        <figure class="ig-figure ig-figure--square">
-          <img src="assets/ig/mascot.jpg" alt="The official FIRA RoboWorld Cup 2026 mascot for Markham, Canada" loading="lazy">
+        <figure class="ig-figure ig-figure--square ig-figure--link">
+          <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
+            <img src="assets/ig/mascot.jpg" alt="The official FIRA RoboWorld Cup 2026 mascot for Markham, Canada" loading="lazy">
+          </a>
           <figcaption>FIRA 2026 Mascot</figcaption>
         </figure>
-        <figure class="ig-figure ig-figure--square">
-          <img src="assets/ig/welcome-festival.jpg" alt="FIRA 2026 welcome graphic featuring 20-plus countries, top robotics teams, and an international food festival in Markham" loading="lazy">
+        <figure class="ig-figure ig-figure--square ig-figure--link">
+          <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
+            <img src="assets/ig/welcome-festival.jpg" alt="FIRA 2026 welcome graphic featuring 20-plus countries, top robotics teams, and an international food festival in Markham" loading="lazy">
+          </a>
           <figcaption>Robotics Meets Culture</figcaption>
         </figure>
       </div>
@@ -115,13 +122,28 @@
   <!-- ============ SPONSOR CTA BAND ============ -->
   <section class="section">
     <div class="container">
-      <div class="hud-frame cta-band">
+      <div class="hud-frame cta-band cta-band--fx">
         <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
+        <!-- animated HUD scanlines travelling down the left & right edges -->
+        <span class="cta-scan cta-scan--l" aria-hidden="true"></span>
+        <span class="cta-scan cta-scan--r" aria-hidden="true"></span>
+        <!-- ambient breathing real sponsor logo chips in the corners -->
+        <div class="cta-sponsors" aria-hidden="true">
+          <span class="sponsor-chip sponsor-chip--tl">
+            <img src="assets/sponsors/diamond_02.png" alt="">
+          </span>
+          <span class="sponsor-chip sponsor-chip--tr">
+            <img src="assets/sponsors/platinum_04.png" alt="">
+          </span>
+          <span class="sponsor-chip sponsor-chip--bl">
+            <img src="assets/sponsors/platinum_05.png" alt="">
+          </span>
+        </div>
         <p class="eyebrow">Partner with us</p>
         <h2>Put Your Brand on the World Stage</h2>
         <p>Sponsoring the FIRA RoboWorld Cup 2026 means high-visibility international exposure and a direct investment in the next generation of engineers. Let's build something championship-worthy together.</p>
         <div class="cta-actions">
-          <a class="angled-btn angled-btn--white" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Sponsorship&body=Tier%20of%20interest%3A%20">Become a Sponsor</a>
+          <a class="angled-btn angled-btn--white" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Sponsorship&body=Tier%20of%20interest%3A%20">Email Us to Sponsor</a>
           <a class="angled-btn angled-btn--ghost" href="sponsorship.html">See Sponsorship Tiers</a>
         </div>
       </div>
@@ -132,12 +154,12 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__inner">
-        <div class="footer__brand"><img class="brand-logo" src="assets/kavosh-logo.png" alt="Kavosh AI & Robotics Academy"> FIRA · 2026</div>
+        <div class="footer__brand">FIRA RoboWorld Cup</div>
         <div class="footer__cols">
           <div>
             <h4>Navigate</h4>
             <a href="index.html">Home</a>
-            <a href="robocup.html">RoboCup 2026</a>
+            <a href="robocup.html">RoboWorld Cup</a>
             <a href="kavosh.html">Kavosh</a>
             <a href="sponsorship.html">Sponsorship</a>
             <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
