@@ -132,8 +132,8 @@
 
 /* breathe = subtle scale pulse + opacity drift around each logo's own --o */
 @keyframes cta-breathe {
-  0%, 100% { transform: scale(.95); opacity: calc(var(--o, .14) * .6); }
-  50%      { transform: scale(1.05); opacity: var(--o, .14); }
+  0%, 100% { transform: scale(.96); opacity: calc(var(--o, .14) * .8); }
+  50%      { transform: scale(1.04); opacity: var(--o, .14); }
 }
 
 /* on narrow screens, drop the faint field but keep MSI + York */
