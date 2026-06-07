@@ -1,0 +1,36 @@
+title: OneMetricTony Projects
+description: Curriculum, sponsorship sites, and project artifacts.
+
+# Use Cayman theme only on the /business/ subtree via include/exclude trick.
+# Without a theme set repo-wide, .md files get bare HTML rendering.
+# Setting theme here is opt-in via front matter (each curriculum .md will set layout).
+remote_theme: pages-themes/cayman@v0.2.0
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: true
+
+include:
+  - README.md
+
+# Don't process the existing FIRA HTML site files
+exclude:
+  - FIRARobocup2026/
+  - physics/
+  - tony.css
+  - tony.js
+  - flashcards.css
+  - flashcards.js
+  - practice-skin.css
+  - index.html
+
+# Markdown defaults
+defaults:
+  - scope:
+      path: "business"
+    values:
+      layout: default
