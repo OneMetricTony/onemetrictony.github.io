@@ -17,16 +17,10 @@ relative_links:
 include:
   - README.md
 
-# Don't process the existing FIRA HTML site files
-exclude:
-  - FIRARobocup2026/
-  - physics/
-  - tony.css
-  - tony.js
-  - flashcards.css
-  - flashcards.js
-  - practice-skin.css
-  - index.html
+# NOTE: do NOT add the static HTML site (index.html, physics/, FIRARobocup2026/,
+# tony.*, flashcards.*) to `exclude` — Jekyll's `exclude` drops files from the
+# built output entirely (404). These files contain no Liquid, so Jekyll copies
+# them through as-is. Excluding them takes the whole site offline.
 
 # Markdown defaults
 defaults:
