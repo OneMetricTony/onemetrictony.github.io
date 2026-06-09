@@ -30,7 +30,7 @@
   --yellow:#ffe14d;
   --red:#ff5470;
   --ink:#d7e6ff;
-  --dim:#7d86b8;
+  --dim:#a9b5d9;
   --slot:#101030;
   --navh:74px;
   --toph:54px;
@@ -55,7 +55,7 @@ body{
 body::before{
   content:""; position:fixed; inset:0; pointer-events:none; z-index:9000;
   background:repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 1px, transparent 1px 3px);
-  mix-blend-mode:overlay; opacity:.45;
+  mix-blend-mode:overlay; opacity:.15;
 }
 .pixel{ font-family:'Press Start 2P', monospace; }
 
@@ -307,7 +307,7 @@ body.cw2-active #cw2-root{ display:block; }
 #cw2-root{
   --bg0:#06060f; --panel:#10102a; --panel-edge:#23234d;
   --neon:#00f0ff; --neon-dim:#0a5560; --sel:#ffe14d; --sel-glow:#ffcc00;
-  --mag:#ff3df0; --green:#39ff7a; --txt:#dfe6ff; --muted:#7d83b5;
+  --mag:#ff3df0; --green:#39ff7a; --txt:#dfe6ff; --muted:#a9b0d9;
   --edge:#3a3a6e; --edge-hot:#00f0ff; --foundation:#5a4d8a;
   --gold:#ffcf3f; --gold-glow:#ffb800; --gold-edge:#ffae00;
 }
@@ -416,7 +416,7 @@ body.cw2-active #cw2-root{ display:block; }
 
 /* ============ SOLVER (scoped under .slv) ============ */
 .slv{ --neon:#00f0ff; --neon2:#ff37e6; --good:#37ff8b; --bad:#ff4d6d;
-  --chip:#1d1d44; --chip-br:#33336e; --muted:#7b80b8;
+  --chip:#1d1d44; --chip-br:#33336e; --muted:#a8afd9;
   --glow-cyan:0 0 6px #00f0ff, 0 0 16px #00f0ff80, 0 0 32px #00f0ff40;
   --glow-good:0 0 8px #37ff8b, 0 0 22px #37ff8b80;
   -webkit-user-select:none; user-select:none; margin:0 0 8px; }
@@ -727,9 +727,125 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
 #vz-root .vz-finale .vz-rvec{ font-size:19px; color:#fff; margin-bottom:6px; font-family:'Cambria Math',serif; }
 #vz-root .vz-finale .vz-mag{ font-size:14px; color:var(--vneon); }
 #vz-root .vz-finale .vz-mag b{ color:var(--vgold); }
+
+/* ============================================================
+   ITERATION ENHANCEMENTS (a11y · motion · juice · responsive)
+   Appended so equal-specificity rules win over earlier defaults.
+   ============================================================ */
+:root{ --ease-responsive:cubic-bezier(.25,.46,.45,.94); }
+
+/* --- screen-reader-only utility + skip link --- */
+.sr-only{ position:absolute!important; width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+.skiplink{ position:absolute; top:-48px; left:8px; z-index:9001;
+  background:#000; color:#fff; padding:8px 12px; border:2px solid var(--cyan);
+  border-radius:8px; transition:top .15s ease; }
+.skiplink:focus{ top:8px; }
+
+/* --- visible focus rings everywhere (keyboard users) --- */
+.btn:focus-visible,.opt:focus-visible,.nav-btn:focus-visible,.slv-btn:focus-visible,
+.mz-tile:focus-visible,.mz-aitem:focus-visible,.mz-back:focus-visible,.mode-btn:focus-visible,
+.slv-mcq-opt:focus-visible,.slv-qnav .qdot:focus-visible,.appnav-link:focus-visible,
+.slv .chip:focus-visible,.slv .eq-card:focus-visible,.slv-answer-area:focus-visible,
+#cw2-web .node:focus-visible,#cw2-web .edge:focus-visible,a:focus-visible,
+[tabindex]:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; border-radius:6px; }
+.cw2-close:focus-visible,.drawer .close:focus-visible{ outline:2px solid var(--magenta); outline-offset:2px; }
+/* keyboard "picked up" term card */
+.slv .chip.kb-selected,.slv .eq-card.kb-selected{ outline:2px dashed var(--yellow); outline-offset:3px;
+  box-shadow:0 0 14px var(--yellow); }
+
+/* --- dual-channel (scale + glow) press feedback, ~150ms --- */
+.btn,.opt,.nav-btn,.slv-btn,.mode-btn,.mz-tile,.mz-aitem{
+  transition:transform .15s var(--ease-responsive), box-shadow .15s var(--ease-responsive); }
+.btn:active,.opt:active,.nav-btn:active,.slv-btn:active,.mode-btn:active,.mz-tile:active,.mz-aitem:active{
+  transform:scale(.96); box-shadow:0 0 12px currentColor; }
+
+/* --- juice keyframes --- */
+@keyframes chipPopIn{ 0%{opacity:0; transform:scale(.7);} 100%{opacity:1; transform:scale(1);} }
+@keyframes chipBounce{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+@keyframes xpPulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
+@keyframes slvshakeLight{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-2px);} 75%{transform:translateX(2px);} }
+@keyframes confettiFall{ 0%{opacity:1; transform:translate(0,0) rotate(0);} 100%{opacity:0; transform:translate(var(--cx,0),120px) rotate(540deg);} }
+.slv .chip{ animation:chipPopIn .3s cubic-bezier(.34,1.56,.64,1) both; }
+.slv .term-slot.bounce{ animation:chipBounce .3s cubic-bezier(.68,-.55,.265,1.55); }
+.slv-mcq-opt.wrong.shakeLight,.slv-answer-area.shakeLight{ animation:slvshakeLight .22s ease; }
+.xp-pulse{ animation:xpPulse .5s ease; }
+/* confetti layer (particles injected by JS) */
+#confettiLayer{ position:fixed; inset:0; pointer-events:none; z-index:8500; overflow:hidden; }
+#confettiLayer i{ position:absolute; width:8px; height:8px; border-radius:2px;
+  animation:confettiFall .9s ease-out forwards; }
+
+/* --- bigger tap targets (min 44px; only grows) --- */
+.cw2-close,.drawer .close,.appnav-handle{ min-width:44px; min-height:44px; }
+.tips-fab{ min-width:48px; min-height:48px; }
+
+/* --- safe-area insets for fixed chrome --- */
+.navbar{ padding-bottom:max(10px, var(--sab)); }
+.slv-inventory{ padding-right:calc(2px + var(--sar)); }
+
+/* --- widescreen: stop components from stretching --- */
+@media (min-width:720px){
+  #vz-root{ max-width:600px; margin-left:auto; margin-right:auto; }
+  .mz-dir{ max-width:560px; margin-left:auto; margin-right:auto; }
+  .mz-tiles{ max-width:560px; margin-left:auto; margin-right:auto; }
+}
+
+/* --- comprehensive reduced-motion: neutralize ALL non-teach motion --- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ scroll-behavior:auto!important; }
+  .drawer,.appnav{ transition:opacity .2s ease!important; }
+  .slv .chip,.slv .term-slot.bounce,.slv-mcq-opt.wrong,.slv-answer-area.shakeLight,
+  .slv .eq-card.glow,.slv .docked-eq,.slv .work-line,.slv .term-slot.next,
+  .slv .final-answer.show,.xp-pulse,.mz-screen.on,#cw2-web .node,
+  .cw2-overlay.cw2-open .cw2-modal,#vz-root .vz-finale.vz-show{
+    animation:none!important; opacity:1!important; transform:none!important; filter:none!important; }
+  #confettiLayer{ display:none!important; }
+  body::before{ opacity:0!important; }
+}
 </style>
 </head>
 <body>
+
+<!-- skip link (first focusable element) -->
+<a href="#stage" class="skiplink">Skip to main content</a>
+<!-- polite live region: announces XP / streak / correctness to screen readers -->
+<div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<!-- confetti particle layer (populated by fxConfetti) -->
+<div id="confettiLayer" aria-hidden="true"></div>
+
+<script>
+/* ---- shared feedback FX: motion-gated, accessibility-aware ---- */
+(function(){
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  window.fxReducedMotion = function(){ return !!(RM && RM.matches); };
+  window.fxAnnounce = function(msg){
+    var r=document.getElementById('live-region'); if(!r||!msg) return;
+    r.textContent=''; setTimeout(function(){ r.textContent=msg; }, 30);
+  };
+  window.fxPulse = function(el){
+    if(!el || window.fxReducedMotion()) return;
+    el.classList.remove('xp-pulse'); void el.offsetWidth; el.classList.add('xp-pulse');
+    setTimeout(function(){ el.classList.remove('xp-pulse'); }, 540);
+  };
+  window.fxConfetti = function(originEl){
+    if(window.fxReducedMotion()) return;
+    var layer=document.getElementById('confettiLayer'); if(!layer) return;
+    var rect = originEl && originEl.getBoundingClientRect ? originEl.getBoundingClientRect() : null;
+    var cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+    var cy = rect ? rect.top : window.innerHeight/3;
+    var colors=['#21e6ff','#ff3df0','#ffe14d','#39ff88'];
+    for(var i=0;i<14;i++){
+      var p=document.createElement('i');
+      p.style.left=cx+'px'; p.style.top=cy+'px';
+      p.style.background=colors[i%colors.length];
+      p.style.setProperty('--cx', ((Math.random()*160)-80)+'px');
+      p.style.animationDelay=(Math.random()*80)+'ms';
+      layer.appendChild(p);
+      (function(node){ setTimeout(function(){ if(node.parentNode) node.parentNode.removeChild(node); }, 1100); })(p);
+    }
+  };
+})();
+</script>
 
 <!-- ===================== TOP NAV (drag-down on mobile) ===================== -->
 <div class="appnav" id="appnav">
@@ -828,6 +944,7 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
       <span class="mz-rank" id="mz-pracRank">Bronze</span>
       <span class="mz-score">XP <b id="mz-pracXp">0</b> · streak <span id="mz-pracStreak">0</span></span>
       <div class="mz-rankprog"><i id="mz-pracProg"></i></div>
+      <div class="mz-weak" id="mz-pracNextTier" style="color:var(--dim);font-size:.78rem"></div>
       <div class="mz-weak" id="mz-pracWeak"></div>
     </div>
     <div class="mz-feedback" id="mz-pracFeedback"></div>
@@ -925,16 +1042,16 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
 <!-- ===================== SHARED SOLVER BLOCK (scoped under .slv) ===================== -->
 <div class="slv" id="solverBlock" hidden>
   <div class="slv-qnav" id="slv-qnav"></div>
-  <div class="mode-toggle" id="slv-modeToggle">
-    <button class="mode-btn on" data-mode="build">BUILD THE EQUATION</button>
-    <button class="mode-btn" data-mode="mcq">MULTIPLE CHOICE</button>
+  <div class="mode-toggle" id="slv-modeToggle" role="group" aria-label="Answer mode">
+    <button class="mode-btn on" data-mode="build" aria-pressed="true" aria-label="Build the equation mode">BUILD THE EQUATION</button>
+    <button class="mode-btn" data-mode="mcq" aria-pressed="false" aria-label="Multiple choice mode">MULTIPLE CHOICE</button>
   </div>
   <div class="slv-prompt" id="slv-prompt"></div>
   <div id="slv-buildMode">
     <div class="slv-section-label">Equation Inventory</div>
     <div class="slv-inventory" id="slv-inventory"></div>
     <div class="slv-section-label">Answer Area</div>
-    <div class="slv-answer-area empty-hint" id="slv-answerArea">Drag the glowing equation here ↓</div>
+    <div class="slv-answer-area empty-hint" id="slv-answerArea">Drag the glowing equation here ↓ &nbsp;·&nbsp; or tap <b>MULTIPLE CHOICE</b> above</div>
     <div class="slv-section-label" id="slv-bankLabel" style="opacity:0;">Formula Term Bank</div>
     <div class="slv-term-bank" id="slv-termBank"></div>
   </div>
@@ -3423,9 +3540,9 @@ if(window.VectorAnims){
       {
         id: "a4q8-stop-distance", concept: "Friction+Kinematics", fromAssignment: "Assignment 4 — combo",
         prompt: '<b>Assignment 4 — Combo.</b> A <b>2.0 kg</b> puck is launched across a level floor at ' +
-                '<b>6.0 m/s</b>; \\(\\mu_k=0.25\\), \\(g=9.8\\). Friction decelerates it at ' +
-                '\\(a=\\mu_k g\\), and it stops after \\(d=\\dfrac{v_0^2}{2\\mu_k g}\\). ' +
-                '<span class="ask">Find the stopping distance \\(d\\).</span>',
+                '<b>6.0 m/s</b>; \\(\\mu_k=0.25\\), \\(g=9.8\\). Kinetic friction brings it to rest. ' +
+                '<span class="ask">Find the stopping distance \\(d\\). ' +
+                '(Hint: \\(f_k=\\mu_k mg\\), then \\(F=ma\\), then \\(v_f^2=v_i^2+2a\\,d\\) with \\(v_f=0\\).)</span>',
         inventory: [
           { id: "stop", tex: "d=\\dfrac{v_0^2}{2\\mu_k g}", label: "stop distance", relevant: true  },
           { id: "fric", tex: "f_k=\\mu_k mg",               label: "kinetic",       relevant: false },
@@ -4076,7 +4193,7 @@ if(window.VectorAnims){
         result: {
           expression:   "\\vec F_{net}=\\vec F_1+\\vec F_2",
           substitution: "\\vec F_{net}=\\langle 17,-10,39\\rangle+\\langle 23,-5,-28\\rangle",
-          answer:       "\\vec F_{net}=\\langle 40.0,\\ -15.0,\\ 11.0\\rangle\\ \\text{N}"
+          answer:       "\\vec F_{net}=\\langle 40,\\ -15,\\ 11\\rangle\\ \\text{N}"
         },
         mcq: {
           options: ["\\langle 40, -15, 11\\rangle\\ \\text{N}", "\\langle -6, -5, 67\\rangle\\ \\text{N}",
@@ -4122,7 +4239,7 @@ if(window.VectorAnims){
         result: {
           expression:   "\\vec p_f=\\vec p_i+\\vec F\\Delta t",
           substitution: "\\vec p_f=\\langle 37,0,0\\rangle+\\langle -11,8,0\\rangle(1.0)",
-          answer:       "\\vec p_f=\\langle 26.0,\\ 8.00,\\ 0\\rangle\\ \\text{kg·m/s}"
+          answer:       "\\vec p_f=\\langle 26,\\ 8,\\ 0\\rangle\\ \\text{kg·m/s}"
         },
         mcq: {
           options: ["\\langle 26, 8, 0\\rangle\\ \\text{kg·m/s}", "\\langle 48, -8, 0\\rangle\\ \\text{kg·m/s}",
@@ -4565,9 +4682,10 @@ if(window.VectorAnims){
       /* A4 combo — sliding stop distance */
       {
         id: "a4q8-stop-distance", concept: "Friction+Kinematics", fromAssignment: "From Assignment 4, combo",
-        prompt: '<b>From Assignment 4, combo.</b> A <b>2.0 kg</b> puck launched at <b>6.0 m/s</b>, \\(\\mu_k=0.25\\), ' +
-                'stops after \\(d=\\dfrac{v_0^2}{2\\mu_k g}\\). ' +
-                '<span class="ask">Find the stopping distance \\(d\\).</span>',
+        prompt: '<b>From Assignment 4, combo.</b> A <b>2.0 kg</b> puck launched at <b>6.0 m/s</b>, \\(\\mu_k=0.25\\), \\(g=9.8\\); ' +
+                'kinetic friction brings it to rest. ' +
+                '<span class="ask">Find the stopping distance \\(d\\). ' +
+                '(Hint: \\(f_k=\\mu_k mg\\), then \\(F=ma\\), then \\(v_f^2=v_i^2+2a\\,d\\) with \\(v_f=0\\).)</span>',
         inventory: inv("fric", "fric", "cons", "fma", "pmv", "ke").map(c => {
           if (c.id === "fric") return { id: "stop", tex: "d=\\dfrac{v_0^2}{2\\mu_k g}", label: "stop distance", relevant: true };
           return c;
@@ -6375,7 +6493,7 @@ const Solver = (function(){
 
   let list=[], Q=null, qIndex=0, ownerStep=0;
   let mode="build", stageS="equation", termIndex=0, workLine=null, subLine=null;
-  let drag=null, cueTimer=null, vbeatDone=false;
+  let drag=null, cueTimer=null, vbeatDone=false, solveReported=false;
   /* host hooks: when set, the solver reports solve events here instead of (or
      in addition to) markSolved(step). Used by Assignments/Practice/Exam modes. */
   let onSolveCb=null, showPager=true, hideMode=false;
@@ -6429,6 +6547,9 @@ const Solver = (function(){
 
   /* central solve dispatch */
   function reportSolved(){
+    if(solveReported) return;          /* idempotent: guard double-fire (rapid taps / late drop) */
+    solveReported=true;
+    if(window.fxConfetti) fxConfetti(els.answerArea||els.prompt);   /* universal earned-win celebration */
     if(ownerStep>=0 && window.markSolved) window.markSolved(ownerStep);
     if(onSolveCb){ try{ onSolveCb(Q, qIndex); }catch(_){ } }
   }
@@ -6464,7 +6585,7 @@ const Solver = (function(){
   function loadQuestion(i){
     qIndex=Math.max(0,Math.min(list.length-1,i|0));
     Q=list[qIndex];
-    stageS="equation"; termIndex=0; workLine=subLine=null; vbeatDone=false;
+    stageS="equation"; termIndex=0; workLine=subLine=null; vbeatDone=false; solveReported=false;
     refreshQNav();
     els.prompt.innerHTML=Q.prompt; mjTypeset(els.prompt);
     /* MCQ-only questions (no drag-build inventory, e.g. SI-units pack) force MCQ mode */
@@ -6606,12 +6727,14 @@ const Solver = (function(){
   function acceptTerm(chip,term){
     chip.classList.add("used");
     const slot=workLine.querySelector(`[data-slot="${termIndex}"]`); mj(slot,term.symbol); slot.classList.add("filled"); slot.classList.remove("next");
+    slot.classList.add("bounce"); setTimeout(()=>slot.classList.remove("bounce"),320);  /* micro-bounce confirms placement */
     const sslot=subLine.querySelector(`[data-sub="${termIndex}"]`); mj(sslot,term.sub,"mjx-mag"); sslot.classList.add("filled");
     termIndex++;
     const nextSlot=workLine.querySelector(`[data-slot="${termIndex}"]`); if(nextSlot) nextSlot.classList.add("next");
     if(termIndex>=Q.terms.length) finish(); else showCue("✓ placed",true);
   }
   function finish(){
+    if(stageS==="done") return;        /* guard: a late term-drop cannot re-run finish */
     stageS="done";
     const subFinal=document.createElement("div"); subFinal.className="work-line sub-line";
     const sl=document.createElement("span"); mj(sl,Q.result.substitution,"mjx-mag"); subFinal.appendChild(sl);
@@ -6656,7 +6779,7 @@ const Solver = (function(){
   /* ---- mode toggle ---- */
   function setMode(m){
     mode=(m==="mcq")?"mcq":"build";
-    els.modeToggle.querySelectorAll(".mode-btn").forEach(b=>b.classList.toggle("on",b.dataset.mode===mode));
+    els.modeToggle.querySelectorAll(".mode-btn").forEach(b=>{ const on=b.dataset.mode===mode; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on?"true":"false"); });
     const isMcq=mode==="mcq";
     els.buildMode.style.display=isMcq?"none":"";
     els.mcqWrap.classList.toggle("show",isMcq);
@@ -6876,6 +6999,8 @@ const ModeApp = (function(){
     document.getElementById('mz-runnerXp').textContent=s.xp;
   }
   function runnerNext(){
+    if(runnerNext._lock) return;       /* guard: double-tap during question load */
+    runnerNext._lock=true; setTimeout(()=>{ runnerNext._lock=false; }, 250);
     if(runner.idx>=runner.questions.length-1){ finishRunner(); return; }
     runner.questions[runner.idx].__recorded=false;
     runner.idx++;
@@ -6950,6 +7075,8 @@ const ModeApp = (function(){
     servePracticeItem();
   }
   function servePracticeItem(){
+    if(servePracticeItem._lock) return;   /* guard: double-click before button disables */
+    servePracticeItem._lock=true; setTimeout(()=>{ servePracticeItem._lock=false; }, 250);
     const host=document.getElementById('mz-pracHost');
     document.getElementById('mz-pracNext').disabled=true;
     document.getElementById('mz-pracFeedback').className='mz-feedback';
@@ -6960,17 +7087,26 @@ const ModeApp = (function(){
   function onPracticeAnswer(q, correct){
     if(!pracEng){ document.getElementById('mz-pracNext').disabled=false; return; }
     const qid=q.id||"prac";
+    const oldXp=pracEng.getScore().xp, oldRank=pracEng.getRank().tier;
     pracEng.recordAttempt({ questionId:qid, concept:q.concept||"General", mode:"practice", correct:!!correct });
+    const sc=pracEng.getScore(), rk=pracEng.getRank(), gain=sc.xp-oldXp;
+    const fb=document.getElementById('mz-pracFeedback');
     if(correct){
-      const fb=document.getElementById('mz-pracFeedback');
       fb.className='mz-feedback show';
-      fb.innerHTML=pracEng.feedbackFor(qid, true);
+      let msg=pracEng.feedbackFor(qid, true);
+      if(gain>0) msg+=' <b style="color:var(--yellow)">+'+gain+' XP</b>';
+      if(sc.streak>=5 && sc.streak%5===0) msg+=' <span style="color:var(--magenta)">🔥 '+sc.streak+'-in-a-row!</span>';
+      else if(sc.streak>1) msg+=' <span style="color:var(--dim)">· streak '+sc.streak+'</span>';
+      if(rk.tier!==oldRank) msg='<div style="color:'+rk.neon+';font-weight:700">🎉 Promoted to '+rk.tier+'! '+(rk.nextTier?('Next: '+rk.nextTier):'Top rank — Physics Boss!')+'</div>'+msg;
+      fb.innerHTML=msg;
       document.getElementById('mz-pracNext').disabled=false;
+      if(window.fxAnnounce) fxAnnounce((rk.tier!==oldRank?('Promoted to '+rk.tier+'. '):'')+'Correct'+(gain>0?(', plus '+gain+' XP'):'')+(sc.streak>1?(', streak '+sc.streak):''));
+      if(window.fxPulse) fxPulse(document.getElementById('mz-pracXp'));
       refreshPracticeScore();
     } else {
-      const fb=document.getElementById('mz-pracFeedback');
       fb.className='mz-feedback bad show';
-      fb.innerHTML=pracEng.feedbackFor(qid, false);
+      fb.innerHTML=pracEng.feedbackFor(qid, false)+' <span style="color:var(--dim)">Streak reset — the next one counts!</span>';
+      if(window.fxAnnounce) fxAnnounce('Not quite. Streak reset. Try the next one.');
       refreshPracticeScore();
     }
   }
@@ -6982,6 +7118,8 @@ const ModeApp = (function(){
     document.getElementById('mz-pracXp').textContent=s.xp;
     document.getElementById('mz-pracStreak').textContent=s.streak;
     document.getElementById('mz-pracProg').style.width=Math.round(r.progress*100)+'%';
+    const ntEl=document.getElementById('mz-pracNextTier');
+    if(ntEl) ntEl.textContent = r.nextTier ? ('Next: '+r.nextTier+' — '+r.xpToNext+' XP to go') : 'Max rank reached — Physics Boss! 🏆';
     const weakEl=document.getElementById('mz-pracWeak');
     if(st.weakestConcept && st.totalAttempts>0){
       weakEl.innerHTML='Weakest concept: <b>'+st.weakestConcept+'</b> · '+st.totalCorrect+'/'+st.totalAttempts+' correct';
