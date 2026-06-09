@@ -26,6 +26,17 @@
     .vol-facts li { color: var(--c-text-dim); padding: .4rem 0; border-bottom: 1px solid var(--c-line); }
     .vol-facts b { color: var(--c-accent); font-family: var(--font-head); letter-spacing: .08em; text-transform: uppercase; font-size: .76rem; margin-right: .7rem; }
     @media (max-width: 760px) { .vol-grid { grid-template-columns: 1fr; } }
+    /* global-site embed (browser-framed screenshot) */
+    .embed-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: center; margin-top: 1.5rem; }
+    .site-embed { display: block; background: var(--c-bg-3); border: 1px solid var(--c-accent-dk); box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+      transition: transform .2s var(--ease), box-shadow .2s var(--ease); }
+    .site-embed:hover { transform: translateY(-3px); }
+    .site-embed__bar { display: flex; align-items: center; gap: .6rem; padding: .5rem .8rem; background: var(--c-bg-2); border-bottom: 1px solid var(--c-line); }
+    .site-embed__dots { display: flex; gap: .35rem; }
+    .site-embed__dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--c-line); display: block; }
+    .site-embed__url { font-family: var(--font-head); font-size: .74rem; letter-spacing: .08em; color: var(--c-text-dim); background: var(--c-bg-3); padding: .2rem .8rem; border-radius: 999px; }
+    .site-embed img { width: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -155,6 +166,30 @@
           </a>
           <figcaption>Robotics Meets Culture</figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GLOBAL FIRA SITE ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-divider"><span>The Global Stage</span></div>
+      <div class="embed-grid">
+        <a class="site-embed" href="https://firaworldcup.org/" target="_blank" rel="noopener" aria-label="Visit the official FIRA RoboWorld Cup website">
+          <span class="site-embed__bar">
+            <span class="site-embed__dots"><i></i><i></i><i></i></span>
+            <span class="site-embed__url">firaworldcup.org</span>
+          </span>
+          <img src="assets/firaworldcup-preview.jpg" alt="The official FIRA RoboWorld Cup website, featuring the 2026 RoboWorld Cup &amp; Summit in Markham, Canada" loading="lazy">
+        </a>
+        <div class="embed-body">
+          <p class="eyebrow">Part of a global movement</p>
+          <h2>The Official FIRA RoboWorld Cup</h2>
+          <p>Markham 2026 is the Canadian stage of the worldwide FIRA RoboWorld Cup — decades of international robot sport spanning dozens of nations. Explore the global federation, its competitions and results.</p>
+          <div class="cta-actions" style="justify-content:flex-start">
+            <a class="angled-btn" href="https://firaworldcup.org/" target="_blank" rel="noopener">Visit firaworldcup.org</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
