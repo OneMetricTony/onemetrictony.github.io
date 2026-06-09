@@ -8,10 +8,6 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="assets/home.css">
   <style>
-    /* Bridge: toggle JS sets .nav--open on .nav; reveal links on mobile */
-    @media (max-width: 760px) {
-      .nav.nav--open .nav__links { display: flex; }
-    }
     .hero__emblem { width: auto; height: 64px; padding: 11px 18px; margin-bottom: 1.4rem; filter: drop-shadow(0 0 22px rgba(240,57,78,.5)); }
     .chips-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
     .panel-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 1.5rem; }
@@ -23,6 +19,13 @@
     .cta-band h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); text-transform: uppercase; }
     .cta-band p { color: var(--c-text-dim); max-width: 52ch; margin: 0 auto 1.6rem; }
     .cta-actions { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; }
+    .vol-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: center; margin-top: 1.5rem; }
+    .vol-poster { margin: 0; }
+    .vol-poster img { width: 100%; display: block; }
+    .vol-facts { list-style: none; padding: 0; margin: 1.1rem 0 1.5rem; }
+    .vol-facts li { color: var(--c-text-dim); padding: .4rem 0; border-bottom: 1px solid var(--c-line); }
+    .vol-facts b { color: var(--c-accent); font-family: var(--font-head); letter-spacing: .08em; text-transform: uppercase; font-size: .76rem; margin-right: .7rem; }
+    @media (max-width: 760px) { .vol-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -35,6 +38,7 @@
       <a class="nav__link" href="robocup.html">RoboWorld Cup</a>
       <a class="nav__link" href="kavosh.html">Kavosh</a>
       <a class="nav__link" href="sponsorship.html">Sponsorship</a>
+      <a class="nav__link" href="#volunteer">Volunteer</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
       <a class="nav__link" href="about.html">About</a>
     </div>
@@ -92,6 +96,38 @@
           <p>From Bronze to Title, find the partnership that fits — global brand exposure, direct access to top robotics talent, and lasting STEM impact.</p>
           <span class="panel-link">View tiers &amp; benefits →</span>
         </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VOLUNTEER ============ -->
+  <section class="section" id="volunteer">
+    <div class="container">
+      <div class="section-divider"><span>Volunteer</span></div>
+      <div class="vol-grid">
+        <figure class="ig-figure ig-figure--accent vol-poster">
+          <img src="assets/volunteer-poster.png" alt="FIRA RoboWorld Cup 2026 — Volunteer Positions Open. July 17–21, 9 AM–6 PM, 16 Main St Unionville, Markham, ON L3R 0W7." loading="lazy">
+        </figure>
+        <div class="vol-body">
+          <p class="eyebrow">Volunteer Positions Open</p>
+          <h2>Help Bring the RoboWorld Cup to Life</h2>
+          <p>Join the crew behind the first FIRA RoboWorld Cup in Canada — welcoming the world's top robotics teams to Markham. No experience needed to start; coding experience is a plus.</p>
+          <ul class="vol-facts">
+            <li><b>When</b> July 17 – 21, 2026 · 9:00 AM – 6:00 PM</li>
+            <li><b>Where</b> Markham Pan Am Centre — 16 Main St, Unionville, Markham, ON L3R 0W7</li>
+          </ul>
+          <div class="cta-actions" style="justify-content:flex-start">
+            <a class="angled-btn" id="volunteer-apply" href="https://docs.google.com/forms/d/e/1FAIpQLSdCs8RkbyWVMia90f2Llybm0S-RHbdCl4v9OqMxq33bnXevdQ/viewform" target="_blank" rel="noopener">Apply to Volunteer</a>
+            <a class="angled-btn angled-btn--ghost" href="robocup.html">Learn About the Event</a>
+          </div>
+        </div>
+      </div>
+      <div class="panel-grid" style="margin-top:1.6rem">
+        <div class="hud-panel"><h3>Volunteer Hours</h3><p>Earn documented volunteer hours — ideal for students fulfilling community-service requirements.</p></div>
+        <div class="hud-panel hud-panel--accent"><h3>Certificate of Participation</h3><p>Receive an official certificate recognizing your contribution to an international championship.</p></div>
+        <div class="hud-panel"><h3>Coding Experience Preferred</h3><p>Comfortable with code? Help with team support, scoring and tech ops — but all backgrounds are welcome.</p></div>
+        <div class="hud-panel"><h3>Long-Term Potential</h3><p>Standout volunteers may be considered for ongoing roles with CNRS and future FIRA events.</p></div>
+        <div class="hud-panel"><h3>Refreshments Provided</h3><p>Food and drinks are on us while you're on shift.</p></div>
       </div>
     </div>
   </section>
@@ -169,11 +205,12 @@
         <div class="footer__brand">FIRA RoboWorld Cup</div>
         <div class="footer__cols">
           <div>
-            <h4>Navigate</h4>
+            <h4>Explore</h4>
             <a href="index.html">Home</a>
             <a href="robocup.html">RoboWorld Cup</a>
             <a href="kavosh.html">Kavosh</a>
             <a href="sponsorship.html">Sponsorship</a>
+            <a href="#volunteer">Volunteer</a>
             <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
             <a href="about.html">About</a>
           </div>

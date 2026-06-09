@@ -20,10 +20,14 @@
   --c-accent-dk: #c8102e;   /* KAVOSH brand crimson (shade) */
   --c-accent-2:  #ffffff;   /* secondary accent (white)*/
 
+  /* Gold — CNRS crown amber, restrained "top-tier / medal" signal only */
+  --c-gold:      #f2a73e;   /* crown amber (~9.2:1 on --c-bg) */
+  --c-gold-dk:   #c9821f;   /* deeper amber for shade/baseline */
+
   /* Text — crisp white / warm light red-grey */
   --c-text:      #fdf3f3;   /* primary text           */
   --c-text-dim:  #e6bcbc;   /* secondary text         */
-  --c-text-mute: #b07e7e;   /* muted / captions       */
+  --c-text-mute: #c79a9a;   /* muted / captions (AA on red panels) */
 
   /* Typography */
   --font-head: 'Chakra Petch', 'Segoe UI', sans-serif; /* condensed techy */
@@ -68,12 +72,22 @@ h1,h2,h3,h4 {
   line-height: 1.1;
   margin: 0 0 .5em;
 }
+/* fluid type scale — without this h2/h3/h4 fall back to near-identical UA sizes */
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); letter-spacing: .03em; }
+h3 { font-size: clamp(1.15rem, 1.8vw, 1.4rem); letter-spacing: .03em; }
+h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
+/* intro lead tier (shared; previously defined only inside kavosh.html) */
+.lead { color: var(--c-text-dim); font-size: clamp(1rem, 2.2vw, 1.15rem); line-height: 1.6; max-width: 64ch; }
+/* comfortable prose measure for general body paragraphs */
+.section p:not(.eyebrow):not(.lead) { max-width: 70ch; }
 .eyebrow {
   font-family: var(--font-head);
   font-size: .72rem;
-  letter-spacing: .35em;
+  letter-spacing: .28em;
+  font-weight: 600;
+  line-height: 1.4;
   text-transform: uppercase;
-  color: var(--c-accent);
+  color: var(--c-gold);
 }
 
 /* Accessible focus state — visible on every interactive element */
@@ -227,7 +241,7 @@ h1,h2,h3,h4 {
 /* ---------- 7. HUD FRAME (corner brackets) ------------------- */
 .hud-frame {
   position: relative;
-  padding: 1.6rem;
+  padding: clamp(1.6rem, 4vw, 3rem) clamp(1.6rem, 5vw, 4rem);
   background: rgba(42,10,10,.5);
 }
 .hud-frame::before,
@@ -249,7 +263,7 @@ h1,h2,h3,h4 {
 /* ---------- 8. SECTION DIVIDER (segmented) ------------------- */
 .section-divider {
   display: flex; align-items: center; gap: .5rem;
-  margin: 2rem 0; border: 0;
+  margin: 0 0 2rem; border: 0;
 }
 .section-divider::before {
   content: ""; flex: 1; height: 2px;
@@ -258,7 +272,7 @@ h1,h2,h3,h4 {
 }
 .section-divider::after {
   content: ""; width: 56px; height: 2px;
-  background: var(--c-accent);
+  background: var(--c-gold);
   clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
 }
 /* center label variant: <span> inside */
@@ -272,7 +286,7 @@ h1,h2,h3,h4 {
   display: inline-flex; flex-direction: column; gap: .15rem;
   padding: .7rem 1.1rem;
   background: var(--c-bg-3);
-  border-left: 3px solid var(--c-accent);
+  border-left: 3px solid var(--c-gold);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
 .stat-chip b {
@@ -335,14 +349,14 @@ h1,h2,h3,h4 {
   content: "★ FLAGSHIP";
   position: absolute; top: 0; right: 0;
   font-family: var(--font-head); font-size: .62rem; letter-spacing: .15em;
-  color: var(--c-bg); background: var(--c-accent-2);
+  color: var(--c-bg); background: var(--c-gold);
   padding: .3rem .7rem;
   clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%);
 }
 
 /* ---------- 11. FOOTER --------------------------------------- */
 .footer {
-  margin-top: 3rem;
+  margin-top: clamp(3rem, 6vw, 5rem);
   background: var(--c-bg-2);
   border-top: 1px solid var(--c-line);
   clip-path: polygon(0 12px, 26px 0, 100% 0, 100% 100%, 0 100%);
@@ -371,11 +385,18 @@ h1,h2,h3,h4 {
     background: var(--c-bg-2); border-bottom: 1px solid var(--c-line);
     padding: .5rem; display: none;
   }
-  .nav__links.is-open { display: flex; }
-  .nav__link { width: 100%; clip-path: none; }
-  .nav__toggle { display: inline-block; }
+  .nav--open .nav__links { display: flex; }
+  .nav__toggle { display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; min-width: 44px; }
+  .nav__link { width: 100%; clip-path: none; min-height: 44px;
+    display: flex; align-items: center; padding: .8rem 1rem;
+    border-bottom: 1px solid var(--c-line); }
+  .nav__links .nav__link:last-child { border-bottom: 0; }
   .footer__inner { flex-direction: column; }
+  .footer__cols { flex-direction: column; gap: 1.4rem; }
+  .cnrs-mark { height: 76px; margin-bottom: 1rem; }
 }
+@media (max-width: 420px) { .cnrs-mark { height: 60px; } }
 
 /* ---------- 13. MOTION SAFETY -------------------------------- */
 @media (prefers-reduced-motion: reduce) {
@@ -448,13 +469,13 @@ h1,h2,h3,h4 {
 }
 .award-card__link:hover { color: var(--c-accent-2); }
 /* featured top honour — Prime Minister of Canada */
-.award-card--top { border-color: var(--c-accent); box-shadow: var(--glow); }
-.award-card--top .award-card__meta { color: var(--c-accent); }
+.award-card--top { border-color: var(--c-gold); box-shadow: 0 0 0 1px rgba(242,167,62,.40), 0 0 18px rgba(242,167,62,.20); }
+.award-card--top .award-card__meta { color: var(--c-gold); }
 .award-card--top::after {
   content: "★ PRIME MINISTER";
   position: absolute; top: 0; right: 0;
   font-family: var(--font-head); font-size: .58rem; letter-spacing: .13em;
-  color: var(--c-bg); background: var(--c-accent);
+  color: var(--c-bg); background: var(--c-gold);
   padding: .28rem .62rem;
   clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%);
 }
