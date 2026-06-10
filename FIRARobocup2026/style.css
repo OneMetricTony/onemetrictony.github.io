@@ -379,6 +379,9 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
 
 /* ---------- 12. RESPONSIVE ----------------------------------- */
 @media (max-width: 760px) {
+  /* the chamfer clip-path on .nav would clip the absolutely-positioned
+     dropdown menu (which sits below the bar) — disable it on mobile */
+  .nav { clip-path: none; }
   .nav__links {
     position: absolute; top: 100%; right: 0; left: 0;
     flex-direction: column; gap: 0;
