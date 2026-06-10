@@ -22,6 +22,9 @@
     .vol-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: center; margin-top: 1.5rem; }
     .vol-poster { margin: 0; }
     .vol-poster img { width: 100%; display: block; }
+    .vol-stage { position: relative; }
+    .vol-stage .cal--overlay { position: absolute; left: 8%; right: 8%; top: 30%; z-index: 3; margin: 0; }
+    @media (max-width: 760px) { .vol-stage .cal--overlay { position: static; left: auto; right: auto; top: auto; margin: .9rem 0 0; } }
     .vol-facts { list-style: none; padding: 0; margin: 1.1rem 0 1.5rem; }
     .vol-facts li { color: var(--c-text-dim); padding: .4rem 0; border-bottom: 1px solid var(--c-line); }
     .vol-facts b { color: var(--c-accent); font-family: var(--font-head); letter-spacing: .08em; text-transform: uppercase; font-size: .76rem; margin-right: .7rem; }
@@ -61,6 +64,19 @@
     .cal-keys { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .6rem; }
     .cal-keys li { display: flex; align-items: center; gap: .6rem; color: var(--c-text-dim); font-size: .95rem; }
     .cal-keys i { width: 16px; height: 16px; flex: 0 0 auto; border-radius: 2px; }
+    /* volunteer role requirements (beside the poster) */
+    .vol-spots { font-family: var(--font-head); letter-spacing: .04em; color: var(--c-text); margin: .1rem 0 1.1rem; }
+    .vol-spots b { color: var(--c-gold); }
+    .role-cards { display: grid; gap: .8rem; margin-bottom: 1.3rem; }
+    .role-card { padding: .9rem 1.1rem; }
+    .role-card--camp { border-color: rgba(47,208,255,.5); }
+    .role-card__tag { margin: 0 0 .4rem; font-family: var(--font-head); letter-spacing: .16em; text-transform: uppercase; font-size: .82rem; }
+    .role-card--camp .role-card__tag { color: #2fd0ff; }
+    .role-card--cup .role-card__tag { color: var(--c-accent); }
+    .role-card__when { margin: .12rem 0; color: var(--c-text); font-weight: 600; font-size: .95rem; }
+    .role-card__when span { color: var(--c-text-mute); font-weight: 400; }
+    .role-card__where { margin: .12rem 0; color: var(--c-text-dim); font-size: .9rem; }
+    .role-card__role { margin: .4rem 0 0; color: var(--c-text-dim); font-size: .92rem; }
   </style>
 </head>
 <body>
@@ -164,42 +180,47 @@
     <div class="container">
       <div class="section-divider"><span>Volunteer</span></div>
 
-      <div class="cal-row">
-        <div class="cal">
-          <span class="cal__scan" aria-hidden="true"></span>
-          <p class="cal__hd">July 2026</p>
-          <div class="cal__grid">
-            <span class="cal__dow">S</span><span class="cal__dow">M</span><span class="cal__dow">T</span><span class="cal__dow">W</span><span class="cal__dow">T</span><span class="cal__dow">F</span><span class="cal__dow">S</span>
-            <span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d">1</span><span class="cal__d">2</span><span class="cal__d">3</span><span class="cal__d">4</span>
-            <span class="cal__d">5</span><span class="cal__d camp">6</span><span class="cal__d camp">7</span><span class="cal__d camp">8</span><span class="cal__d camp">9</span><span class="cal__d camp">10</span><span class="cal__d">11</span>
-            <span class="cal__d">12</span><span class="cal__d camp">13</span><span class="cal__d camp">14</span><span class="cal__d camp">15</span><span class="cal__d cup">16</span><span class="cal__d cup">17</span><span class="cal__d cup">18</span>
-            <span class="cal__d cup">19</span><span class="cal__d cup">20</span><span class="cal__d cup">21</span><span class="cal__d">22</span><span class="cal__d">23</span><span class="cal__d">24</span><span class="cal__d">25</span>
-            <span class="cal__d">26</span><span class="cal__d">27</span><span class="cal__d">28</span><span class="cal__d">29</span><span class="cal__d">30</span><span class="cal__d">31</span><span class="cal__d empty"></span>
+      <div class="vol-grid">
+        <div class="vol-stage">
+          <figure class="ig-figure ig-figure--accent vol-poster">
+            <img src="assets/volunteer-poster.svg" alt="FIRA RoboWorld Cup 2026 — Volunteer Positions Open. July 6–21, 9 AM–6 PM, Markham Pan Am Centre, 16 Main St Unionville, Markham, ON L3R 0W7." loading="lazy">
+          </figure>
+          <div class="cal cal--overlay">
+            <span class="cal__scan" aria-hidden="true"></span>
+            <p class="cal__hd">July 2026</p>
+            <div class="cal__grid">
+              <span class="cal__dow">S</span><span class="cal__dow">M</span><span class="cal__dow">T</span><span class="cal__dow">W</span><span class="cal__dow">T</span><span class="cal__dow">F</span><span class="cal__dow">S</span>
+              <span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d">1</span><span class="cal__d">2</span><span class="cal__d">3</span><span class="cal__d">4</span>
+              <span class="cal__d">5</span><span class="cal__d camp">6</span><span class="cal__d camp">7</span><span class="cal__d camp">8</span><span class="cal__d camp">9</span><span class="cal__d camp">10</span><span class="cal__d">11</span>
+              <span class="cal__d">12</span><span class="cal__d camp">13</span><span class="cal__d camp">14</span><span class="cal__d camp">15</span><span class="cal__d camp">16</span><span class="cal__d cup">17</span><span class="cal__d cup">18</span>
+              <span class="cal__d cup">19</span><span class="cal__d cup">20</span><span class="cal__d cup">21</span><span class="cal__d">22</span><span class="cal__d">23</span><span class="cal__d">24</span><span class="cal__d">25</span>
+              <span class="cal__d">26</span><span class="cal__d">27</span><span class="cal__d">28</span><span class="cal__d">29</span><span class="cal__d">30</span><span class="cal__d">31</span><span class="cal__d empty"></span>
+            </div>
           </div>
         </div>
-        <div class="cal-legend">
-          <p class="eyebrow" style="color:#9fe8ff">Mark your calendar</p>
-          <h3>Two phases this July</h3>
-          <ul class="cal-keys">
-            <li><i style="background:#2fd0ff;box-shadow:0 0 8px rgba(47,208,255,.6)"></i> Preparation Camp — July 6–15 (weekdays)</li>
-            <li><i style="background:var(--c-accent);box-shadow:0 0 8px rgba(240,57,78,.6)"></i> FIRA RoboWorld Cup — July 16–21</li>
-          </ul>
-          <p style="color:var(--c-text-dim);margin-top:.6rem">Volunteers help run the lead-up training camp and the championship itself.</p>
-        </div>
-      </div>
-
-      <div class="vol-grid">
-        <figure class="ig-figure ig-figure--accent vol-poster">
-          <img src="assets/volunteer-poster.svg" alt="FIRA RoboWorld Cup 2026 — Volunteer Positions Open. July 6–21, 9 AM–6 PM, Markham Pan Am Centre, 16 Main St Unionville, Markham, ON L3R 0W7." loading="lazy">
-        </figure>
         <div class="vol-body">
-          <p class="eyebrow">Volunteer Positions Open</p>
+          <p class="eyebrow" style="color:#9fe8ff">Mark your calendar</p>
           <h2>Help Bring the RoboWorld Cup to Life</h2>
-          <p>Join the crew behind the first FIRA RoboWorld Cup in Canada — welcoming the world's top robotics teams to Markham. No experience needed to start; coding experience is a plus.</p>
-          <ul class="vol-facts">
-            <li><b>When</b> July 6 – 21, 2026 · 9:00 AM – 6:00 PM</li>
-            <li><b>Where</b> Markham Pan Am Centre — 16 Main St, Unionville, Markham, ON L3R 0W7</li>
+          <ul class="cal-keys" style="margin:.2rem 0 1rem">
+            <li><i style="background:#2fd0ff;box-shadow:0 0 8px rgba(47,208,255,.6)"></i> <span style="color:#2fd0ff;font-weight:700">Preparation Camp</span>&nbsp;— July 6–16 (weekdays)</li>
+            <li><i style="background:var(--c-accent);box-shadow:0 0 8px rgba(240,57,78,.6)"></i> <span style="color:var(--c-accent);font-weight:700">FIRA RoboWorld Cup</span>&nbsp;— July 17–21</li>
           </ul>
+          <p>Volunteers earn documented hours, an honourary mention from the Mayor of Markham, and possible long-term offers from KAVOSH.ai — food &amp; uniform provided.</p>
+          <p class="vol-spots">Spots are limited — <b>10 remaining</b></p>
+          <div class="role-cards">
+            <div class="hud-panel role-card role-card--camp">
+              <p class="role-card__tag">Preparation Camp</p>
+              <p class="role-card__when">July 6–16, 2026 · 9 AM–6 PM <span>(no weekends)</span></p>
+              <p class="role-card__where">7050 Woodbine Ave, Suite 300, Markham, ON L3R 4G8</p>
+              <p class="role-card__role">Role — Teaching Assistant</p>
+            </div>
+            <div class="hud-panel role-card role-card--cup">
+              <p class="role-card__tag">FIRA RoboWorld Cup</p>
+              <p class="role-card__when">July 17–21, 2026</p>
+              <p class="role-card__where">Markham Pan Am Centre — 16 Main St Unionville, Markham, ON L3R 0W7</p>
+              <p class="role-card__role">Role — Supervising younger students, coaching support, parent communication</p>
+            </div>
+          </div>
           <div class="cta-actions" style="justify-content:flex-start">
             <a class="angled-btn" id="volunteer-apply" href="https://docs.google.com/forms/d/e/1FAIpQLSdCs8RkbyWVMia90f2Llybm0S-RHbdCl4v9OqMxq33bnXevdQ/viewform" target="_blank" rel="noopener">Apply to Volunteer</a>
             <a class="angled-btn angled-btn--ghost" href="robocup.html">Learn About the Event</a>
