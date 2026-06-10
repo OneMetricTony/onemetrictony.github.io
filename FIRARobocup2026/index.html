@@ -23,8 +23,12 @@
     .vol-poster { margin: 0; }
     .vol-poster img { width: 100%; display: block; }
     .vol-stage { position: relative; }
-    .vol-stage .cal--overlay { position: absolute; left: 8%; right: 8%; top: 30%; z-index: 3; margin: 0; }
-    @media (max-width: 760px) { .vol-stage .cal--overlay { position: static; left: auto; right: auto; top: auto; margin: .9rem 0 0; } }
+    .vol-stage .cal--overlay { position: absolute; left: 5%; width: 41%; right: auto; bottom: 4%; top: auto; z-index: 3; margin: 0; padding: .5rem .6rem .6rem; }
+    .vol-stage .cal--overlay .cal__hd { font-size: .82rem; margin-bottom: .45rem; letter-spacing: .18em; }
+    .vol-stage .cal--overlay .cal__grid { gap: 3px; }
+    .vol-stage .cal--overlay .cal__dow { font-size: .5rem; padding-bottom: 1px; }
+    .vol-stage .cal--overlay .cal__d { font-size: .62rem; border-radius: 2px; }
+    @media (max-width: 760px) { .vol-stage .cal--overlay { position: static; left: auto; width: auto; bottom: auto; top: auto; margin: .9rem 0 0; padding: 1rem 1.1rem 1.2rem; } }
     .vol-facts { list-style: none; padding: 0; margin: 1.1rem 0 1.5rem; }
     .vol-facts li { color: var(--c-text-dim); padding: .4rem 0; border-bottom: 1px solid var(--c-line); }
     .vol-facts b { color: var(--c-accent); font-family: var(--font-head); letter-spacing: .08em; text-transform: uppercase; font-size: .76rem; margin-right: .7rem; }
@@ -77,6 +81,18 @@
     .role-card__when span { color: var(--c-text-mute); font-weight: 400; }
     .role-card__where { margin: .12rem 0; color: var(--c-text-dim); font-size: .9rem; }
     .role-card__role { margin: .4rem 0 0; color: var(--c-text-dim); font-size: .92rem; }
+    /* Team Canada recognition — clickable row of 3 */
+    .award-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: .2rem 0 1.3rem; }
+    .award-thumb { margin: 0; cursor: zoom-in; background: var(--c-bg-3); border: 1px solid var(--c-line);
+      clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+      transition: transform .15s var(--ease), border-color .15s var(--ease); }
+    .award-thumb:hover { transform: translateY(-3px); border-color: var(--c-gold); }
+    .award-thumb img { width: 100%; aspect-ratio: 4/3; object-fit: cover; object-position: top center; display: block; }
+    .award-thumb figcaption { font-family: var(--font-head); font-size: .56rem; letter-spacing: .05em; text-transform: uppercase; color: var(--c-text-mute); text-align: center; padding: .32rem .2rem; }
+    .lightbox { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center;
+      background: rgba(6,3,3,.92); backdrop-filter: blur(4px); cursor: zoom-out; padding: 4vh 4vw; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 92vw; max-height: 92vh; border: 1px solid var(--c-accent-dk); box-shadow: var(--glow); }
   </style>
 </head>
 <body>
@@ -205,8 +221,13 @@
             <li><i style="background:#2fd0ff;box-shadow:0 0 8px rgba(47,208,255,.6)"></i> <span style="color:#2fd0ff;font-weight:700">Preparation Camp</span>&nbsp;— July 6–16 (weekdays)</li>
             <li><i style="background:var(--c-accent);box-shadow:0 0 8px rgba(240,57,78,.6)"></i> <span style="color:var(--c-accent);font-weight:700">FIRA RoboWorld Cup</span>&nbsp;— July 17–21</li>
           </ul>
-          <p>Volunteers earn documented hours, an honourary mention from the Mayor of Markham, and possible long-term offers from KAVOSH.ai — food &amp; uniform provided.</p>
+          <p>Top-tier volunteers can earn an honourary mention from the Mayor of Markham and possible long-term offers from KAVOSH.ai. Food, uniform, and documented hours provided.</p>
           <p class="vol-spots">Spots are limited — <b>10 remaining</b></p>
+          <div class="award-row">
+            <figure class="award-thumb" data-full="assets/awards/award-markham.jpg"><img src="assets/awards/award-markham.jpg" alt="City of Markham recognition for Team Canada — Kavosh Robotic Team &amp; FIRA Canada" loading="lazy"><figcaption>City of Markham</figcaption></figure>
+            <figure class="award-thumb" data-full="assets/awards/award-jeanyip.jpg"><img src="assets/awards/award-jeanyip.jpg" alt="Greetings from MP Jean Yip, House of Commons" loading="lazy"><figcaption>MP Jean Yip</figcaption></figure>
+            <figure class="award-thumb" data-full="assets/awards/award-pm.jpg"><img src="assets/awards/award-pm.jpg" alt="Congratulations from the Prime Minister of Canada" loading="lazy"><figcaption>Prime Minister</figcaption></figure>
+          </div>
           <div class="role-cards">
             <div class="hud-panel role-card role-card--camp">
               <p class="role-card__tag">Preparation Camp</p>
@@ -334,6 +355,14 @@
     </div>
   </footer>
 
+  <div class="lightbox" id="lightbox"><img alt="Enlarged Team Canada certificate"></div>
+
   <script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+  <script>
+    (function(){const lb=document.getElementById('lightbox');if(!lb)return;const img=lb.querySelector('img');
+    document.querySelectorAll('.award-thumb').forEach(t=>t.addEventListener('click',()=>{img.src=t.dataset.full;lb.classList.add('open');}));
+    lb.addEventListener('click',()=>lb.classList.remove('open'));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('open');});})();
+  </script>
 </body>
 </html>
