@@ -191,6 +191,7 @@ a.weblink{ color:var(--magenta); font-weight:700; text-decoration:none;
   filter:drop-shadow(0 0 14px var(--magenta)); }
 .menu-list{ text-align:left; margin:14px auto 18px; max-width:380px; }
 .menu-list li{ padding:7px 0; font-size:15px; }
+.tocJump{ color:var(--cyan); background:none; border:none; cursor:pointer; font:inherit; font-size:15px; padding:0; text-align:left; }
 
 /* ============ BOTTOM NAV ============ */
 .navbar{
@@ -599,6 +600,9 @@ body:not(.mode-learn) .topbar .progress-fill{ opacity:.25; }
 .mz-tile.exam .tt{ color:var(--yellow); }
 .mz-tile.practice{ border-color:var(--green); box-shadow:0 0 14px rgba(57,255,136,.2); }
 .mz-tile.practice .tt{ color:var(--green); }
+.mz-tile.training{ border-color:var(--yellow); box-shadow:0 0 14px rgba(255,225,77,.2); }
+.mz-tile.training .tt{ color:var(--yellow); }
+.mz-tiles .mz-tile:nth-child(5){ grid-column:1 / -1; min-height:84px; }
 
 .mz-dir{ display:flex; flex-wrap:wrap; gap:9px; margin:14px 0 4px; }
 .mz-dir a, .mz-dir button{ flex:1 1 30%; min-width:96px; text-decoration:none;
@@ -901,6 +905,10 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
         <span class="ic">🎯</span><span class="tt">PRACTICE</span>
         <span class="ds">Adaptive drills on your weak spots, ranked</span>
       </button>
+      <button class="mz-tile training" data-go="training">
+        <span class="ic">🏋️</span><span class="tt">TRAINING</span>
+        <span class="ds">Targeted drills — units, vectors, FBDs, circular motion &amp; more</span>
+      </button>
     </div>
     <div class="mz-dir">
       <button data-go="modules">🧩 Modules</button>
@@ -955,6 +963,13 @@ body:not(.mode-learn):not(.mode-hub) #hubBtn{ display:block; }
     <div class="mz-dir" style="margin-top:18px">
       <button id="mz-pracReset">↺ Reset progress</button>
     </div>
+  </section>
+
+  <!-- TRAINING -->
+  <section class="mz-screen" id="mz-training">
+    <div class="mz-bar"><button class="mz-back" data-go="hub">⌂ HUB</button><h2>🏋️ TRAINING</h2></div>
+    <div class="mz-alist" id="mz-trainingMenu"></div>
+    <div class="mz-host" id="mz-trainingHost"></div>
   </section>
 
   <!-- VECTOR PROBLEM HOST (used by exam; lives here, relocated into runner host) -->
@@ -6312,10 +6327,7 @@ function welcomeHTML(){
     <div class="kicker" style="margin-bottom:14px">CH 1–6 — BEGINNER MODE</div>
     <p class="lead">A bite-size, swipe-through tour from SI units and vectors all the way to energy. We <b>teach</b> one idea, then you <b>build the equation</b> to solve a quick problem (or tap Multiple Choice).</p>
     <ul class="menu-list beats" style="display:inline-block">
-      <li>1 · SI Units</li><li>2 · Vectors</li><li>3 · Velocity &amp; Momentum</li>
-      <li>4 · Momentum</li><li>5 · Gravity</li><li>6 · Electric Force</li>
-      <li>7 · Collisions</li><li>8 · Impulse</li><li>9 · Friction</li>
-      <li>10 · Free-body diagrams</li><li>11 · Energy &amp; work</li>
+      ${CONCEPTS.map((c,i)=>`<li><button class="tocJump" data-cidx="${i}">${i+1} · ${c.teach.head}</button></li>`).join("")}
     </ul>
     <p class="lead" style="font-size:14px;color:var(--dim)">Tap <b>💡 TIPS</b> anytime for formula help. Use <b>← BACK / NEXT →</b> below to move.</p>
     <button class="btn big magenta nextLocal">START →</button>
@@ -6463,6 +6475,8 @@ nextBtn.addEventListener('click', ()=>{ if(cur<N-1) show(cur+1,1); });
 stage.addEventListener('click', (e)=>{
   if(e.target.closest('.nextLocal')){ if(cur<N-1) show(cur+1,1); return; }
   if(e.target.id==='reviewBtn'){ show(0,-1); return; }
+  const t=e.target.closest('.tocJump');
+  if(t){ show(1 + 2*(+t.dataset.cidx), 1); return; }
 });
 
 /* ===================== DRAG-TO-BUILD SOLVER + MCQ (scoped under .slv) =====================
@@ -6852,7 +6866,7 @@ stage.addEventListener('click',(e)=>{
 const ModeApp = (function(){
   const layer = document.getElementById('modeLayer');
   const body = document.body;
-  const MODES = ["hub","learn","assignments","modules","runner","practice"];
+  const MODES = ["hub","learn","assignments","modules","runner","practice","training"];
   let mode = "hub";
 
   /* park the shared solver block back on <body> so any host is left clean */
@@ -7147,9 +7161,51 @@ const ModeApp = (function(){
     buildModuleMenu();
     showScreen("mz-modules");
   }
+  function goTraining(){
+    parkSolver(); parkVector();
+    setBodyMode("training");
+    buildTrainingMenu();
+    showScreen("mz-training");
+  }
+  function buildTrainingMenu(){
+    const menu=document.getElementById('mz-trainingMenu');
+    const host=document.getElementById('mz-trainingHost');
+    /* unmount any previously mounted module */
+    if(host._trMod){ try{ host._trMod.unmount(); }catch(_){} host._trMod=null; }
+    menu.innerHTML=""; host.innerHTML="";
+    menu.style.display="";
+    (window.TRAINING_MODULES||[]).forEach(function(m){
+      const it=document.createElement('button'); it.className='mz-aitem';
+      it.innerHTML='<span class="an">'+m.icon+'</span><span class="am">'+m.title+'<small>'+(m.desc||m.blurb||'')+'</small></span>';
+      it.addEventListener('click',function(){
+        menu.style.display='none';
+        host.innerHTML='';
+        host._trMod=m;
+        try{ m.mount(host, window.TrainingAPI); }catch(e){ host.innerHTML='<p class="lead" style="color:var(--red)">Module error: '+e.message+'</p>'; }
+        /* back button wired to data-go="hub" on .mz-back already handles leaving mode;
+           we also need an in-screen back that returns to menu within training */
+        var backBtn=document.createElement('button');
+        backBtn.className='btn ghost'; backBtn.style.cssText='margin-top:14px;width:100%;';
+        backBtn.textContent='← BACK TO TRAINING MENU';
+        backBtn.addEventListener('click',function(){
+          if(host._trMod){ try{ host._trMod.unmount(); }catch(_){} host._trMod=null; }
+          host.innerHTML='';
+          menu.style.display='';
+        });
+        host.appendChild(backBtn);
+      });
+      menu.appendChild(it);
+    });
+    if(!(window.TRAINING_MODULES||[]).length) menu.innerHTML='<p class="lead">No training modules loaded.</p>';
+  }
 
   /* ---- ROUTING ---- */
   function go(target){
+    /* unmount any live training module when leaving training */
+    if(mode==="training" && target!=="training"){
+      const host=document.getElementById('mz-trainingHost');
+      if(host && host._trMod){ try{ host._trMod.unmount(); }catch(_){} host._trMod=null; }
+    }
     switch(target){
       case "hub": goHub(); break;
       case "learn": goLearn(); break;
@@ -7157,6 +7213,7 @@ const ModeApp = (function(){
       case "modules": goModules(); break;
       case "exam": goExam(); break;
       case "practice": goPractice(); break;
+      case "training": goTraining(); break;
       default: goHub();
     }
   }
@@ -7192,5 +7249,53 @@ function waitMJ(){
 }
 waitMJ();
 </script>
+
+<!-- TRAINING API BRIDGE (defines window.TrainingAPI) -->
+<script>
+window.TrainingAPI = (function(){
+  /* serialized typeset queue — same pattern as Solver's mjQueue */
+  var q = Promise.resolve();
+  function whenMJ(){ return new Promise(function(res){
+    if(window.__mjReady || (window.MathJax && MathJax.typesetPromise)) return res();
+    var n=0; var t=setInterval(function(){ if(window.__mjReady||(window.MathJax&&MathJax.typesetPromise)||n++>80){ clearInterval(t); res(); } },60);
+  });}
+  function typeset(el){
+    q = q.then(whenMJ).then(function(){ if(el && el.isConnected && window.MathJax && MathJax.typesetPromise)
+      return MathJax.typesetPromise([el]).catch(function(){}); });
+    return q;
+  }
+  function latex(el, tex){
+    el.innerHTML = '\\(' + tex + '\\)';
+    return typeset(el);
+  }
+  var eng = window.PracticeEngine ? new PracticeEngine({ storageKey:'tr_progress_v1' }) : null;
+  function xp(n, label){
+    if(!eng) return null;
+    var s = eng.recordAttempt({ questionId:label||'tr', concept:label||'Training', mode:'training', correct:n>0 });
+    if(window.fxAnnounce) fxAnnounce((n>0?'Correct. ':'')+(label||'')+' XP '+s.xp);
+    return s;
+  }
+  function confetti(origin){ if(window.fxConfetti) fxConfetti(origin||null); }
+  var cueT=null;
+  function toast(msg, kind){
+    var c=document.getElementById('slv-cue'); if(!c) return;
+    c.textContent=msg; c.className='slv-cue show'+(kind==='ok'?' ok':'');
+    clearTimeout(cueT); cueT=setTimeout(function(){ c.className='slv-cue'; },1500);
+  }
+  function reducedMotion(){ return window.fxReducedMotion ? fxReducedMotion() : false; }
+  return { latex:latex, typeset:typeset, xp:xp, confetti:confetti, toast:toast, reducedMotion:reducedMotion,
+           pulse:function(el){ if(window.fxPulse) fxPulse(el); },
+           announce:function(m){ if(window.fxAnnounce) fxAnnounce(m); },
+           engine:eng };
+})();
+</script>
+
+<!-- TRAINING MODULES -->
+<script src="training/tr-units.js"></script>
+<script src="training/tr-vec3d.js"></script>
+<script src="training/tr-radial.js"></script>
+<script src="training/tr-energy.js"></script>
+<script src="training/tr-momentum.js"></script>
+<script src="training/tr-fbd.js"></script>
 </body>
 </html>
