@@ -3283,7 +3283,7 @@ if(window.VectorAnims){
    A4 and A5 are kept DISTINCT (no shared problems).
 
    Export shape:
-     window.ASSIGN_4_5 = { a4:[...], a5:[...] }
+     window.ASSIGN_4_5 = { a4:[...], a5:[...], a6:[...] }
    (also module.exports for node)
    ================================================================ */
 
@@ -3858,6 +3858,317 @@ if(window.VectorAnims){
           why: "a = (v_f − v_i)/Δt = ⟨6,-4,0⟩/3 = ⟨2,-1.33,0⟩; F = m a = 2·⟨2,-1.33,0⟩ = ⟨4,-2.67,0⟩ N."
         }
       }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 6  —  POTENTIAL ENERGY & ELECTRIC PE
+       ============================================================ */
+    a6: [
+
+      /* ---- A6 Q1 : near-surface gravitational PE / falling ball ---- */
+      {
+        id: "a6q1-falling-ball", concept: "Gravitational PE (near-surface)", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q1.</b> A <b>0.10 kg</b> ball is released from rest at \\(y_i=7\\) m. ' +
+                'Using ball+Earth as the system, \\(\\Delta K+\\Delta U=0\\) and \\(U_{\\rm grav}=mgy\\). ' +
+                '<span class="ask">Find \\(\\Delta K\\) when \\(y_f=4\\) m.</span>',
+        inventory: [
+          { id: "ugrav",  tex: "\\Delta U=mg\\Delta y",          label: "grav PE",      relevant: true  },
+          { id: "wke",    tex: "W_{\\rm net}=\\Delta KE",        label: "work-energy",  relevant: false },
+          { id: "ke",     tex: "KE=\\tfrac12 mv^2",              label: "kinetic E",    relevant: false },
+          { id: "pe_gen", tex: "U=-\\dfrac{Gm_1m_2}{r}",        label: "general PE",   relevant: false },
+          { id: "wfd",    tex: "W=Fd\\cos\\theta",               label: "work",         relevant: false }
+        ],
+        answerEqId: "wke",
+        dockedTex: "\\Delta K = -m\\,g\\,(y_f-y_i)",
+        lhs: "\\Delta K", joiner: "",
+        terms: [
+          { symbol: "-m\\,g\\,(y_f-y_i)", sub: "-(0.1)(9.8)(4-7)" }
+        ],
+        distractors: [
+          "+m\\,g\\,(y_f-y_i)",
+          "\\tfrac12 m v^2",
+          "m\\,g\\,y_f",
+          "G m_1 m_2 / r"
+        ],
+        result: {
+          expression:   "\\Delta K = -m\\,g\\,(y_f-y_i)",
+          substitution: "\\Delta K = -(0.1)(9.8)(4-7) = -(0.98)(-3)",
+          answer:       "\\Delta K = 2.94\\ \\text{J}"
+        },
+        mcq: {
+          options: [
+            "2.94\\ \\text{J}",
+            "-2.94\\ \\text{J}",
+            "4.90\\ \\text{J}",
+            "6.86\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "ΔK = −ΔU = −mg(y_f−y_i) = −(0.1)(9.8)(4−7) = −(0.98)(−3) = 2.94 J."
+        }
+      },
+
+      /* ---- A6 Q2 : spring PE, total mechanical energy ---- */
+      {
+        id: "a6q2-spring-energy", concept: "Spring Potential Energy", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q2.</b> A <b>0.20 kg</b> block oscillates on a spring (\\(k=12\\) N/m). ' +
+                'At a given instant the stretch is \\(s=0.030\\) m and the speed is \\(v=0.50\\) m/s. ' +
+                'The total mechanical energy is \\(E=\\tfrac12 mv^2+\\tfrac12 ks^2\\). ' +
+                '<span class="ask">Find \\(E_{\\rm total}\\).</span>',
+        inventory: [
+          { id: "uspring", tex: "U_s=\\tfrac12 ks^2",            label: "spring PE",    relevant: true  },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "wke",     tex: "W_{\\rm net}=\\Delta KE",       label: "work-energy",  relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false }
+        ],
+        answerEqId: "ke",
+        dockedTex: "E = \\tfrac12 m v^2 + \\tfrac12 k s^2",
+        lhs: "E", joiner: "+",
+        terms: [
+          { symbol: "\\tfrac12 m v^2",  sub: "\\tfrac12(0.20)(0.50)^2" },
+          { symbol: "\\tfrac12 k s^2",  sub: "\\tfrac12(12)(0.030)^2" }
+        ],
+        distractors: [
+          "\\tfrac12 k s",
+          "m v^2",
+          "-\\tfrac12 k s^2",
+          "k s^2"
+        ],
+        result: {
+          expression:   "E = \\tfrac12 mv^2 + \\tfrac12 ks^2",
+          substitution: "E = \\tfrac12(0.20)(0.25)+\\tfrac12(12)(0.0009) = 0.025+0.0054",
+          answer:       "E = 0.0304\\ \\text{J}"
+        },
+        mcq: {
+          options: [
+            "0.0304\\ \\text{J}",
+            "0.025\\ \\text{J}",
+            "0.0054\\ \\text{J}",
+            "0.0608\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "E = ½(0.20)(0.25) + ½(12)(0.0009) = 0.025 + 0.0054 = 0.0304 J."
+        }
+      },
+
+      /* ---- A6 Q3 : gravitational PE (general formula) ---- */
+      {
+        id: "a6q3-grav-pe-general", concept: "Gravitational PE (general)", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q3.</b> Two masses \\(m_1=2.0\\) kg and \\(m_2=5.0\\) kg are separated by ' +
+                '\\(r=0.10\\) m. Using \\(U_{\\rm grav}=-\\dfrac{Gm_1m_2}{r}\\) (\\(G=6.674\\times10^{-11}\\) N·m²/kg²), ' +
+                '<span class="ask">find \\(U_{\\rm grav}\\).</span>',
+        inventory: [
+          { id: "pe_gen",  tex: "U=-\\dfrac{Gm_1m_2}{r}",       label: "general PE",   relevant: true  },
+          { id: "ugrav",   tex: "\\Delta U=mg\\Delta y",         label: "grav PE",      relevant: false },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false }
+        ],
+        answerEqId: "pe_gen",
+        dockedTex: "U = -\\dfrac{G m_1 m_2}{r}",
+        lhs: "U", joiner: "",
+        terms: [
+          { symbol: "-\\dfrac{G m_1 m_2}{r}",
+            sub:    "-\\dfrac{(6.674\\times10^{-11})(2.0)(5.0)}{0.10}" }
+        ],
+        distractors: [
+          "+\\dfrac{G m_1 m_2}{r}",
+          "\\dfrac{G m_1 m_2}{r^2}",
+          "-G m_1 m_2 r",
+          "m g h"
+        ],
+        result: {
+          expression:   "U = -\\dfrac{Gm_1m_2}{r}",
+          substitution: "U = -\\dfrac{(6.674\\times10^{-11})(2.0)(5.0)}{0.10}",
+          answer:       "U = -6.67\\times10^{-9}\\ \\text{J}"
+        },
+        mcq: {
+          options: [
+            "-6.67\\times10^{-9}\\ \\text{J}",
+            "+6.67\\times10^{-9}\\ \\text{J}",
+            "-6.67\\times10^{-10}\\ \\text{J}",
+            "-6.67\\times10^{-8}\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "U = −Gm₁m₂/r = −(6.674×10⁻¹¹)(2.0)(5.0)/0.10 = −6.674×10⁻⁹ J ≈ −6.67×10⁻⁹ J. Sign is negative — gravitational PE is always negative."
+        }
+      },
+
+      /* ---- A6 Q4 : electric PE between two like charges ---- */
+      {
+        id: "a6q4-electric-pe", concept: "Electric Potential Energy", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q4.</b> Two small spheres each carry charge \\(q=+3.0\\) nC \\(=3.0\\times10^{-9}\\) C, ' +
+                'separated by \\(r=0.12\\) m. Using \\(U_{\\rm elec}=\\dfrac{kq_1q_2}{r}\\) with \\(k=9.0\\times10^9\\) N·m²/C², ' +
+                '<span class="ask">find \\(U_{\\rm elec}\\). (Like charges → \\(U>0\\): repulsive/unbound.)</span>',
+        inventory: [
+          { id: "pe_elec", tex: "U_e=\\dfrac{kq_1q_2}{r}",      label: "electric PE",  relevant: true  },
+          { id: "pe_gen",  tex: "U=-\\dfrac{Gm_1m_2}{r}",       label: "general PE",   relevant: false },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false }
+        ],
+        answerEqId: "pe_elec",
+        dockedTex: "U = \\dfrac{k\\,q_1 q_2}{r}",
+        lhs: "U", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{k\\,q_1 q_2}{r}",
+            sub:    "\\dfrac{(9.0\\times10^9)(3.0\\times10^{-9})^2}{0.12}" }
+        ],
+        distractors: [
+          "\\dfrac{k\\,q_1 q_2}{r^2}",
+          "-\\dfrac{k\\,q_1 q_2}{r}",
+          "k\\,q_1 q_2\\,r",
+          "\\tfrac12 k q^2"
+        ],
+        result: {
+          expression:   "U = \\dfrac{kq_1q_2}{r}",
+          substitution: "U = \\dfrac{(9.0\\times10^9)(3.0\\times10^{-9})^2}{0.12} = \\dfrac{(9\\times10^9)(9\\times10^{-18})}{0.12} = \\dfrac{81\\times10^{-9}}{0.12}",
+          answer:       "U = 6.75\\times10^{-7}\\ \\text{J}"
+        },
+        mcq: {
+          options: [
+            "6.75\\times10^{-7}\\ \\text{J}",
+            "-6.75\\times10^{-7}\\ \\text{J}",
+            "5.63\\times10^{-6}\\ \\text{J}",
+            "8.10\\times10^{-8}\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "U = kq²/r = (9×10⁹)(3×10⁻⁹)²/0.12 = (9×10⁹)(9×10⁻¹⁸)/0.12 = 81×10⁻⁹/0.12 = 6.75×10⁻⁷ J. Positive because like charges."
+        }
+      },
+
+      /* ---- A6 Q5 : energy conservation — spring to speed ---- */
+      {
+        id: "a6q5-spring-to-speed", concept: "Energy Conservation (Spring)", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q5.</b> A <b>0.50 kg</b> block on a frictionless surface is attached to a spring ' +
+                '(\\(k=200\\) N/m). The spring is compressed \\(s=0.080\\) m and released from rest. ' +
+                'When the spring returns to its natural length (\\(s=0\\)), all PE has become KE: ' +
+                '\\(\\tfrac12 mv^2=\\tfrac12 ks^2\\). ' +
+                '<span class="ask">Solve for \\(v\\).</span>',
+        inventory: [
+          { id: "uspring", tex: "U_s=\\tfrac12 ks^2",            label: "spring PE",    relevant: true  },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "wke",     tex: "W_{\\rm net}=\\Delta KE",       label: "work-energy",  relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false }
+        ],
+        answerEqId: "ke",
+        dockedTex: "v = s\\sqrt{\\dfrac{k}{m}}",
+        lhs: "v", joiner: "",
+        terms: [
+          { symbol: "s\\sqrt{\\dfrac{k}{m}}",
+            sub:    "(0.080)\\sqrt{\\dfrac{200}{0.50}}" }
+        ],
+        distractors: [
+          "\\sqrt{\\dfrac{k\\,s}{m}}",
+          "\\sqrt{\\dfrac{2k\\,s}{m}}",
+          "s\\sqrt{\\dfrac{m}{k}}",
+          "k s / m"
+        ],
+        result: {
+          expression:   "v = s\\sqrt{k/m}",
+          substitution: "(0.080)\\sqrt{200/0.50} = (0.080)\\sqrt{400} = (0.080)(20)",
+          answer:       "v = 1.6\\ \\text{m/s}"
+        },
+        mcq: {
+          options: [
+            "1.6\\ \\text{m/s}",
+            "0.8\\ \\text{m/s}",
+            "3.2\\ \\text{m/s}",
+            "0.040\\ \\text{m/s}"
+          ],
+          correct: 0,
+          why: "½mv² = ½ks² → v = s√(k/m) = 0.080√400 = 0.080×20 = 1.6 m/s."
+        }
+      },
+
+      /* ---- A6 Q6 : power ---- */
+      {
+        id: "a6q6-power", concept: "Power", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q6.</b> A <b>60 W</b> electric motor runs for <b>5.0 minutes</b>. ' +
+                'Using \\(P=E/t\\), ' +
+                '<span class="ask">find the total energy consumed.</span>',
+        inventory: [
+          { id: "power",   tex: "P=E/t",                         label: "power",        relevant: true  },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false },
+          { id: "pe_gen",  tex: "U=-\\dfrac{Gm_1m_2}{r}",       label: "general PE",   relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false }
+        ],
+        answerEqId: "power",
+        dockedTex: "E = P\\,t",
+        lhs: "E", joiner: "\\cdot",
+        terms: [
+          { symbol: "P", sub: "(60\\,\\text{W})" },
+          { symbol: "t", sub: "(5.0\\times60\\,\\text{s})" }
+        ],
+        distractors: [
+          "t/P",
+          "P/t",
+          "\\tfrac12 P t",
+          "P t^2"
+        ],
+        result: {
+          expression:   "E = P\\,t",
+          substitution: "E = (60)(5.0\\times60) = (60)(300)",
+          answer:       "E = 1.8\\times10^4\\ \\text{J}"
+        },
+        mcq: {
+          options: [
+            "1.8\\times10^4\\ \\text{J}",
+            "3.0\\times10^2\\ \\text{J}",
+            "9.0\\times10^3\\ \\text{J}",
+            "3.6\\times10^4\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "E = P t = 60 W × (5.0 × 60 s) = 60 × 300 = 18000 J = 1.8×10⁴ J."
+        }
+      },
+
+      /* ---- A6 Q7 : ionization energy estimate (electric PE) ---- */
+      {
+        id: "a6q7-ionization", concept: "Electric PE — Ionization", fromAssignment: "Assignment 6 (Ch 6)",
+        prompt: '<b>Assignment 6 — Q7.</b> Estimate the ionization energy of a hydrogen-like atom. ' +
+                'The electron (\\(q=-e=-1.6\\times10^{-19}\\) C) orbits the proton (\\(q=+e\\)) at \\(r=1.0\\times10^{-10}\\) m. ' +
+                'Find \\(U_{\\rm elec}\\), then find the energy needed to remove the electron to infinity ' +
+                '(where \\(U=0\\)). ' +
+                '<span class="ask">Find \\(U_{\\rm elec}\\) and \\(E_{\\rm ionize}=0-U_i\\).</span>',
+        inventory: [
+          { id: "pe_elec", tex: "U_e=\\dfrac{kq_1q_2}{r}",      label: "electric PE",  relevant: true  },
+          { id: "pe_gen",  tex: "U=-\\dfrac{Gm_1m_2}{r}",       label: "general PE",   relevant: false },
+          { id: "ke",      tex: "KE=\\tfrac12 mv^2",             label: "kinetic E",    relevant: false },
+          { id: "wfd",     tex: "W=Fd\\cos\\theta",              label: "work",         relevant: false },
+          { id: "circ",    tex: "F=\\dfrac{mv^2}{r}",            label: "centripetal",  relevant: false }
+        ],
+        answerEqId: "pe_elec",
+        dockedTex: "U = \\dfrac{k\\,q_1 q_2}{r}",
+        lhs: "U", joiner: "",
+        terms: [
+          { symbol: "\\dfrac{k\\,q_1 q_2}{r}",
+            sub:    "\\dfrac{(9\\times10^9)(+1.6\\times10^{-19})(-1.6\\times10^{-19})}{1.0\\times10^{-10}}" }
+        ],
+        distractors: [
+          "-\\dfrac{k\\,e^2}{r^2}",
+          "+\\dfrac{k\\,e^2}{r}",
+          "k\\,e\\,r",
+          "\\tfrac12 k e^2"
+        ],
+        result: {
+          expression:   "U = \\dfrac{kq_1q_2}{r}",
+          substitution: "U = \\dfrac{(9\\times10^9)(+1.6\\times10^{-19})(-1.6\\times10^{-19})}{1.0\\times10^{-10}} = \\dfrac{-(9\\times10^9)(2.56\\times10^{-38})}{10^{-10}}",
+          answer:       "U = -2.3\\times10^{-18}\\ \\text{J};\\quad E_{\\rm ionize} = +2.3\\times10^{-18}\\ \\text{J}\\ (\\approx14\\ \\text{eV})"
+        },
+        mcq: {
+          options: [
+            "-2.3\\times10^{-18}\\ \\text{J}",
+            "+2.3\\times10^{-18}\\ \\text{J}",
+            "-2.3\\times10^{-28}\\ \\text{J}",
+            "+9.2\\times10^{-10}\\ \\text{J}"
+          ],
+          correct: 0,
+          why: "U = kq₁q₂/r = (9×10⁹)(+e)(−e)/r = −(9×10⁹)(2.56×10⁻³⁸)/(10⁻¹⁰) = −2.3×10⁻¹⁸ J. Negative — electron is bound. To ionize, supply +2.3×10⁻¹⁸ J ≈ 14.4 eV."
+        }
+      }
     ]
 
   };
@@ -3906,7 +4217,7 @@ if(window.VectorAnims){
    always replaces ALL variables with numbers.
 
    Export shape:
-     window.ASSIGN_FULL = { a1:[...], a2:[...], a3:[...], a4:[...], a5:[...] }
+     window.ASSIGN_FULL = { a1:[...], a2:[...], a3:[...], a4:[...], a5:[...], a6:[...] }
      window.EXAM_MOCK   = [ ... ]   (the 20-question mock midterm)
    (also module.exports for node)
    ================================================================ */
@@ -3936,7 +4247,13 @@ if(window.VectorAnims){
     wfd:   { id: "wfd",  tex: "W=Fd\\cos\\theta",            label: "work",         relevant: false },
     cons:  { id: "cons", tex: "\\vec P_i=\\vec P_f",         label: "conservation", relevant: false },
     fma:   { id: "fma",  tex: "F=ma",                        label: "newton 2nd",   relevant: false },
-    ke:    { id: "ke",   tex: "KE=\\tfrac12 mv^2",           label: "kinetic E",    relevant: false }
+    ke:    { id: "ke",   tex: "KE=\\tfrac12 mv^2",           label: "kinetic E",    relevant: false },
+    ugrav: { id: "ugrav",tex: "\\Delta U=mg\\Delta y",       label: "grav PE",      relevant: false },
+    uspring:{ id:"uspring",tex:"U_s=\\tfrac12 ks^2",         label: "spring PE",    relevant: false },
+    pe_gen:{ id:"pe_gen",tex: "U=-\\dfrac{Gm_1m_2}{r}",     label: "general PE",   relevant: false },
+    pe_elec:{ id:"pe_elec",tex:"U_e=\\dfrac{kq_1q_2}{r}",   label: "electric PE",  relevant: false },
+    power: { id: "power",tex: "P=E/t",                       label: "power",        relevant: false },
+    wke:   { id: "wke",  tex: "W_{\\rm net}=\\Delta KE",     label: "work-energy",  relevant: false }
   };
   // helper: pull a few inventory cards, marking one as the relevant answer
   function inv(answerKey, ...keys){
@@ -4879,6 +5196,170 @@ if(window.VectorAnims){
           correct: 0,
           why: "a=(v_f−v_i)/Δt=⟨6,-4,0⟩/3=⟨2,-1.33,0⟩; F=m a=2·⟨2,-1.33,0⟩=⟨4,-2.67,0⟩ N."
         }
+      }
+    ],
+
+    /* ============================================================
+       ASSIGNMENT 6  —  POTENTIAL ENERGY & ELECTRIC PE
+       ============================================================ */
+    a6: [
+
+      /* A6 Q1 — near-surface gravitational PE / falling ball */
+      {
+        id: "a6q1-falling-ball", concept: "Gravitational PE (near-surface)", fromAssignment: "From Assignment 6, Q1",
+        prompt: '<b>From Assignment 6, Q1.</b> A <b>0.10 kg</b> ball is released from rest at \\(y_i=7\\) m. ' +
+                'Using ball+Earth as the system, \\(\\Delta K+\\Delta U=0\\) and \\(U_{\\rm grav}=mgy\\). ' +
+                '<span class="ask">Find \\(\\Delta K\\) when \\(y_f=4\\) m.</span>',
+        inventory: inv("ugrav", "ugrav", "wke", "ke", "pe_gen", "wfd"),
+        answerEqId: "wke", dockedTex: "\\Delta K = -m\\,g\\,(y_f-y_i)", lhs: "\\Delta K", joiner: "",
+        terms: [ { symbol: "-m\\,g\\,(y_f-y_i)", sub: "-(0.1)(9.8)(4-7)" } ],
+        distractors: ["+m\\,g\\,(y_f-y_i)", "\\tfrac12 m v^2", "m\\,g\\,y_f", "G m_1 m_2 / r"],
+        result: {
+          expression:   "\\Delta K = -m\\,g\\,(y_f-y_i)",
+          substitution: "\\Delta K = -(0.1)(9.8)(4-7) = -(0.98)(-3)",
+          answer:       "\\Delta K = 2.94\\ \\text{J}"
+        },
+        mcq: { options: ["2.94\\ \\text{J}", "-2.94\\ \\text{J}", "4.90\\ \\text{J}", "6.86\\ \\text{J}"],
+          correct: 0,
+          why: "ΔK = −ΔU = −mg(y_f−y_i) = −(0.1)(9.8)(4−7) = −(0.98)(−3) = 2.94 J." }
+      },
+
+      /* A6 Q2 — spring PE, total mechanical energy */
+      {
+        id: "a6q2-spring-energy", concept: "Spring Potential Energy", fromAssignment: "From Assignment 6, Q2",
+        prompt: '<b>From Assignment 6, Q2.</b> A <b>0.20 kg</b> block oscillates on a spring (\\(k=12\\) N/m). ' +
+                'At a given instant the stretch is \\(s=0.030\\) m and the speed is \\(v=0.50\\) m/s. ' +
+                'The total mechanical energy is \\(E=\\tfrac12 mv^2+\\tfrac12 ks^2\\). ' +
+                '<span class="ask">Find \\(E_{\\rm total}\\).</span>',
+        inventory: inv("uspring", "uspring", "ke", "wke", "circ", "wfd"),
+        answerEqId: "ke", dockedTex: "E = \\tfrac12 m v^2 + \\tfrac12 k s^2", lhs: "E", joiner: "+",
+        terms: [
+          { symbol: "\\tfrac12 m v^2", sub: "\\tfrac12(0.20)(0.50)^2" },
+          { symbol: "\\tfrac12 k s^2", sub: "\\tfrac12(12)(0.030)^2" }
+        ],
+        distractors: ["\\tfrac12 k s", "m v^2", "-\\tfrac12 k s^2", "k s^2"],
+        result: {
+          expression:   "E = \\tfrac12 mv^2 + \\tfrac12 ks^2",
+          substitution: "E = \\tfrac12(0.20)(0.25)+\\tfrac12(12)(0.0009) = 0.025+0.0054",
+          answer:       "E = 0.0304\\ \\text{J}"
+        },
+        mcq: { options: ["0.0304\\ \\text{J}", "0.025\\ \\text{J}", "0.0054\\ \\text{J}", "0.0608\\ \\text{J}"],
+          correct: 0,
+          why: "E = ½(0.20)(0.25) + ½(12)(0.0009) = 0.025 + 0.0054 = 0.0304 J." }
+      },
+
+      /* A6 Q3 — gravitational PE (general formula) */
+      {
+        id: "a6q3-grav-pe-general", concept: "Gravitational PE (general)", fromAssignment: "From Assignment 6, Q3",
+        prompt: '<b>From Assignment 6, Q3.</b> Two masses \\(m_1=2.0\\) kg and \\(m_2=5.0\\) kg are separated by ' +
+                '\\(r=0.10\\) m. Using \\(U_{\\rm grav}=-\\dfrac{Gm_1m_2}{r}\\) (\\(G=6.674\\times10^{-11}\\) N·m²/kg²), ' +
+                '<span class="ask">find \\(U_{\\rm grav}\\).</span>',
+        inventory: inv("pe_gen", "pe_gen", "ugrav", "ke", "circ", "wfd"),
+        answerEqId: "pe_gen", dockedTex: "U = -\\dfrac{G m_1 m_2}{r}", lhs: "U", joiner: "",
+        terms: [ { symbol: "-\\dfrac{G m_1 m_2}{r}",
+                   sub:    "-\\dfrac{(6.674\\times10^{-11})(2.0)(5.0)}{0.10}" } ],
+        distractors: ["+\\dfrac{G m_1 m_2}{r}", "\\dfrac{G m_1 m_2}{r^2}", "-G m_1 m_2 r", "m g h"],
+        result: {
+          expression:   "U = -\\dfrac{Gm_1m_2}{r}",
+          substitution: "U = -\\dfrac{(6.674\\times10^{-11})(2.0)(5.0)}{0.10}",
+          answer:       "U = -6.67\\times10^{-9}\\ \\text{J}"
+        },
+        mcq: { options: ["-6.67\\times10^{-9}\\ \\text{J}", "+6.67\\times10^{-9}\\ \\text{J}",
+                          "-6.67\\times10^{-10}\\ \\text{J}", "-6.67\\times10^{-8}\\ \\text{J}"],
+          correct: 0,
+          why: "U = −Gm₁m₂/r = −(6.674×10⁻¹¹)(2.0)(5.0)/0.10 = −6.674×10⁻⁹ J ≈ −6.67×10⁻⁹ J. Sign is negative — gravitational PE is always negative." }
+      },
+
+      /* A6 Q4 — electric PE between two like charges */
+      {
+        id: "a6q4-electric-pe", concept: "Electric Potential Energy", fromAssignment: "From Assignment 6, Q4",
+        prompt: '<b>From Assignment 6, Q4.</b> Two small spheres each carry charge \\(q=+3.0\\) nC \\(=3.0\\times10^{-9}\\) C, ' +
+                'separated by \\(r=0.12\\) m. Using \\(U_{\\rm elec}=\\dfrac{kq_1q_2}{r}\\) with \\(k=9.0\\times10^9\\) N·m²/C², ' +
+                '<span class="ask">find \\(U_{\\rm elec}\\). (Like charges → \\(U>0\\): repulsive/unbound.)</span>',
+        inventory: inv("pe_elec", "pe_elec", "pe_gen", "ke", "circ", "wfd"),
+        answerEqId: "pe_elec", dockedTex: "U = \\dfrac{k\\,q_1 q_2}{r}", lhs: "U", joiner: "",
+        terms: [ { symbol: "\\dfrac{k\\,q_1 q_2}{r}",
+                   sub:    "\\dfrac{(9.0\\times10^9)(3.0\\times10^{-9})^2}{0.12}" } ],
+        distractors: ["\\dfrac{k\\,q_1 q_2}{r^2}", "-\\dfrac{k\\,q_1 q_2}{r}", "k\\,q_1 q_2\\,r", "\\tfrac12 k q^2"],
+        result: {
+          expression:   "U = \\dfrac{kq_1q_2}{r}",
+          substitution: "U = \\dfrac{(9.0\\times10^9)(3.0\\times10^{-9})^2}{0.12} = \\dfrac{(9\\times10^9)(9\\times10^{-18})}{0.12} = \\dfrac{81\\times10^{-9}}{0.12}",
+          answer:       "U = 6.75\\times10^{-7}\\ \\text{J}"
+        },
+        mcq: { options: ["6.75\\times10^{-7}\\ \\text{J}", "-6.75\\times10^{-7}\\ \\text{J}",
+                          "5.63\\times10^{-6}\\ \\text{J}", "8.10\\times10^{-8}\\ \\text{J}"],
+          correct: 0,
+          why: "U = kq²/r = (9×10⁹)(3×10⁻⁹)²/0.12 = (9×10⁹)(9×10⁻¹⁸)/0.12 = 81×10⁻⁹/0.12 = 6.75×10⁻⁷ J. Positive because like charges." }
+      },
+
+      /* A6 Q5 — energy conservation: spring to speed */
+      {
+        id: "a6q5-spring-to-speed", concept: "Energy Conservation (Spring)", fromAssignment: "From Assignment 6, Q5",
+        prompt: '<b>From Assignment 6, Q5.</b> A <b>0.50 kg</b> block on a frictionless surface is attached to a spring ' +
+                '(\\(k=200\\) N/m). The spring is compressed \\(s=0.080\\) m and released from rest. ' +
+                'When the spring returns to its natural length (\\(s=0\\)), all PE has become KE: ' +
+                '\\(\\tfrac12 mv^2=\\tfrac12 ks^2\\). ' +
+                '<span class="ask">Solve for \\(v\\).</span>',
+        inventory: inv("uspring", "uspring", "ke", "wke", "circ", "wfd"),
+        answerEqId: "ke", dockedTex: "v = s\\sqrt{\\dfrac{k}{m}}", lhs: "v", joiner: "",
+        terms: [ { symbol: "s\\sqrt{\\dfrac{k}{m}}", sub: "(0.080)\\sqrt{\\dfrac{200}{0.50}}" } ],
+        distractors: ["\\sqrt{\\dfrac{k\\,s}{m}}", "\\sqrt{\\dfrac{2k\\,s}{m}}", "s\\sqrt{\\dfrac{m}{k}}", "k s / m"],
+        result: {
+          expression:   "v = s\\sqrt{k/m}",
+          substitution: "(0.080)\\sqrt{200/0.50} = (0.080)\\sqrt{400} = (0.080)(20)",
+          answer:       "v = 1.6\\ \\text{m/s}"
+        },
+        mcq: { options: ["1.6\\ \\text{m/s}", "0.8\\ \\text{m/s}", "3.2\\ \\text{m/s}", "0.040\\ \\text{m/s}"],
+          correct: 0,
+          why: "½mv² = ½ks² → v = s√(k/m) = 0.080√400 = 0.080×20 = 1.6 m/s." }
+      },
+
+      /* A6 Q6 — power */
+      {
+        id: "a6q6-power", concept: "Power", fromAssignment: "From Assignment 6, Q6",
+        prompt: '<b>From Assignment 6, Q6.</b> A <b>60 W</b> electric motor runs for <b>5.0 minutes</b>. ' +
+                'Using \\(P=E/t\\), ' +
+                '<span class="ask">find the total energy consumed.</span>',
+        inventory: inv("power", "power", "ke", "wfd", "pe_gen", "circ"),
+        answerEqId: "power", dockedTex: "E = P\\,t", lhs: "E", joiner: "\\cdot",
+        terms: [
+          { symbol: "P", sub: "(60\\,\\text{W})" },
+          { symbol: "t", sub: "(5.0\\times60\\,\\text{s})" }
+        ],
+        distractors: ["t/P", "P/t", "\\tfrac12 P t", "P t^2"],
+        result: {
+          expression:   "E = P\\,t",
+          substitution: "E = (60)(5.0\\times60) = (60)(300)",
+          answer:       "E = 1.8\\times10^4\\ \\text{J}"
+        },
+        mcq: { options: ["1.8\\times10^4\\ \\text{J}", "3.0\\times10^2\\ \\text{J}",
+                          "9.0\\times10^3\\ \\text{J}", "3.6\\times10^4\\ \\text{J}"],
+          correct: 0,
+          why: "E = P t = 60 W × (5.0 × 60 s) = 60 × 300 = 18000 J = 1.8×10⁴ J." }
+      },
+
+      /* A6 Q7 — ionization energy estimate */
+      {
+        id: "a6q7-ionization", concept: "Electric PE — Ionization", fromAssignment: "From Assignment 6, Q7",
+        prompt: '<b>From Assignment 6, Q7.</b> Estimate the ionization energy of a hydrogen-like atom. ' +
+                'The electron (\\(q=-e=-1.6\\times10^{-19}\\) C) orbits the proton (\\(q=+e\\)) at \\(r=1.0\\times10^{-10}\\) m. ' +
+                'Find \\(U_{\\rm elec}\\), then find the energy needed to remove the electron to infinity ' +
+                '(where \\(U=0\\)). ' +
+                '<span class="ask">Find \\(U_{\\rm elec}\\) and \\(E_{\\rm ionize}=0-U_i\\).</span>',
+        inventory: inv("pe_elec", "pe_elec", "pe_gen", "ke", "wfd", "circ"),
+        answerEqId: "pe_elec", dockedTex: "U = \\dfrac{k\\,q_1 q_2}{r}", lhs: "U", joiner: "",
+        terms: [ { symbol: "\\dfrac{k\\,q_1 q_2}{r}",
+                   sub:    "\\dfrac{(9\\times10^9)(+1.6\\times10^{-19})(-1.6\\times10^{-19})}{1.0\\times10^{-10}}" } ],
+        distractors: ["-\\dfrac{k\\,e^2}{r^2}", "+\\dfrac{k\\,e^2}{r}", "k\\,e\\,r", "\\tfrac12 k e^2"],
+        result: {
+          expression:   "U = \\dfrac{kq_1q_2}{r}",
+          substitution: "U = \\dfrac{(9\\times10^9)(+1.6\\times10^{-19})(-1.6\\times10^{-19})}{1.0\\times10^{-10}} = \\dfrac{-(9\\times10^9)(2.56\\times10^{-38})}{10^{-10}}",
+          answer:       "U = -2.3\\times10^{-18}\\ \\text{J};\\quad E_{\\rm ionize} = +2.3\\times10^{-18}\\ \\text{J}\\ (\\approx14\\ \\text{eV})"
+        },
+        mcq: { options: ["-2.3\\times10^{-18}\\ \\text{J}", "+2.3\\times10^{-18}\\ \\text{J}",
+                          "-2.3\\times10^{-28}\\ \\text{J}", "+9.2\\times10^{-10}\\ \\text{J}"],
+          correct: 0,
+          why: "U = kq₁q₂/r = (9×10⁹)(+e)(−e)/r = −(9×10⁹)(2.56×10⁻³⁸)/(10⁻¹⁰) = −2.3×10⁻¹⁸ J. Negative — electron is bound. To ionize, supply +2.3×10⁻¹⁸ J ≈ 14.4 eV." }
       }
     ]
 
@@ -6927,7 +7408,8 @@ const ModeApp = (function(){
       { key:"a2", label:"A2", title:"Ch 2 — Momentum, Forces, Springs & Gravity", set:aset("a2",A123.a2) },
       { key:"a3", label:"A3", title:"Ch 3 — Gravity, Coulomb & Conservation", set:aset("a3",A123.a3) },
       { key:"a4", label:"A4", title:"Ch 4 — Collisions & Friction", set:aset("a4",A45.a4), distinct:true },
-      { key:"a5", label:"A5", title:"Ch 5-6 — Forces, Circular Motion & Energy", set:aset("a5",A45.a5), distinct:true }
+      { key:"a5", label:"A5", title:"Ch 5-6 — Forces, Circular Motion & Energy", set:aset("a5",A45.a5), distinct:true },
+      { key:"a6", label:"A6", title:"Ch 6 — Potential Energy & Electric PE", set:aset("a6",A45.a6), distinct:true }
     ];
   }
   function buildAssignMenu(){
