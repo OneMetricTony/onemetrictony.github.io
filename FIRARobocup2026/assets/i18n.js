@@ -1154,6 +1154,11 @@
         a.setAttribute('href', file + u.search + u.hash);
       } catch (e) {}
     });
+    // swap localized images (e.g. the booth poster) by language
+    document.querySelectorAll('img[data-src-en]').forEach(function (img) {
+      var s = img.getAttribute('data-src-' + lang) || img.getAttribute('data-src-en');
+      if (s) img.setAttribute('src', s);
+    });
     try { localStorage.setItem('fira_lang', lang); } catch (e) {}
   }
 
