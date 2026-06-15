@@ -1,1 +1,6 @@
 _preview/
+
+*.bak
+*.bak_*
+*_prepolish*
+_backup*/

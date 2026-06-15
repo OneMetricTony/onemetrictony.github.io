@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Release · FIRA RoboWorld Cup 2026 · Markham, Canada</title>
+  <link rel="icon" href="assets/emblem.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/home.css">
+  <style>
+    /* ===== Media Release ===== */
+    .mr-grid {
+      display: grid; gap: var(--gap);
+      grid-template-columns: repeat(2, 1fr);
+      margin-top: 1.8rem;
+    }
+    @media (max-width: 760px) { .mr-grid { grid-template-columns: 1fr; } }
+
+    /* tall HUD personnel card */
+    .mr-card {
+      position: relative; display: flex; flex-direction: column;
+      background: var(--c-bg-2); border: 1px solid var(--c-accent-dk);
+      box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+    }
+    .mr-card::before { /* top accent bar */
+      content: ""; position: absolute; top: 0; left: var(--chamfer);
+      width: 72px; height: 3px; background: var(--c-accent); z-index: 4;
+    }
+    /* media (video) section — top */
+    .mr-card__media { position: relative; background: #000; }
+    .mr-card__video {
+      display: block; width: 100%; aspect-ratio: 4 / 5;
+      object-fit: cover; background: #000;
+    }
+    /* circular LinkedIn avatar, bottom-right of the media */
+    .mr-card__avatar {
+      position: absolute; right: 14px; top: 14px; z-index: 5;
+      width: 84px; height: 84px; border-radius: 50%; object-fit: cover;
+      object-position: center top;
+      border: 3px solid var(--c-accent);
+      box-shadow: 0 0 0 3px var(--c-bg-2), 0 6px 18px rgba(0,0,0,.55), var(--glow);
+    }
+    /* HUD corner ticks around the avatar */
+    .mr-card__avatar-ring {
+      position: absolute; right: 6px; top: 6px; z-index: 4;
+      width: 100px; height: 100px; border-radius: 50%;
+      border: 1px dashed rgba(240,57,78,.55); pointer-events: none;
+    }
+    /* body — smaller info section */
+    .mr-card__body { padding: 1.4rem 1.3rem 1.4rem; }
+    .mr-card__name {
+      margin: 0; font-family: var(--font-head); font-weight: 700;
+      font-size: 1.18rem; letter-spacing: .02em; color: var(--c-text);
+      text-transform: uppercase;
+    }
+    .mr-card__title { margin: .25rem 0 0; color: var(--c-text-dim); font-size: .92rem; }
+    .mr-card__fira {
+      margin: .7rem 0 0; display: inline-block;
+      font-family: var(--font-head); font-size: .68rem; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--c-accent);
+      border: 1px solid var(--c-accent-dk); padding: .28rem .6rem;
+      clip-path: polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);
+    }
+
+    /* wide CBC rectangle */
+    .mr-wide {
+      position: relative; margin-top: var(--gap);
+      background: var(--c-bg-2); border: 1px solid var(--c-line);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+      overflow: hidden;
+    }
+    .mr-wide__inner {
+      display: grid; grid-template-columns: 1.4fr 1fr; gap: 0; align-items: stretch;
+    }
+    @media (max-width: 760px) { .mr-wide__inner { grid-template-columns: 1fr; } }
+    .mr-wide__media {
+      position: relative; aspect-ratio: 16 / 9; background: #05080c;
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid var(--c-line);
+    }
+    .mr-wide__media video, .mr-wide__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mr-wide__ph { text-align: center; color: var(--c-text-mute); padding: 1.5rem; }
+    .mr-wide__ph b { display:block; font-family: var(--font-head); letter-spacing:.16em; color: var(--c-text-dim); font-size: 1rem; margin-bottom:.3rem; }
+    .mr-wide__body { padding: 1.6rem 1.5rem; align-self: center; }
+    .mr-wide__body h3 { margin: .2rem 0 .4rem; font-size: 1.35rem; text-transform: uppercase; }
+    .mr-wide__body p { color: var(--c-text-dim); }
+
+    /* more-coverage grid of small clip tiles */
+    .mr-more { margin-top: calc(var(--gap) * 1.4); }
+    .mr-more__head { margin: 0 0 .3rem; font-size: 1.35rem; text-transform: uppercase; }
+    .mr-more__lead { color: var(--c-text-dim); margin: 0 0 .5rem; max-width: 60ch; }
+    .mr-more__note { color: var(--c-text-mute); font-size: .85rem; margin: 0 0 1.4rem; max-width: 60ch; }
+    .mr-more__grid {
+      display: grid; gap: var(--gap);
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 760px) { .mr-more__grid { grid-template-columns: 1fr; } }
+    .mr-tile {
+      position: relative; display: flex; flex-direction: column;
+      background: var(--c-bg-2); border: 1px solid var(--c-line);
+      box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+      overflow: hidden;
+    }
+    .mr-tile__media { position: relative; background: #05080c; }
+    .mr-tile__media video {
+      display: block; width: 100%; aspect-ratio: 16 / 9;
+      object-fit: cover; background: #000;
+    }
+    .mr-tile__body { padding: 1.1rem 1.2rem 1.3rem; }
+    .mr-tile__src {
+      display: inline-block; margin: 0 0 .5rem;
+      font-family: var(--font-head); font-size: .66rem; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--c-accent);
+      border: 1px solid var(--c-accent-dk); padding: .26rem .55rem;
+      clip-path: polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);
+    }
+    .mr-tile__desc { margin: 0; color: var(--c-text-dim); font-size: .94rem; line-height: 1.5; }
+
+    /* language toggle in nav */
+    .lang-switch { display: inline-flex; align-items: center; gap: 2px; margin-left: .4rem; }
+    .lang-switch a {
+      font-family: var(--font-head); font-size: .72rem; letter-spacing: .06em;
+      color: var(--c-text-mute); padding: .25rem .45rem; line-height: 1;
+      border: 1px solid transparent; border-radius: 3px;
+    }
+    .lang-switch a:hover { color: var(--c-text); }
+    .lang-switch a.is-active { color: var(--c-bg); background: var(--c-accent); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
+    <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
+    <div class="nav__links">
+      <a class="nav__link" href="index.html" data-i18n="nav.home">Home</a>
+      <a class="nav__link" href="media-release.html" aria-current="page" data-i18n="nav.media">Media Release</a>
+      <a class="nav__link" href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+      <a class="nav__link" href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+      <a class="nav__link" href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+      <a class="nav__link" href="about.html" data-i18n="nav.about">About</a>
+      <span class="lang-switch" aria-label="Language">
+        <a data-lang-btn="en" href="?lang=en">EN</a>
+        <a data-lang-btn="cn" href="?lang=cn">CN</a>
+        <a data-lang-btn="fr" href="?lang=fr">FR</a>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="container hero__inner">
+      <p class="eyebrow" data-i18n="mr.eyebrow">FIRA ROBOWORLD CUP 2026 · MARKHAM, CANADA</p>
+      <h1 data-i18n="mr.title">Media Release</h1>
+      <p data-i18n="mr.intro">Civic leaders welcome the FIRA RoboWorld Cup to Markham, Canada.</p>
+    </div>
+  </header>
+
+  <!-- ============ CIVIC LEADER CARDS ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="mr-grid">
+
+        <!-- AMANDA -->
+        <article class="mr-card">
+          <div class="mr-card__media">
+            <video class="mr-card__video" controls playsinline preload="metadata" poster="assets/media/amanda-poster.jpg">
+              <source src="assets/media/amanda.mp4" type="video/mp4">
+            </video>
+            <span class="mr-card__avatar-ring" aria-hidden="true"></span>
+            <img class="mr-card__avatar" src="assets/media/amanda-headshot.jpg" alt="Amanda Yeung Collucci">
+          </div>
+          <div class="mr-card__body">
+            <p class="mr-card__name">Amanda Yeung Collucci</p>
+            <p class="mr-card__title" data-i18n="mr.amanda.title">Ward 4 Councillor · City of Markham</p>
+            <span class="mr-card__fira" data-i18n="mr.fira">FIRA RoboWorld Cup 2026</span>
+          </div>
+        </article>
+
+        <!-- FRANK -->
+        <article class="mr-card">
+          <div class="mr-card__media">
+            <video class="mr-card__video" controls playsinline preload="metadata" poster="assets/media/frank-poster.jpg">
+              <source src="assets/media/frank.mp4" type="video/mp4">
+            </video>
+            <span class="mr-card__avatar-ring" aria-hidden="true"></span>
+            <img class="mr-card__avatar" src="assets/media/frank-headshot.jpg" alt="Frank Scarpitti">
+          </div>
+          <div class="mr-card__body">
+            <p class="mr-card__name">Frank Scarpitti</p>
+            <p class="mr-card__title" data-i18n="mr.frank.title">Mayor · City of Markham</p>
+            <span class="mr-card__fira" data-i18n="mr.fira">FIRA RoboWorld Cup 2026</span>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- ============ CBC VANCOUVER WIDE ============ -->
+      <div class="mr-wide">
+        <div class="mr-wide__inner">
+          <div class="mr-wide__media">
+            <video controls playsinline preload="metadata" poster="assets/media/cbc-vancouver-poster.jpg">
+              <source src="assets/media/cbc-vancouver.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="mr-wide__body">
+            <p class="eyebrow" data-i18n="mr.cbc.eyebrow">National coverage</p>
+            <h3 data-i18n="mr.cbc.title">As seen on CBC Vancouver</h3>
+            <p data-i18n="mr.fira">FIRA RoboWorld Cup 2026</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MORE COVERAGE ============ -->
+      <div class="mr-more">
+        <p class="eyebrow">More coverage</p>
+        <h2 class="mr-more__head" data-i18n="news.head">In the news</h2>
+        <p class="mr-more__lead" data-i18n="news.lead">Broadcasters across Canada have followed the FIRA RoboWorld Cup and its qualifiers, in English, French and Chinese.</p>
+        <p class="mr-more__note" data-i18n="news.note">Coverage shown is from the FIRA qualifier in Vancouver / Surrey, BC.</p>
+
+        <div class="mr-more__grid">
+
+          <!-- Global News interview -->
+          <article class="mr-tile">
+            <div class="mr-tile__media">
+              <video controls playsinline preload="metadata" poster="assets/media/global-news-interview-poster.jpg">
+                <source src="assets/media/global-news-interview.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="mr-tile__body">
+              <span class="mr-tile__src">Global News</span>
+              <p class="mr-tile__desc" data-i18n="news.d1">Global News reports from the floor and interviews competitor Alexander Jando of the Ten Ton Robotics team about the FIRA qualifier in Canada.</p>
+            </div>
+          </article>
+
+          <!-- Radio-Canada -->
+          <article class="mr-tile">
+            <div class="mr-tile__media">
+              <video controls playsinline preload="metadata" poster="assets/media/radio-canada-coverage-poster.jpg">
+                <source src="assets/media/radio-canada-coverage.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="mr-tile__body">
+              <span class="mr-tile__src">Radio-Canada · Le Téléjournal</span>
+              <p class="mr-tile__desc" data-i18n="news.d2">French-language coverage from Radio-Canada's Le Téléjournal, billed as an "international robotics competition," with packed stands and robots running the course in Surrey.</p>
+            </div>
+          </article>
+
+          <!-- OMNI News feature -->
+          <article class="mr-tile">
+            <div class="mr-tile__media">
+              <video controls playsinline preload="metadata" poster="assets/media/omni-news-feature-poster.jpg">
+                <source src="assets/media/omni-news-feature.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="mr-tile__body">
+              <span class="mr-tile__src">OMNI News · 中文</span>
+              <p class="mr-tile__desc" data-i18n="news.d3">Chinese-language feature on OMNI News covering FIRA Canada, with an organizer interview, the trophy table and young teams presenting their work.</p>
+            </div>
+          </article>
+
+          <!-- OMNI News Taiwan -->
+          <article class="mr-tile">
+            <div class="mr-tile__media">
+              <video controls playsinline preload="metadata" poster="assets/media/omni-news-taiwan-poster.jpg">
+                <source src="assets/media/omni-news-taiwan.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="mr-tile__body">
+              <span class="mr-tile__src">OMNI News · 中文</span>
+              <p class="mr-tile__desc" data-i18n="news.d4">A second OMNI News segment from the anchor desk, featuring an organizer on the 250-plus students taking part and an interview with Taiwan representative Kuo-Yang Tu.</p>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">FIRA RoboWorld Cup</div>
+        <div class="footer__cols">
+          <div>
+            <h4>Explore</h4>
+            <a href="index.html" data-i18n="nav.home">Home</a>
+            <a href="media-release.html" data-i18n="nav.media">Media Release</a>
+            <a href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+            <a href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+            <a href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+            <a href="about.html" data-i18n="nav.about">About</a>
+          </div>
+          <div>
+            <h4>Contact</h4>
+            <a href="mailto:tonychu@hqcnrs.org">Tony Chu · tonychu@hqcnrs.org</a>
+            <a href="tel:+16476066942">647-606-6942</a>
+            <a href="https://canada.firaworldcup.org" target="_blank" rel="noopener">FIRA Canada / CNRS</a>
+            <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">Instagram · @cnrs.ngo</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bar">© 2026 FIRA Canada · Canadian National Robotic Society</div>
+    </div>
+  </footer>
+
+  <script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+  <script src="assets/i18n.js"></script>
+</body>
+</html>

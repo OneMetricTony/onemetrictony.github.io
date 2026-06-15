@@ -72,30 +72,17 @@
   filter: drop-shadow(0 0 6px rgba(240, 57, 78, .65));
   opacity: .85;
 }
-.cta-scan--l { left: 3px;  animation: cta-scan-run 4.2s linear infinite; }
-.cta-scan--r { right: 3px; animation: cta-scan-run 4.2s linear infinite; animation-delay: 2.1s; }
+/* scanline animations disabled (professional-polish pass) — hide the
+   travelling crimson lines entirely; keep the structural rules intact */
+.cta-scan--l { left: 3px;  animation: none; opacity: 0; }
+.cta-scan--r { right: 3px; animation: none; opacity: 0; }
 
-@keyframes cta-scan-run {
-  0%   { transform: translateY(-110%); opacity: 0; }
-  12%  { opacity: .85; }
-  88%  { opacity: .85; }
-  100% { transform: translateY(360%); opacity: 0; }
-}
-
-/* soft glowing pulse on the chamfer corner brackets */
+/* corner-bracket glow pulse disabled — no crimson bloom */
 .cta-band--fx::before,
 .cta-band--fx::after,
 .cta-band--fx > .hud-frame__tr,
 .cta-band--fx > .hud-frame__bl {
-  animation: cta-corner-pulse 3.4s ease-in-out infinite;
-}
-.cta-band--fx::after               { animation-delay: .85s; }
-.cta-band--fx > .hud-frame__tr     { animation-delay: 1.7s; }
-.cta-band--fx > .hud-frame__bl     { animation-delay: 2.55s; }
-
-@keyframes cta-corner-pulse {
-  0%, 100% { filter: drop-shadow(0 0 0 rgba(240, 57, 78, 0)); }
-  50%      { filter: drop-shadow(0 0 8px rgba(240, 57, 78, .75)); }
+  animation: none;
 }
 
 /* ---------- C. CTA BAND — ambient breathing sponsor field ------ */

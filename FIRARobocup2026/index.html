@@ -48,23 +48,21 @@
     .cal-row { display: grid; gap: var(--gap); grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: center; margin-top: 1.5rem; }
     @media (max-width: 760px) { .cal-row { grid-template-columns: 1fr; } }
     .cal { position: relative; padding: 1rem 1.1rem 1.2rem; overflow: hidden;
-      background: rgba(8,20,30,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(47,208,255,.5);
-      box-shadow: 0 0 0 1px rgba(47,208,255,.22), 0 0 22px rgba(47,208,255,.22), inset 0 0 26px rgba(47,208,255,.06);
+      background: var(--c-bg-2);
+      border: 1px solid var(--c-line);
+      box-shadow: var(--glow);
       clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px); }
-    .cal__scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba(47,208,255,.7), transparent); animation: calScan 3.4s linear infinite; }
-    @keyframes calScan { 0%{top:-2px;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:100%;opacity:0} }
+    .cal__scan { display: none; }
     .cal__hd { margin: 0 0 .7rem; text-align: center; font-family: var(--font-head); font-weight: 700;
-      letter-spacing: .22em; text-transform: uppercase; color: #9fe8ff; text-shadow: 0 0 10px rgba(47,208,255,.55); }
+      letter-spacing: .22em; text-transform: uppercase; color: var(--c-gold); }
     .cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
     .cal__dow { text-align: center; font-family: var(--font-head); font-size: .6rem; letter-spacing: .04em; color: var(--c-text-mute); padding-bottom: 3px; }
     .cal__d { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
       font-family: var(--font-head); font-size: .82rem; color: var(--c-text-dim);
-      border: 1px solid rgba(159,232,255,.10); border-radius: 2px; }
+      border: 1px solid var(--c-line); border-radius: 2px; }
     .cal__d.empty { border-color: transparent; }
-    .cal__d.camp { color: #06121a; background: #2fd0ff; box-shadow: 0 0 10px rgba(47,208,255,.6); font-weight: 700; }
-    .cal__d.cup  { color: #fff; background: var(--c-accent); box-shadow: 0 0 12px rgba(240,57,78,.6); font-weight: 700; }
+    .cal__d.camp { color: var(--c-bg); background: var(--c-gold); font-weight: 700; }
+    .cal__d.cup  { color: #fff; background: var(--c-accent); font-weight: 700; }
     .cal-keys { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .6rem; }
     .cal-keys li { display: flex; align-items: center; gap: .6rem; color: var(--c-text-dim); font-size: .95rem; }
     .cal-keys i { width: 16px; height: 16px; flex: 0 0 auto; border-radius: 2px; }
@@ -73,9 +71,9 @@
     .vol-spots b { color: var(--c-gold); }
     .role-cards { display: grid; gap: .8rem; margin-bottom: 1.3rem; }
     .role-card { padding: .9rem 1.1rem; }
-    .role-card--camp { border-color: rgba(47,208,255,.5); }
+    .role-card--camp { border-color: var(--c-gold); }
     .role-card__tag { margin: 0 0 .4rem; font-family: var(--font-head); letter-spacing: .16em; text-transform: uppercase; font-size: .82rem; }
-    .role-card--camp .role-card__tag { color: #2fd0ff; }
+    .role-card--camp .role-card__tag { color: var(--c-gold); }
     .role-card--cup .role-card__tag { color: var(--c-accent); }
     .role-card__when { margin: .12rem 0; color: var(--c-text); font-weight: 600; font-size: .95rem; }
     .role-card__when span { color: var(--c-text-mute); font-weight: 400; }
@@ -101,26 +99,36 @@
     <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
-      <a class="nav__link" href="index.html" aria-current="page">Home</a>
-      <a class="nav__link" href="robocup.html">RoboWorld Cup</a>
-      <a class="nav__link" href="kavosh.html">Kavosh</a>
-      <a class="nav__link" href="sponsorship.html">Sponsorship</a>
-      <a class="nav__link" href="#volunteer">Volunteer</a>
+      <a class="nav__link" href="index.html" aria-current="page" data-i18n="nav.home">Home</a>
+      <a class="nav__link" href="media-release.html" data-i18n="nav.media">Media Release</a>
+      <a class="nav__link" href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+      <a class="nav__link" href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+      <a class="nav__link" href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+      <a class="nav__link" href="#volunteer" data-i18n="nav.volunteer">Volunteer</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
-      <a class="nav__link" href="about.html">About</a>
+      <a class="nav__link" href="about.html" data-i18n="nav.about">About</a>
+      <span class="lang-switch" aria-label="Language">
+        <a data-lang-btn="en" href="?lang=en">EN</a>
+        <a data-lang-btn="cn" href="?lang=cn">CN</a>
+        <a data-lang-btn="fr" href="?lang=fr">FR</a>
+      </span>
     </div>
   </nav>
 
   <!-- ============ HERO ============ -->
   <header class="hero">
+    <video class="hero__bg" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+      <source src="assets/fira-cgi.mp4" type="video/mp4">
+    </video>
+    <div class="hero__scrim" aria-hidden="true"></div>
     <div class="container hero__inner">
       <img class="cnrs-mark" src="assets/cnrs-logo.svg" alt="Canadian National Robotic Society (CNRS)">
-      <p class="eyebrow">FIRA ROBOWORLD CUP 2026 · MARKHAM, CANADA</p>
-      <h1>A Robotics World <span>Championship</span> Comes to Canada</h1>
-      <p>The FIRA RoboWorld Cup lands in Markham, Ontario for the first time ever — a global stage where the world's elite student and research robotics teams compete. Partner with us and put your brand at the heart of the future of robotics and AI.</p>
+      <p class="eyebrow" data-i18n="home.1">FIRA ROBOWORLD CUP 2026 · MARKHAM, CANADA</p>
+      <h1 data-i18n="home.2">A Robotics World <span>Championship</span> Comes to Canada</h1>
+      <p data-i18n="home.3">The FIRA RoboWorld Cup lands in Markham, Ontario for the first time ever — a global stage where the world's elite student and research robotics teams compete. Partner with us and put your brand at the heart of the future of robotics and AI.</p>
       <div class="hero__actions">
-        <a class="angled-btn" href="sponsorship.html">Become a Sponsor</a>
-        <a class="angled-btn angled-btn--ghost" href="robocup.html">Explore RoboWorld Cup</a>
+        <a class="angled-btn" href="sponsorship.html" data-i18n="home.4">Become a Sponsor</a>
+        <a class="angled-btn angled-btn--ghost" href="robocup.html" data-i18n="home.5">Explore RoboWorld Cup</a>
       </div>
     </div>
   </header>
@@ -128,7 +136,7 @@
   <!-- ============ GLOBAL FIRA SITE ============ -->
   <section class="section">
     <div class="container">
-      <div class="section-divider"><span>The Global Stage</span></div>
+      <div class="section-divider"><span data-i18n="home.6">The Global Stage</span></div>
       <div class="embed-grid">
         <a class="site-embed" href="https://firaworldcup.org/" target="_blank" rel="noopener" aria-label="Visit the official FIRA RoboWorld Cup website">
           <span class="site-embed__bar">
@@ -138,11 +146,11 @@
           <img src="assets/firaworldcup-preview.jpg" alt="The official FIRA RoboWorld Cup website, featuring the 2026 RoboWorld Cup &amp; Summit in Markham, Canada" loading="lazy">
         </a>
         <div class="embed-body">
-          <p class="eyebrow">Part of a global movement</p>
-          <h2>The Official FIRA RoboWorld Cup</h2>
-          <p>Markham 2026 is the Canadian stage of the worldwide FIRA RoboWorld Cup — decades of international robot sport spanning dozens of nations. Explore the global federation, its competitions and results.</p>
+          <p class="eyebrow" data-i18n="home.7">Part of a global movement</p>
+          <h2 data-i18n="home.8">The Official FIRA RoboWorld Cup</h2>
+          <p data-i18n="home.9">Markham 2026 is the Canadian stage of the worldwide FIRA RoboWorld Cup — decades of international robot sport spanning dozens of nations. Explore the global federation, its competitions and results.</p>
           <div class="cta-actions" style="justify-content:flex-start">
-            <a class="angled-btn" href="https://firaworldcup.org/" target="_blank" rel="noopener">Visit firaworldcup.org</a>
+            <a class="angled-btn" href="https://firaworldcup.org/" target="_blank" rel="noopener" data-i18n="home.10">Visit firaworldcup.org</a>
           </div>
         </div>
       </div>
@@ -152,17 +160,17 @@
   <!-- ============ IMPACT STAT CHIPS ============ -->
   <section class="section">
     <div class="container">
-      <div class="section-divider"><span>By the numbers</span></div>
+      <div class="section-divider"><span data-i18n="home.11">By the numbers</span></div>
       <div class="chips-row">
-        <span class="stat-chip"><b>1,000+</b><small>Competitors</small></span>
-        <span class="stat-chip"><b>27+</b><small>Countries</small></span>
-        <span class="stat-chip"><b>9.5M+</b><small>Media reach</small></span>
+        <span class="stat-chip"><b>1,000+</b><small data-i18n="home.12">Competitors</small></span>
+        <span class="stat-chip"><b>27+</b><small data-i18n="home.13">Countries</small></span>
+        <span class="stat-chip"><b>9.5M+</b><small data-i18n="home.14">Media reach</small></span>
         <span class="stat-chip"><b>Jul 16–21</b><small>2026</small></span>
-        <span class="stat-chip"><b>First</b><small>in Canada</small></span>
+        <span class="stat-chip"><b data-i18n="home.15">First</b><small data-i18n="home.16">in Canada</small></span>
       </div>
       <figure class="ig-figure ig-figure--wide ig-figure--accent" style="margin-top:1.6rem">
         <img src="assets/venue/markham-pan-am-centre.jpg" alt="The Markham Pan Am Centre — host venue of the FIRA RoboWorld Cup 2026" loading="lazy">
-        <figcaption>Markham Pan Am Centre · Host Venue · July 16–21, 2026</figcaption>
+        <figcaption data-i18n="home.17">Markham Pan Am Centre · Host Venue · July 16–21, 2026</figcaption>
       </figure>
     </div>
   </section>
@@ -170,22 +178,22 @@
   <!-- ============ EXPLORE PANELS ============ -->
   <section class="section">
     <div class="container">
-      <div class="section-divider"><span>Explore</span></div>
+      <div class="section-divider"><span data-i18n="home.18">Explore</span></div>
       <div class="panel-grid">
         <a class="hud-panel" href="robocup.html" style="color:inherit">
-          <h3>What is the FIRA RoboWorld Cup</h3>
-          <p>The international championship of fully autonomous robots — humanoid decathlons, robot soccer, flying drones and more — now in its 31st edition.</p>
-          <span class="panel-link">Discover RoboWorld Cup →</span>
+          <h3 data-i18n="home.19">What is the FIRA RoboWorld Cup</h3>
+          <p data-i18n="home.20">The international championship of fully autonomous robots — humanoid decathlons, robot soccer, flying drones and more — now in its 31st edition.</p>
+          <span class="panel-link" data-i18n="home.21">Discover RoboWorld Cup →</span>
         </a>
         <a class="hud-panel hud-panel--accent" href="kavosh.html" style="color:inherit">
-          <h3>Meet Kavosh</h3>
-          <p>Kavosh AI &amp; Robotics Academy — the Canadian team engineering world champions, and the first Canadian national team on the FIRA world stage.</p>
-          <span class="panel-link">Meet the team →</span>
+          <h3 data-i18n="home.22">Meet Kavosh</h3>
+          <p data-i18n="home.23">Kavosh AI &amp; Robotics Academy — the Canadian team engineering world champions, and the first Canadian national team on the FIRA world stage.</p>
+          <span class="panel-link" data-i18n="home.24">Meet the team →</span>
         </a>
         <a class="hud-panel" href="sponsorship.html" style="color:inherit">
-          <h3>Sponsorship Tiers</h3>
-          <p>From Bronze to Title, find the partnership that fits — global brand exposure, direct access to top robotics talent, and lasting STEM impact.</p>
-          <span class="panel-link">View tiers &amp; benefits →</span>
+          <h3 data-i18n="home.25">Sponsorship Tiers</h3>
+          <p data-i18n="home.26">From Bronze to Title, find the partnership that fits — global brand exposure, direct access to top robotics talent, and lasting STEM impact.</p>
+          <span class="panel-link" data-i18n="home.27">View tiers &amp; benefits →</span>
         </a>
       </div>
     </div>
@@ -194,7 +202,7 @@
   <!-- ============ VOLUNTEER ============ -->
   <section class="section" id="volunteer">
     <div class="container">
-      <div class="section-divider"><span>Volunteer</span></div>
+      <div class="section-divider"><span data-i18n="nav.volunteer">Volunteer</span></div>
 
       <div class="vol-grid">
         <div class="vol-stage">
@@ -203,7 +211,7 @@
           </figure>
           <div class="cal cal--overlay">
             <span class="cal__scan" aria-hidden="true"></span>
-            <p class="cal__hd">July 2026</p>
+            <p class="cal__hd" data-i18n="home.28">July 2026</p>
             <div class="cal__grid">
               <span class="cal__dow">S</span><span class="cal__dow">M</span><span class="cal__dow">T</span><span class="cal__dow">W</span><span class="cal__dow">T</span><span class="cal__dow">F</span><span class="cal__dow">S</span>
               <span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d empty"></span><span class="cal__d">1</span><span class="cal__d">2</span><span class="cal__d">3</span><span class="cal__d">4</span>
@@ -215,45 +223,45 @@
           </div>
         </div>
         <div class="vol-body">
-          <p class="eyebrow" style="color:#9fe8ff">Mark your calendar</p>
-          <h2>Help Bring the RoboWorld Cup to Life</h2>
+          <p class="eyebrow" data-i18n="home.29">Mark your calendar</p>
+          <h2 data-i18n="home.30">Help Bring the RoboWorld Cup to Life</h2>
           <ul class="cal-keys" style="margin:.2rem 0 1rem">
-            <li><i style="background:#2fd0ff;box-shadow:0 0 8px rgba(47,208,255,.6)"></i> <span style="color:#2fd0ff;font-weight:700">Preparation Camp</span>&nbsp;— July 6–16 (weekdays)</li>
-            <li><i style="background:var(--c-accent);box-shadow:0 0 8px rgba(240,57,78,.6)"></i> <span style="color:var(--c-accent);font-weight:700">FIRA RoboWorld Cup</span>&nbsp;— July 17–21</li>
+            <li data-i18n="home.31"><i style="background:var(--c-gold)"></i> <span style="color:var(--c-gold);font-weight:700">Preparation Camp</span>&nbsp;— July 6–16 (weekdays)</li>
+            <li data-i18n="home.32"><i style="background:var(--c-accent)"></i> <span style="color:var(--c-accent);font-weight:700">FIRA RoboWorld Cup</span>&nbsp;— July 17–21</li>
           </ul>
-          <p>Top-tier volunteers can earn an honourary mention from the Mayor of Markham and possible long-term offers from KAVOSH.ai. Food, uniform, and documented hours provided.</p>
-          <p class="vol-spots">Spots are limited — <b>10 remaining</b></p>
+          <p data-i18n="home.33">Top-tier volunteers can earn an honourary mention from the Mayor of Markham and possible long-term offers from KAVOSH.ai. Food, uniform, and documented hours provided.</p>
+          <p class="vol-spots" data-i18n="home.34">Spots are limited — <b>10 remaining</b></p>
           <div class="award-row">
-            <figure class="award-thumb" data-full="assets/awards/award-markham.jpg"><img src="assets/awards/award-markham.jpg" alt="City of Markham recognition for Team Canada — Kavosh Robotic Team &amp; FIRA Canada" loading="lazy"><figcaption>City of Markham</figcaption></figure>
+            <figure class="award-thumb" data-full="assets/awards/award-markham.jpg"><img src="assets/awards/award-markham.jpg" alt="City of Markham recognition for Team Canada — Kavosh Robotic Team &amp; FIRA Canada" loading="lazy"><figcaption data-i18n="home.35">City of Markham</figcaption></figure>
             <figure class="award-thumb" data-full="assets/awards/award-jeanyip.jpg"><img src="assets/awards/award-jeanyip.jpg" alt="Greetings from MP Jean Yip, House of Commons" loading="lazy"><figcaption>MP Jean Yip</figcaption></figure>
-            <figure class="award-thumb" data-full="assets/awards/award-pm.jpg"><img src="assets/awards/award-pm.jpg" alt="Congratulations from the Prime Minister of Canada" loading="lazy"><figcaption>Prime Minister</figcaption></figure>
+            <figure class="award-thumb" data-full="assets/awards/award-pm.jpg"><img src="assets/awards/award-pm.jpg" alt="Congratulations from the Prime Minister of Canada" loading="lazy"><figcaption data-i18n="home.36">Prime Minister</figcaption></figure>
           </div>
           <div class="role-cards">
             <div class="hud-panel role-card role-card--camp">
-              <p class="role-card__tag">Preparation Camp</p>
-              <p class="role-card__when">July 6–16, 2026 · 9 AM–6 PM <span>(no weekends)</span></p>
+              <p class="role-card__tag" data-i18n="home.37">Preparation Camp</p>
+              <p class="role-card__when" data-i18n="home.38">July 6–16, 2026 · 9 AM–6 PM <span>(no weekends)</span></p>
               <p class="role-card__where">7050 Woodbine Ave, Suite 300, Markham, ON L3R 4G8</p>
-              <p class="role-card__role">Role — Teaching Assistant</p>
+              <p class="role-card__role" data-i18n="home.39">Role — Teaching Assistant</p>
             </div>
             <div class="hud-panel role-card role-card--cup">
               <p class="role-card__tag">FIRA RoboWorld Cup</p>
               <p class="role-card__when">July 17–21, 2026</p>
-              <p class="role-card__where">Markham Pan Am Centre — 16 Main St Unionville, Markham, ON L3R 0W7</p>
-              <p class="role-card__role">Role — Supervising younger students, coaching support, parent communication</p>
+              <p class="role-card__where" data-i18n="home.40">Markham Pan Am Centre — 16 Main St Unionville, Markham, ON L3R 0W7</p>
+              <p class="role-card__role" data-i18n="home.41">Role — Supervising younger students, coaching support, parent communication</p>
             </div>
           </div>
           <div class="cta-actions" style="justify-content:flex-start">
-            <a class="angled-btn" id="volunteer-apply" href="https://docs.google.com/forms/d/e/1FAIpQLSdCs8RkbyWVMia90f2Llybm0S-RHbdCl4v9OqMxq33bnXevdQ/viewform" target="_blank" rel="noopener">Apply to Volunteer</a>
-            <a class="angled-btn angled-btn--ghost" href="robocup.html">Learn About the Event</a>
+            <a class="angled-btn" id="volunteer-apply" href="https://docs.google.com/forms/d/e/1FAIpQLSdCs8RkbyWVMia90f2Llybm0S-RHbdCl4v9OqMxq33bnXevdQ/viewform" target="_blank" rel="noopener" data-i18n="home.42">Apply to Volunteer</a>
+            <a class="angled-btn angled-btn--ghost" href="robocup.html" data-i18n="home.43">Learn About the Event</a>
           </div>
         </div>
       </div>
       <div class="panel-grid" style="margin-top:1.6rem">
-        <div class="hud-panel"><h3>Volunteer Hours</h3><p>Earn documented volunteer hours — ideal for students fulfilling community-service requirements.</p></div>
-        <div class="hud-panel hud-panel--accent"><h3>Certificate of Participation</h3><p>Receive an official certificate recognizing your contribution to an international championship.</p></div>
-        <div class="hud-panel"><h3>Coding Experience Preferred</h3><p>Comfortable with code? Help with team support, scoring and tech ops — but all backgrounds are welcome.</p></div>
-        <div class="hud-panel"><h3>Long-Term Potential</h3><p>Standout volunteers may be considered for ongoing roles with CNRS and future FIRA events.</p></div>
-        <div class="hud-panel"><h3>Refreshments Provided</h3><p>Food and drinks are on us while you're on shift.</p></div>
+        <div class="hud-panel"><h3 data-i18n="home.44">Volunteer Hours</h3><p data-i18n="home.45">Earn documented volunteer hours — ideal for students fulfilling community-service requirements.</p></div>
+        <div class="hud-panel hud-panel--accent"><h3 data-i18n="home.46">Certificate of Participation</h3><p data-i18n="home.47">Receive an official certificate recognizing your contribution to an international championship.</p></div>
+        <div class="hud-panel"><h3 data-i18n="home.48">Coding Experience Preferred</h3><p data-i18n="home.49">Comfortable with code? Help with team support, scoring and tech ops — but all backgrounds are welcome.</p></div>
+        <div class="hud-panel"><h3 data-i18n="home.50">Long-Term Potential</h3><p data-i18n="home.51">Standout volunteers may be considered for ongoing roles with CNRS and future FIRA events.</p></div>
+        <div class="hud-panel"><h3 data-i18n="home.52">Refreshments Provided</h3><p data-i18n="home.53">Food and drinks are on us while you're on shift.</p></div>
       </div>
     </div>
   </section>
@@ -261,25 +269,25 @@
   <!-- ============ FROM THE COMMUNITY ============ -->
   <section class="section">
     <div class="container">
-      <div class="section-divider"><span>From the Community</span></div>
+      <div class="section-divider"><span data-i18n="home.54">From the Community</span></div>
       <div class="media-grid">
         <figure class="ig-figure ig-figure--square ig-figure--link">
           <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
             <img src="assets/ig/countdown-40.jpg" alt="Countdown graphic announcing 40 days to go until the 31st FIRA RoboWorld Cup 2026" loading="lazy">
           </a>
-          <figcaption>40 Days to Go</figcaption>
+          <figcaption data-i18n="home.55">40 Days to Go</figcaption>
         </figure>
         <figure class="ig-figure ig-figure--square ig-figure--link">
           <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
             <img src="assets/ig/mascot.jpg" alt="The official FIRA RoboWorld Cup 2026 mascot for Markham, Canada" loading="lazy">
           </a>
-          <figcaption>FIRA 2026 Mascot</figcaption>
+          <figcaption data-i18n="home.56">FIRA 2026 Mascot</figcaption>
         </figure>
         <figure class="ig-figure ig-figure--square ig-figure--link">
           <a href="https://www.instagram.com/cnrs.ngo/" target="_blank" rel="noopener">
             <img src="assets/ig/welcome-festival.jpg" alt="FIRA 2026 welcome graphic featuring 20-plus countries, top robotics teams, and an international food festival in Markham" loading="lazy">
           </a>
-          <figcaption>Robotics Meets Culture</figcaption>
+          <figcaption data-i18n="home.57">Robotics Meets Culture</figcaption>
         </figure>
       </div>
     </div>
@@ -313,12 +321,12 @@
           <span class="cta-front" style="top:11%;left:6%;--o:.97;animation-delay:.3s"><img src="assets/sponsors/msi.png" alt="MSI"></span>
           <span class="cta-front" style="bottom:13%;right:6%;--o:.97;animation-delay:1.5s"><img src="assets/sponsors/york.png" alt="York University"></span>
         </div>
-        <p class="eyebrow">Partner with us</p>
-        <h2>Put Your Brand on the World Stage</h2>
-        <p>Sponsoring the FIRA RoboWorld Cup 2026 means high-visibility international exposure and a direct investment in the next generation of engineers. Let's build something championship-worthy together.</p>
+        <p class="eyebrow" data-i18n="home.58">Partner with us</p>
+        <h2 data-i18n="home.59">Put Your Brand on the World Stage</h2>
+        <p data-i18n="home.60">Sponsoring the FIRA RoboWorld Cup 2026 means high-visibility international exposure and a direct investment in the next generation of engineers. Let's build something championship-worthy together.</p>
         <div class="cta-actions">
-          <a class="angled-btn angled-btn--white" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Sponsorship&body=Tier%20of%20interest%3A%20">Email Us to Sponsor</a>
-          <a class="angled-btn angled-btn--ghost" href="sponsorship.html">See Sponsorship Tiers</a>
+          <a class="angled-btn angled-btn--white" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Sponsorship&body=Tier%20of%20interest%3A%20" data-i18n="home.61">Email Us to Sponsor</a>
+          <a class="angled-btn angled-btn--ghost" href="sponsorship.html" data-i18n="home.62">See Sponsorship Tiers</a>
         </div>
       </div>
     </div>
@@ -331,17 +339,17 @@
         <div class="footer__brand">FIRA RoboWorld Cup</div>
         <div class="footer__cols">
           <div>
-            <h4>Explore</h4>
-            <a href="index.html">Home</a>
-            <a href="robocup.html">RoboWorld Cup</a>
-            <a href="kavosh.html">Kavosh</a>
-            <a href="sponsorship.html">Sponsorship</a>
-            <a href="#volunteer">Volunteer</a>
+            <h4 data-i18n="home.63">Explore</h4>
+            <a href="index.html" data-i18n="nav.home">Home</a>
+            <a href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+            <a href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+            <a href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+            <a href="#volunteer" data-i18n="nav.volunteer">Volunteer</a>
             <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
-            <a href="about.html">About</a>
+            <a href="about.html" data-i18n="nav.about">About</a>
           </div>
           <div>
-            <h4>Contact</h4>
+            <h4 data-i18n="home.64">Contact</h4>
             <a href="mailto:tonychu@hqcnrs.org">Tony Chu · tonychu@hqcnrs.org</a>
             <a href="tel:+16476066942">647-606-6942</a>
             <a href="https://canada.firaworldcup.org" target="_blank" rel="noopener">FIRA Canada / CNRS</a>
@@ -364,5 +372,6 @@
     lb.addEventListener('click',()=>lb.classList.remove('open'));
     document.addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('open');});})();
   </script>
+  <script src="assets/i18n.js"></script>
 </body>
 </html>

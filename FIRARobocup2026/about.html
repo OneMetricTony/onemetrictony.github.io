@@ -20,13 +20,19 @@
     <a class="nav__brand" href="index.html">FIRA RoboWorld Cup</a>
     <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav__links">
-      <a class="nav__link" href="index.html">Home</a>
-      <a class="nav__link" href="robocup.html">RoboWorld Cup</a>
-      <a class="nav__link" href="kavosh.html">Kavosh</a>
-      <a class="nav__link" href="sponsorship.html">Sponsorship</a>
-      <a class="nav__link" href="index.html#volunteer">Volunteer</a>
+      <a class="nav__link" href="index.html" data-i18n="nav.home">Home</a>
+      <a class="nav__link" href="media-release.html" data-i18n="nav.media">Media Release</a>
+      <a class="nav__link" href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+      <a class="nav__link" href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+      <a class="nav__link" href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+      <a class="nav__link" href="index.html#volunteer" data-i18n="nav.volunteer">Volunteer</a>
       <!-- ABOUT PAGE (deletable): remove about.html and this nav link -->
-      <a class="nav__link" href="about.html" aria-current="page">About</a>
+      <a class="nav__link" href="about.html" aria-current="page" data-i18n="nav.about">About</a>
+      <span class="lang-switch" aria-label="Language">
+        <a data-lang-btn="en" href="?lang=en">EN</a>
+        <a data-lang-btn="cn" href="?lang=cn">CN</a>
+        <a data-lang-btn="fr" href="?lang=fr">FR</a>
+      </span>
     </div>
   </nav>
 
@@ -38,23 +44,23 @@
 <section class="hero">
   <div class="container hero__inner">
     <img class="cnrs-mark" src="assets/cnrs-logo.svg" alt="Canadian National Robotic Society (CNRS)">
-    <p class="eyebrow">FIRA RoboWorld Cup 2026 · Markham, Canada</p>
-    <h1>About the <span>Organizer</span></h1>
-    <p>Meet the person leading sponsorship for the team's FIRA RoboWorld Cup 2026 effort in Markham, Ontario.</p>
+    <p class="eyebrow" data-i18n="about.1">FIRA RoboWorld Cup 2026 · Markham, Canada</p>
+    <h1 data-i18n="about.2">About the <span>Organizer</span></h1>
+    <p data-i18n="about.3">Meet the person leading sponsorship for the team's FIRA RoboWorld Cup 2026 effort in Markham, Ontario.</p>
   </div>
 </section>
 
 <main class="container section">
 
-  <div class="section-divider"><span>Organizer</span></div>
+  <div class="section-divider" data-i18n="about.4"><span>Organizer</span></div>
 
   <div style="display:grid;gap:1.25rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:start;">
 
     <!-- ===== BIO PANEL ===== -->
     <div class="hud-panel">
-      <p class="eyebrow">Physicist · Sponsorship Lead</p>
-      <h2>Tony Chu</h2>
-      <p style="color:var(--c-text-dim);margin:0 0 1rem">
+      <p class="eyebrow" data-i18n="about.5">Physicist · Sponsorship Lead</p>
+      <h2 data-i18n="about.6">Tony Chu</h2>
+      <p style="color:var(--c-text-dim);margin:0 0 1rem" data-i18n="about.7">
         Tony Chu is a physicist and the sponsorship lead for the FIRA RoboWorld Cup 2026
         effort in Markham, Canada. Trained at the graduate level in theoretical &amp;
         mathematical physics at the University of Guelph and the University of Waterloo —
@@ -63,13 +69,13 @@
         In his own words, he studies the &ldquo;shape of space&rdquo; and the things that
         make it shake.
       </p>
-      <p style="color:var(--c-text-dim);margin:0 0 1rem">
+      <p style="color:var(--c-text-dim);margin:0 0 1rem" data-i18n="about.8">
         Alongside physics he works as a software &amp; automation engineer (Python,
         TensorFlow, Node.js), bringing the same mix of technical rigor and real-world
         problem-solving to the mission: bringing world-class robotics competition to the
         community and connecting sponsors with the next generation of robotics and AI talent.
       </p>
-      <p style="color:var(--c-text-mute);margin:0;font-size:.9rem">
+      <p style="color:var(--c-text-mute);margin:0;font-size:.9rem" data-i18n="about.9">
         For sponsorship inquiries, partnership opportunities, or general questions,
         Tony is the primary point of contact and is happy to help.
       </p>
@@ -78,17 +84,17 @@
     <!-- ===== CONTACT CARD ===== -->
     <div class="hud-frame">
       <span class="hud-frame__tr"></span><span class="hud-frame__bl"></span>
-      <p class="eyebrow">Get in Touch</p>
-      <h3>Contact Card</h3>
+      <p class="eyebrow" data-i18n="about.10">Get in Touch</p>
+      <h3 data-i18n="about.11">Contact Card</h3>
       <ul style="list-style:none;padding:0;margin:0 0 1.4rem;display:grid;gap:.7rem;color:var(--c-text-dim);">
-        <li><strong style="color:var(--c-text)">Email</strong><br>
+        <li><strong style="color:var(--c-text)" data-i18n="about.12">Email</strong><br>
           <a href="mailto:tonychu@hqcnrs.org">tonychu@hqcnrs.org</a></li>
-        <li><strong style="color:var(--c-text)">Phone</strong><br>
+        <li><strong style="color:var(--c-text)" data-i18n="about.13">Phone</strong><br>
           <a href="tel:+16476066942">647-606-6942</a></li>
-        <li><strong style="color:var(--c-text)">LinkedIn</strong><br>
+        <li><strong style="color:var(--c-text)" data-i18n="about.14">LinkedIn</strong><br>
           <a href="https://www.linkedin.com/in/onemetrictony/" target="_blank" rel="noopener">linkedin.com/in/onemetrictony</a></li>
       </ul>
-      <a class="angled-btn" href="https://www.linkedin.com/in/onemetrictony/" target="_blank" rel="noopener">Connect on LinkedIn</a>
+      <a class="angled-btn" href="https://www.linkedin.com/in/onemetrictony/" target="_blank" rel="noopener" data-i18n="about.15">Connect on LinkedIn</a>
     </div>
 
   </div>
@@ -104,21 +110,21 @@
   <div class="container footer__inner">
     <div>
       <div class="footer__brand">FIRA RoboWorld Cup</div>
-      <p style="color:var(--c-text-mute);max-width:32ch;font-size:.88rem">FIRA RoboWorld Cup 2026 · Markham, Canada. Organized by FIRA Canada · Canadian National Robotic Society.</p>
+      <p style="color:var(--c-text-mute);max-width:32ch;font-size:.88rem" data-i18n="about.16">FIRA RoboWorld Cup 2026 · Markham, Canada. Organized by FIRA Canada · Canadian National Robotic Society.</p>
     </div>
     <div class="footer__cols">
       <div>
-        <h4>Explore</h4>
-        <a href="index.html">Home</a>
-        <a href="robocup.html">RoboWorld Cup</a>
-        <a href="kavosh.html">Kavosh</a>
-        <a href="sponsorship.html">Sponsorship</a>
-        <a href="index.html#volunteer">Volunteer</a>
+        <h4 data-i18n="about.17">Explore</h4>
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="robocup.html" data-i18n="nav.robocup">RoboWorld Cup</a>
+        <a href="kavosh.html" data-i18n="nav.kavosh">Kavosh</a>
+        <a href="sponsorship.html" data-i18n="nav.sponsorship">Sponsorship</a>
+        <a href="index.html#volunteer" data-i18n="nav.volunteer">Volunteer</a>
         <!-- ABOUT PAGE (deletable): remove about.html and this footer link -->
-        <a href="about.html">About</a>
+        <a href="about.html" data-i18n="nav.about">About</a>
       </div>
       <div>
-        <h4>Contact</h4>
+        <h4 data-i18n="about.18">Contact</h4>
         <a href="mailto:tonychu@hqcnrs.org">Tony Chu · tonychu@hqcnrs.org</a>
         <a href="tel:+16476066942">647-606-6942</a>
         <a href="https://canada.firaworldcup.org" target="_blank" rel="noopener">FIRA Canada / CNRS</a>
@@ -132,5 +138,6 @@
 </footer>
 
 <script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+<script src="assets/i18n.js"></script>
 </body>
 </html>

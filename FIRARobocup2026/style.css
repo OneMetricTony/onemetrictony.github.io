@@ -9,11 +9,12 @@
 
 /* ---------- 1. PALETTE & TOKENS ------------------------------ */
 :root {
-  /* Base — KAVOSH deep red / near-black warm field */
-  --c-bg:        #190707;   /* page background        */
-  --c-bg-2:      #2a0a0a;   /* raised panel fill (red-900-ish) */
-  --c-bg-3:      #3a1414;   /* elevated / hover       */
-  --c-line:      #5e2a2a;   /* hairline borders (muted red) */
+  /* Base — warm near-black NEUTRAL ground, clear elevation steps
+     (was mono-red ramp: #190707 / #2a0a0a / #3a1414) */
+  --c-bg:        #141011;   /* page background — warm charcoal, whisper of red */
+  --c-bg-2:      #1e1718;   /* raised panel fill — perceptibly lighter */
+  --c-bg-3:      #2a2122;   /* elevated / hover — clearly lighter again */
+  --c-line:      #3a2c2e;   /* hairline borders (quiet, readable) */
 
   /* Accent — KAVOSH crimson (primary) + white (secondary) */
   --c-accent:    #f0394e;   /* primary crimson accent */
@@ -39,8 +40,9 @@
   --gap:     1.25rem;
   --maxw:    1180px;
 
-  /* FX */
-  --glow:   0 0 0 1px rgba(240,57,78,.40), 0 0 18px rgba(240,57,78,.20);
+  /* FX — neutral elevation hairline + soft shadow, NO crimson bloom
+     (was: 0 0 0 1px rgba(240,57,78,.40), 0 0 18px rgba(240,57,78,.20)) */
+  --glow:   0 0 0 1px var(--c-line), 0 10px 30px rgba(0,0,0,.5);
   --shadow: 0 8px 30px rgba(0,0,0,.45);
   --ease:   cubic-bezier(.2,.7,.3,1);
 }
@@ -55,11 +57,10 @@ body {
   background: var(--c-bg);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  /* subtle angular background motif */
+  /* calm field — 45deg stripe removed; soft radial vignettes kept */
   background-image:
-    repeating-linear-gradient(45deg, rgba(248,113,113,.030) 0 2px, transparent 2px 24px),
     radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.035), transparent 60%),
-    radial-gradient(120% 90% at 0% 100%, rgba(200,16,46,.12), transparent 55%);
+    radial-gradient(120% 90% at 0% 100%, rgba(200,16,46,.08), transparent 55%);
   background-attachment: fixed;
 }
 img, svg { max-width: 100%; display: block; }
@@ -105,7 +106,7 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 1.5rem;
   padding: .7rem clamp(1rem, 4vw, 2rem);
-  background: rgba(25,7,7,.85);
+  background: rgba(20,16,17,.85);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--c-line);
   /* chamfered bottom-right corner via clip */
@@ -136,13 +137,10 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
 /* Animated CNRS organizer mark (self-animating SVG + page-level float/glow) */
 .cnrs-mark {
   width: auto; height: 120px; display: block; margin-bottom: 1.4rem;
-  animation: cnrsFloat 5s ease-in-out infinite, cnrsGlow 3.2s ease-in-out infinite;
+  /* glow pulse dropped — keep the gentle float only (no crimson bloom) */
+  animation: cnrsFloat 5s ease-in-out infinite;
 }
 @keyframes cnrsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-@keyframes cnrsGlow {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(240,57,78,.30)); }
-  50%     { filter: drop-shadow(0 0 22px rgba(240,57,78,.65)); }
-}
 @media (prefers-reduced-motion: reduce) { .cnrs-mark { animation: none; } }
 .nav__link {
   position: relative;
@@ -166,6 +164,12 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
   font-family: var(--font-head); cursor: pointer;
 }
 
+/* language switch (EN / CN / FR) */
+.lang-switch { display: inline-flex; align-items: center; gap: 2px; margin-left: .4rem; }
+.lang-switch a { font-family: var(--font-head); font-size: .72rem; letter-spacing: .06em; color: var(--c-text-mute); padding: .25rem .45rem; line-height: 1; border: 1px solid transparent; border-radius: 3px; }
+.lang-switch a:hover { color: var(--c-text); }
+.lang-switch a.is-active { color: var(--c-bg); background: var(--c-accent); }
+
 /* ---------- 4. HERO ------------------------------------------ */
 .hero {
   position: relative; overflow: hidden;
@@ -176,7 +180,21 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
     var(--c-bg-2);
   border-bottom: 1px solid var(--c-line);
 }
-.hero__inner { position: relative; max-width: 760px; }
+.hero__inner { position: relative; z-index: 3; max-width: 760px; }
+/* CGI FIRA name reel, layered behind the hero content */
+.hero__bg {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  pointer-events: none; opacity: .5;
+}
+/* readability scrim over the video, under the text */
+.hero__scrim {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(20,16,17,.55), rgba(20,16,17,.82)),
+    linear-gradient(135deg, rgba(200,16,46,.18), transparent 55%);
+}
+@media (prefers-reduced-motion: reduce) { .hero__bg { display: none; } }
 .hero h1 {
   font-size: clamp(2.2rem, 7vw, 4.4rem);
   text-transform: uppercase;
@@ -242,7 +260,7 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
 .hud-frame {
   position: relative;
   padding: clamp(1.6rem, 4vw, 3rem) clamp(1.6rem, 5vw, 4rem);
-  background: rgba(42,10,10,.5);
+  background: rgba(30,23,24,.5);
 }
 .hud-frame::before,
 .hud-frame::after {
@@ -428,7 +446,7 @@ h4 { font-size: clamp(.95rem, 1.2vw, 1.05rem); }
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
   font-family: var(--font-head); font-size: .72rem; letter-spacing: .08em;
   text-transform: uppercase; color: var(--c-text);
-  background: linear-gradient(transparent, rgba(25,7,7,.92));
+  background: linear-gradient(transparent, rgba(20,16,17,.92));
   padding: 1.6rem .9rem .7rem;
 }
 .ig-figure--accent { border-color: var(--c-accent-dk); box-shadow: var(--glow); }
