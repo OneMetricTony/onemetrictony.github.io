@@ -66,6 +66,23 @@
     .contact-grid p { margin: .35rem 0; color: var(--c-text-dim); }
     .contact-grid b { color: var(--c-text); }
     .hud-panel h3 { color: var(--c-accent); }
+    /* Booth image gallery — 3-up responsive, click to enlarge */
+    .booth-gallery { display: grid; gap: var(--gap);
+      grid-template-columns: repeat(3, 1fr); margin: 1.5rem 0 0; }
+    .booth-gallery .ig-figure { margin: 0; cursor: zoom-in; }
+    .booth-gallery .ig-figure img { width: 100%; height: auto; aspect-ratio: 933 / 1400;
+      object-fit: cover; object-position: top center;
+      transition: transform .15s var(--ease), border-color .15s var(--ease); }
+    .booth-gallery .ig-figure:hover { border-color: var(--c-accent); }
+    .booth-gallery .ig-figure:hover img { transform: scale(1.02); }
+    @media (max-width: 760px) {
+      .booth-gallery { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+    }
+    /* Lightbox overlay (matches index.html) */
+    .lightbox { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center;
+      background: rgba(6,3,3,.92); backdrop-filter: blur(4px); cursor: zoom-out; padding: 4vh 4vw; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 92vw; max-height: 92vh; border: 1px solid var(--c-accent-dk); box-shadow: var(--glow); }
   </style>
 </head>
 <body>
@@ -262,14 +279,24 @@
   <!-- EXHIBITOR BOOTHS -->
   <section class="section" id="booths">
     <div class="container">
-      <figure class="ig-figure ig-figure--accent" style="max-width:520px;margin:0 auto 2rem;">
-        <img src="assets/booth-recruit.jpg" data-src-en="assets/booth-recruit.jpg" data-src-cn="assets/booth-recruit-cn.jpg" data-src-fr="assets/booth-recruit.jpg" alt="Be part of the World Cup — reserve your exhibitor booth today. FIRA RoboWorld Cup 2026, July 17–21, Canada. Limited booths remaining." loading="eager" decoding="async" width="933" height="1400">
-        <figcaption data-i18n="spon.boothposter">Exhibitor opportunities — FIRA RoboWorld Cup 2026</figcaption>
-      </figure>
       <p class="eyebrow" data-i18n="spon.85">Exhibitor Booths</p>
       <h2 data-i18n="spon.86">Our Booth Packages</h2>
       <p data-i18n="spon.87">Showcase your brand on the exhibition floor beside the world's top robotics teams. Spots are limited.</p>
       <div class="tier-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+
+        <article class="tier-card">
+          <span class="tier-card__tier" data-i18n="spon.b35a">Limited-Time Exhibitor Offer</span>
+          <span class="tier-card__spots" data-i18n="spon.b35b">Limited-time</span>
+          <div class="tier-card__price">$3,500</div>
+          <ul>
+            <li data-i18n="spon.b35c">Full 5 days of the event (8 AM–6 PM)</li>
+            <li data-i18n="spon.b35d">1 table + 1 chair</li>
+            <li data-i18n="spon.b35e">Exhibition-floor placement</li>
+            <li data-i18n="spon.b35f">Visitor access tickets included</li>
+            <li data-i18n="spon.b35g">Exposure to an international audience</li>
+          </ul>
+          <a class="angled-btn" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Booth&body=Booth%20package%3A%20Limited-Time%20Offer%20(%243%2C500)%0AName%3A%20%0AOrganization%3A%20" data-i18n="spon.b35h">Reserve This Offer</a>
+        </article>
 
         <article class="tier-card">
           <span class="tier-card__tier" data-i18n="spon.88">Standard Booth</span>
@@ -296,6 +323,18 @@
           <a class="angled-btn" href="mailto:tonychu@hqcnrs.org?subject=FIRA%20RoboWorld%20Cup%202026%20Booth&body=Booth%20package%3A%20Booth%20%2B%20Banquet%20(%246%2C000)%0AName%3A%20%0AOrganization%3A%20" data-i18n="spon.100">Reserve Booth + Banquet</a>
         </article>
 
+      </div>
+
+      <div class="booth-gallery" id="booth-gallery">
+        <figure class="ig-figure ig-figure--accent">
+          <img src="assets/booth-recruit.jpg" data-src-en="assets/booth-recruit.jpg" data-src-cn="assets/booth-recruit-cn.jpg" data-src-fr="assets/booth-recruit.jpg" alt="Be part of the World Cup — reserve your exhibitor booth today. FIRA RoboWorld Cup 2026, July 17–21, Canada. Limited booths remaining." loading="lazy" decoding="async" width="933" height="1400">
+        </figure>
+        <figure class="ig-figure ig-figure--accent">
+          <img src="assets/booth-sponsor-location.jpg" alt="Sponsor and exhibitor booth locations on the FIRA RoboWorld Cup 2026 exhibition floor." loading="lazy" decoding="async" width="933" height="1400">
+        </figure>
+        <figure class="ig-figure ig-figure--accent">
+          <img src="assets/booth-exhibitor-guide.jpg" alt="Exhibitor guide for the FIRA RoboWorld Cup 2026 — booth packages, inclusions and how to reserve." loading="lazy" decoding="async" width="933" height="1400">
+        </figure>
       </div>
 
       <div class="section-divider"><span data-i18n="spon.101">Exhibition Floor Plan</span></div>
@@ -503,7 +542,15 @@
     </div>
   </footer>
 
+  <div class="lightbox" id="lightbox"><img alt="Enlarged booth image"></div>
+
   <script>document.querySelector('.nav__toggle').addEventListener('click',e=>{const n=e.currentTarget.closest('.nav');n.classList.toggle('nav--open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('nav--open'));});</script>
+  <script>
+    (function(){const lb=document.getElementById('lightbox');if(!lb)return;const img=lb.querySelector('img');
+    document.querySelectorAll('#booth-gallery .ig-figure').forEach(function(fig){fig.addEventListener('click',function(){img.src=this.querySelector('img').src;lb.classList.add('open');});});
+    lb.addEventListener('click',function(){lb.classList.remove('open');});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('open');});})();
+  </script>
   <script src="assets/i18n.js"></script>
 </body>
 </html>

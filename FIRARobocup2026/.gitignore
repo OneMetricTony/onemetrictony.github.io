@@ -4,3 +4,4 @@ _preview/
 *.bak_*
 *_prepolish*
 _backup*/
+__pycache__/

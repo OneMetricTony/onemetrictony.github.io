@@ -312,6 +312,15 @@
         "spon.82": "2 Gala tickets",
         "spon.83": "Letter of Appreciation",
         "spon.84": "Choose Bronze",
+        "spon.b35a": "Limited-Time Exhibitor Offer",
+        "spon.b35b": "Limited-time",
+        "spon.b35c": "Full 5 days of the event (8 AM–6 PM)",
+        "spon.b35d": "1 table + 1 chair",
+        "spon.b35e": "Exhibition-floor placement",
+        "spon.b35f": "Visitor access tickets included",
+        "spon.b35g": "Exposure to an international audience",
+        "spon.b35h": "Reserve This Offer",
+        "spon.boothgallery": "Booth Details & Floor Placement",
         "spon.boothposter": "Exhibitor opportunities — FIRA RoboWorld Cup 2026",
         "spon.85": "Exhibitor Booths",
         "spon.86": "Our Booth Packages",
@@ -684,6 +693,15 @@
         "spon.82": "2 张晚宴门票",
         "spon.83": "感谢函",
         "spon.84": "选择青铜级",
+        "spon.b35a": "限时参展优惠",
+        "spon.b35b": "限时优惠",
+        "spon.b35c": "全程5天（上午8时–下午6时）",
+        "spon.b35d": "1张桌子 + 1把椅子",
+        "spon.b35e": "展览厅展位",
+        "spon.b35f": "含观众入场券",
+        "spon.b35g": "面向国际观众的品牌曝光",
+        "spon.b35h": "预订此优惠",
+        "spon.boothgallery": "展位详情与展位布局",
         "spon.boothposter": "参展机会 — 2026 FIRA 机器人世界杯",
         "spon.85": "参展展位",
         "spon.86": "我们的展位套餐",
@@ -1056,6 +1074,15 @@
         "spon.82": "2 billets pour le gala",
         "spon.83": "Lettre de remerciement",
         "spon.84": "Choisir Bronze",
+        "spon.b35a": "Offre exposant à durée limitée",
+        "spon.b35b": "Durée limitée",
+        "spon.b35c": "5 jours complets (8 h–18 h)",
+        "spon.b35d": "1 table + 1 chaise",
+        "spon.b35e": "Emplacement sur le plancher d'exposition",
+        "spon.b35f": "Billets d'accès visiteurs inclus",
+        "spon.b35g": "Visibilité auprès d'un public international",
+        "spon.b35h": "Réserver cette offre",
+        "spon.boothgallery": "Détails des stands et emplacement sur le plancher",
         "spon.boothposter": "Opportunités pour les exposants — Coupe du monde FIRA RoboWorld 2026",
         "spon.85": "Stands d'exposants",
         "spon.86": "Nos forfaits de stands",
@@ -1141,18 +1168,22 @@
     document.querySelectorAll('[data-lang-btn]').forEach(function (b) {
       b.classList.toggle('is-active', b.getAttribute('data-lang-btn') === lang);
     });
-    // keep the chosen language across internal navigation — bake ?lang= into same-site links
+    // keep the chosen language across internal navigation — bake ?lang= into same-site PAGE links only
     document.querySelectorAll('a[href]').forEach(function (a) {
       if (a.hasAttribute('data-lang-btn')) return;
       var href = a.getAttribute('href');
       if (!href || /^(https?:|mailto:|tel:|#)/i.test(href)) return;
-      try {
-        var u = new URL(href, location.href);
-        if (u.origin !== location.origin) return;
-        u.searchParams.set('lang', lang);
-        var file = u.pathname.split('/').pop() || u.pathname;
-        a.setAttribute('href', file + u.search + u.hash);
-      } catch (e) {}
+      var pathOnly = href.split('#')[0].split('?')[0];
+      var ext = (pathOnly.split('/').pop().match(/\.[a-z0-9]+$/i) || [''])[0].toLowerCase();
+      if (ext && ext !== '.html' && ext !== '.htm') return;   // leave PDFs/images/other assets untouched
+      var hash = ''; var hi = href.indexOf('#');
+      if (hi >= 0) { hash = href.slice(hi); href = href.slice(0, hi); }
+      var qi = href.indexOf('?');
+      var path = qi >= 0 ? href.slice(0, qi) : href;
+      var query = qi >= 0 ? href.slice(qi + 1) : '';
+      var params = query ? query.split('&').filter(function (p) { return p && p.indexOf('lang=') !== 0; }) : [];
+      params.push('lang=' + lang);
+      a.setAttribute('href', path + '?' + params.join('&') + hash);
     });
     // swap localized images (e.g. the booth poster) by language
     document.querySelectorAll('img[data-src-en]').forEach(function (img) {
