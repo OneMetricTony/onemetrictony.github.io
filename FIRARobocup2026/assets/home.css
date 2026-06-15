@@ -85,48 +85,38 @@
   animation: none;
 }
 
-/* ---------- C. CTA BAND — ambient breathing sponsor field ------ */
-.cta-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
-/* keep the CTA copy crisply above the logo field */
+/* ---------- C. CTA BAND — tidy sponsor logo row ---------------- */
+/* keep the CTA copy crisply above any decorative band layers */
 .cta-band--fx > .eyebrow,
 .cta-band--fx > h2,
 .cta-band--fx > p,
-.cta-band--fx > .cta-actions { position: relative; z-index: 2; }
+.cta-band--fx > .cta-actions,
+.cta-band--fx > .cta-field { position: relative; z-index: 2; }
 
-/* faint ghosted background logos — desaturated to soft light marks,
-   each with its own base transparency (--o) and a gentle breathing pulse */
-.cta-ghost {
-  position: absolute;
-  height: auto;
-  filter: grayscale(1) brightness(1.75) contrast(.85);
-  opacity: var(--o, .14);
-  will-change: transform, opacity;
-  animation: cta-breathe 7s ease-in-out infinite;
+/* a single, evenly-sized, grayscale partner row that flows in normal
+   document order below the CTA actions (was: scattered absolute field) */
+.cta-field {
+  display: flex; flex-wrap: wrap;
+  gap: 1.6rem 2.2rem;
+  justify-content: center; align-items: center;
+  margin-top: 2.4rem;
 }
-/* MSI + York at the front — full colour on a white chamfered chip */
-.cta-front {
-  position: absolute;
-  display: inline-flex; align-items: center;
-  background: var(--c-accent-2);
-  padding: 5px 9px;
-  opacity: var(--o, .9);
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px),
-    calc(100% - 6px) 100%, 0 100%, 0 6px);
-  will-change: transform, opacity;
-  animation: cta-breathe 5.6s ease-in-out infinite;
+.cta-logo {
+  height: 34px; width: auto; max-width: 132px;
+  object-fit: contain;
+  filter: grayscale(1) brightness(1.6) contrast(.9);
+  opacity: .55;
+  transition: filter .25s var(--ease), opacity .25s var(--ease), transform .25s var(--ease);
 }
-.cta-front img { height: 22px; width: auto; display: block; }
-
-/* breathe = subtle scale pulse + opacity drift around each logo's own --o */
-@keyframes cta-breathe {
-  0%, 100% { transform: scale(.96); opacity: calc(var(--o, .14) * .8); }
-  50%      { transform: scale(1.04); opacity: var(--o, .14); }
+.cta-logo:hover {
+  filter: none;
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
-/* on narrow screens, drop the faint field but keep MSI + York */
 @media (max-width: 560px) {
-  .cta-ghost { display: none; }
-  .cta-front img { height: 18px; }
+  .cta-field { gap: 1.2rem 1.6rem; margin-top: 1.8rem; }
+  .cta-logo { height: 26px; max-width: 104px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -135,13 +125,9 @@
   .cta-band--fx::before,
   .cta-band--fx::after,
   .cta-band--fx > .hud-frame__tr,
-  .cta-band--fx > .hud-frame__bl,
-  .cta-ghost,
-  .cta-front {
+  .cta-band--fx > .hud-frame__bl {
     animation: none;
   }
-  .cta-ghost { opacity: var(--o, .14); }
-  .cta-front { opacity: var(--o, .9); }
   /* keep the scanlines from sitting frozen mid-frame */
   .cta-scan { opacity: 0; }
 }

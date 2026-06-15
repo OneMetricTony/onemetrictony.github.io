@@ -59,9 +59,13 @@
 .hero h1 span.hero__title-big {
   display: block;
   margin-top: .12em;
-  font-size: clamp(3rem, 12vw, 8rem);
-  line-height: .92;
+  font-size: clamp(2.1rem, 10.5vw, 7rem);
+  line-height: .96;
   letter-spacing: .01em;
+  /* allow the two words to wrap/stack, but never break inside a word */
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
   color: var(--c-accent-2);
   text-shadow:
     0 0 1px var(--c-accent),
