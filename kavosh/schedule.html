@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>KAVOSH — Who's Doing What</title>
+<link rel="stylesheet" href="kavosh.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>KAVOSH <span>//</span> Who's Doing What</h1>
+  <nav>
+    <a href="index.html">Teams</a>
+    <a href="schedule.html" class="active">Schedule</a>
+  </nav>
+  <div class="savebar">
+    <span id="save-status" class="save-status">…</span>
+    <button id="save-now" class="btn">Save</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="pagenote">
+    Drag <b>team modules</b> (green) and <b>volunteers</b> (pink) into the
+    <b style="color:#f0394e">red RoboWorld Cup days</b> — same red section as the calendar on the
+    <a href="../FIRARobocup2026/index.html">FIRA 2026 site</a>. ✕ removes a module from a day.
+    The board saves for everyone with the link.
+  </p>
+
+  <div class="legend">
+    <span class="r"><i></i>FIRA RoboWorld Cup (Pan Am Centre)</span>
+    <span class="c"><i></i>Prep camp (7050 Woodbine)</span>
+    <span class="g"><i></i>Team module</span>
+    <span class="p"><i></i>Volunteer</span>
+  </div>
+
+  <div class="tray">
+    <h3>Teams — drag onto a day</h3>
+    <div class="modules" id="tray-teams"></div>
+    <h3 style="margin-top:.9rem">Volunteers — drag onto a day</h3>
+    <div class="modules" id="tray-vols"></div>
+  </div>
+
+  <div class="board" id="board"></div>
+</main>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

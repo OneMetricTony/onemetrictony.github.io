@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>KAVOSH — Team Gossip Sheet</title>
+<link rel="stylesheet" href="kavosh.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>KAVOSH <span>//</span> Gossip Sheet</h1>
+  <nav>
+    <a href="index.html" class="active">Teams</a>
+    <a href="schedule.html">Schedule</a>
+  </nav>
+  <div class="savebar">
+    <span id="save-status" class="save-status">…</span>
+    <button id="save-now" class="btn">Save</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="pagenote">
+    FIRA RoboWorld Cup 2026 · Markham · <b>internal — team staff &amp; volunteers only</b>.
+    Kid data from COMP DETAILS, parent data from the Parent Consent form
+    (<b>form #</b> = the entry number in the form's Individual-response view).
+    Comments and volunteer picks save for everyone with the link.
+  </p>
+
+  <div class="searchrow">
+    <input type="search" id="search" placeholder="filter by kid, parent, or team name…">
+  </div>
+
+  <div id="teams"><!-- team cards render here --></div>
+
+  <section class="extras">
+    <h3>Consent forms with no FIRA team match (EnjoyAI kids &amp; misc)</h3>
+    <table>
+      <thead><tr><th>Student</th><th>Parent</th><th>Phone</th><th>Email</th><th>Form&nbsp;#</th><th></th></tr></thead>
+      <tbody id="extras-body"></tbody>
+    </table>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
