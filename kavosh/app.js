@@ -28,6 +28,20 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(saveRemote, 2500); // debounce autosave
   }
+  // Flat reference roster (all students) so the backend can populate a
+  // fully-readable Google Sheet, not just the sparse edited fields.
+  function buildRoster() {
+    const out = [];
+    KAVOSH_DATA.teams.forEach(t => t.students.forEach(s => {
+      out.push({
+        team: t.team, league: t.league, mentor: t.mentor,
+        student: s.name, prefer: s.prefer || "", parent: s.parent || "",
+        phone: s.phone || "", email: s.email || "", medical: s.medical || "",
+        entry: s.entry || "",
+      });
+    }));
+    return out;
+  }
   async function saveRemote() {
     if (!window.KAVOSH_BACKEND) { setStatus("err", "no backend configured — local only"); return; }
     state.updated = new Date().toISOString();
@@ -37,7 +51,7 @@
       const r = await fetch(window.KAVOSH_BACKEND, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(state),
+        body: JSON.stringify(Object.assign({}, state, { roster: buildRoster() })),
       });
       const j = await r.json();
       if (j.ok) { dirty = false; setStatus("ok", "saved " + new Date().toLocaleTimeString()); }
@@ -69,11 +83,6 @@
   const esc = s => String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const telHref = p => "tel:" + String(p || "").replace(/[^\d+]/g, "");
-  function chunk5(arr) {
-    const out = [];
-    for (let i = 0; i < arr.length; i += 5) out.push(arr.slice(i, i + 5));
-    return out;
-  }
   const cKey = (team, stu) => team + "::" + stu;
 
   function volOptions(selected) {
@@ -90,7 +99,8 @@
     if (!root) return;
     let html = "";
     KAVOSH_DATA.teams.forEach(team => {
-      const groups = chunk5(team.students);
+      // one volunteer per team (no splitting at 5 — a 6-kid team gets one dropdown)
+      const groups = [team.students];
       html += '<section class="team-card" data-team="' + esc(team.team) + '">';
       html += '<div class="team-banner"><h2>' + esc(team.team) + "</h2>" +
         '<span class="meta"><b>' + esc(team.league) + "</b></span>" +
@@ -113,7 +123,7 @@
         const med = stu.medical && stu.medical !== "None"
           ? ' <span class="badge med">⚠ ' + esc(stu.medical) + "</span>" : "";
         html += '<div class="stu-row" data-search="' + esc((stu.name + " " + (stu.parent || "")).toLowerCase()) + '">';
-        html += '<div class="cell kid"><h4>' + esc(stu.name) +
+        html += '<div class="cell kid"><span class="side kid">STUDENT</span><h4>' + esc(stu.name) +
           (stu.prefer && stu.prefer.toLowerCase() !== stu.name.toLowerCase()
             ? ' <span class="sub">“' + esc(stu.prefer) + "”</span>" : "") + "</h4>" +
           '<p class="facts">DOB <b>' + esc(stu.dob || "?") + "</b> · ID <b>" + esc(stu.id) + "</b>" +
@@ -121,14 +131,14 @@
           '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="kid" ' +
           'placeholder="notes on the kid… (e.g. this student is smart)">' + esc(c.kid) + "</textarea></div>";
         if (stu.parent) {
-          html += '<div class="cell parent"><h4>' + esc(stu.parent) +
+          html += '<div class="cell parent"><span class="side parent">PARENT</span><h4>' + esc(stu.parent) +
             ' <span class="badge entry">form #' + stu.entry + "</span></h4>" +
             '<span class="phone"><a href="' + telHref(stu.phone) + '">📞 ' + esc(stu.phone) + "</a></span>" +
             '<p class="facts">' + esc(stu.email) + "</p>" +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
             'placeholder="notes on the parent… (e.g. this parent is a trouble maker)">' + esc(c.parent) + "</textarea></div>";
         } else {
-          html += '<div class="cell parent"><h4><span class="badge nocon">no consent form on file</span></h4>' +
+          html += '<div class="cell parent"><span class="side parent">PARENT</span><h4><span class="badge nocon">no consent form on file</span></h4>' +
             '<p class="facts">no parent contact from the consent form — chase this one down</p>' +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
             'placeholder="notes…">' + esc(c.parent) + "</textarea></div>";

@@ -118,8 +118,17 @@ a { color: var(--red); text-decoration: none; }
   background: rgba(79,195,247,.05);
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
-.cell { padding: .6rem .8rem; min-width: 0; }
+.cell { position: relative; padding: .6rem .8rem .6rem 2.1rem; min-width: 0; }
 .cell.kid { border-right: 1px dashed rgba(79,195,247,.45); }
+/* vertical spine label so kid vs parent reads at a glance */
+.side {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: .6rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase;
+}
+.side.kid { background: linear-gradient(180deg, var(--blue), #2b8fc4); color: #04121b; }
+.side.parent { background: linear-gradient(180deg, var(--red-dk), #7a0a1c); color: #fff; }
 .cell h4 {
   margin: 0 0 .15rem; font-size: .95rem; color: var(--blue);
   display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap;
