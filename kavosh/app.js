@@ -130,20 +130,28 @@
           (stu.fee ? " · " + esc(stu.fee) : "") + (stu.ptag ? " · " + esc(stu.ptag) : "") + "</p>" + med +
           '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="kid" ' +
           'placeholder="notes on the student…">' + esc(c.kid) + "</textarea></div>";
+        // parent-status add-on: 0 = clean (purple consent), 1 = ? submitted but data
+        // was missing, 2 = ! enrollment form only (no FIRA consent), 3 = !! no data.
+        const pstat = stu.pstatus === 1
+          ? ' <span class="badge pstat q" title="Submitted a consent form, but parent data was missing from the match — verify">?</span>'
+          : stu.pstatus === 2
+          ? ' <span class="badge pstat warn" title="Data from the Student Enrollment form only — no FIRA consent form on file">!</span>'
+          : "";
         if (stu.parent) {
-          const src = stu.source || "purple";
-          const badge = stu.form_url
-            ? '<a class="badge entry ' + src + '" href="' + esc(stu.form_url) + '" target="_blank" rel="noopener" title="open this consent-form response">form #' + stu.entry + " ↗</a>"
-            : '<span class="badge entry ' + src + '">form #' + esc(stu.entry) + "</span>";
+          const src = stu.source || "";
+          let badge = "";
+          if (stu.entry && stu.form_url) badge = ' <a class="badge entry ' + src + '" href="' + esc(stu.form_url) + '" target="_blank" rel="noopener" title="open this consent-form response">form #' + stu.entry + " ↗</a>";
+          else if (stu.entry) badge = ' <span class="badge entry ' + src + '">form #' + esc(stu.entry) + "</span>";
           html += '<div class="cell parent"><span class="side parent">PARENT</span><h4>' + esc(stu.parent) +
-            ' ' + badge + "</h4>" +
+            badge + pstat + "</h4>" +
             '<span class="phone"><a href="' + telHref(stu.phone) + '">📞 ' + esc(stu.phone) + "</a></span>" +
             '<p class="facts">' + esc(stu.email) + "</p>" +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
             'placeholder="notes on the parent…">' + esc(c.parent) + "</textarea></div>";
         } else {
-          html += '<div class="cell parent"><span class="side parent">PARENT</span><h4><span class="badge nocon">no consent form on file</span></h4>' +
-            '<p class="facts">no parent contact from the consent form — chase this one down</p>' +
+          html += '<div class="cell parent"><span class="side parent">PARENT</span>' +
+            '<h4><span class="badge pstat alert" title="No data in either consent form">!!</span> <span class="nodata">no data in either form</span></h4>' +
+            '<p class="facts">not in the Parent Consent or Student Enrollment form — chase this one down</p>' +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
             'placeholder="notes…">' + esc(c.parent) + "</textarea></div>";
         }
