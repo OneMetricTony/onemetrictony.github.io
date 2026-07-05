@@ -147,7 +147,13 @@ a { color: var(--red); text-decoration: none; }
 }
 .badge.med { background: var(--amber); color: #201400; }
 .badge.nocon { background: var(--red); color: #fff; }
-.badge.entry { background: #22304a; color: var(--blue); font-weight: 600; text-transform: none; }
+.badge.entry { background: #22304a; color: var(--blue); font-weight: 700; text-transform: none; text-decoration: none; }
+/* source colour: which consent form the parent data came from */
+a.badge.entry { cursor: pointer; }
+.badge.entry.purple { background: #7c3aed; color: #fff; }   /* Parent Consent & Policy Agreement */
+.badge.entry.red    { background: var(--red); color: #fff; } /* Student Enrollment & Consent Form */
+a.badge.entry.purple:hover { background: #9560f0; }
+a.badge.entry.red:hover { background: #ff5566; }
 .comment {
   width: 100%; min-height: 2.1em; resize: vertical;
   background: var(--panel-2); color: var(--text);

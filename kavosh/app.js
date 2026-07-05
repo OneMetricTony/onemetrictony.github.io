@@ -131,8 +131,12 @@
           '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="kid" ' +
           'placeholder="notes on the student…">' + esc(c.kid) + "</textarea></div>";
         if (stu.parent) {
+          const src = stu.source || "purple";
+          const badge = stu.form_url
+            ? '<a class="badge entry ' + src + '" href="' + esc(stu.form_url) + '" target="_blank" rel="noopener" title="open this consent-form response">form #' + stu.entry + " ↗</a>"
+            : '<span class="badge entry ' + src + '">form #' + esc(stu.entry) + "</span>";
           html += '<div class="cell parent"><span class="side parent">PARENT</span><h4>' + esc(stu.parent) +
-            ' <span class="badge entry">form #' + stu.entry + "</span></h4>" +
+            ' ' + badge + "</h4>" +
             '<span class="phone"><a href="' + telHref(stu.phone) + '">📞 ' + esc(stu.phone) + "</a></span>" +
             '<p class="facts">' + esc(stu.email) + "</p>" +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
