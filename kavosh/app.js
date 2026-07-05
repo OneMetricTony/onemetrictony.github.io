@@ -129,14 +129,14 @@
           '<p class="facts">DOB <b>' + esc(stu.dob || "?") + "</b> · ID <b>" + esc(stu.id) + "</b>" +
           (stu.fee ? " · " + esc(stu.fee) : "") + (stu.ptag ? " · " + esc(stu.ptag) : "") + "</p>" + med +
           '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="kid" ' +
-          'placeholder="notes on the kid… (e.g. this student is smart)">' + esc(c.kid) + "</textarea></div>";
+          'placeholder="notes on the student…">' + esc(c.kid) + "</textarea></div>";
         if (stu.parent) {
           html += '<div class="cell parent"><span class="side parent">PARENT</span><h4>' + esc(stu.parent) +
             ' <span class="badge entry">form #' + stu.entry + "</span></h4>" +
             '<span class="phone"><a href="' + telHref(stu.phone) + '">📞 ' + esc(stu.phone) + "</a></span>" +
             '<p class="facts">' + esc(stu.email) + "</p>" +
             '<textarea class="comment" data-ckey="' + esc(key) + '" data-cside="parent" ' +
-            'placeholder="notes on the parent… (e.g. this parent is a trouble maker)">' + esc(c.parent) + "</textarea></div>";
+            'placeholder="notes on the parent…">' + esc(c.parent) + "</textarea></div>";
         } else {
           html += '<div class="cell parent"><span class="side parent">PARENT</span><h4><span class="badge nocon">no consent form on file</span></h4>' +
             '<p class="facts">no parent contact from the consent form — chase this one down</p>' +
