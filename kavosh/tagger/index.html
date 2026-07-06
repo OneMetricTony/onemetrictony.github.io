@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>FIRA Face Tagger</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #1a1e27;
+      --panel2: #232838;
+      --text: #eef1f7;
+      --muted: #97a0b5;
+      --accent: #4c8dff;
+      --accent2: #2fbf71;
+      --warn: #ffb020;
+      --border: #2c3346;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+    }
+    header {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      padding: 14px 22px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    header .stats { margin-left: auto; display: flex; gap: 18px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+    header .stats b { color: var(--text); }
+    #intro {
+      font-size: 13px; color: var(--text); background: rgba(76,141,255,.10);
+      border-bottom: 1px solid var(--border); padding: 8px 22px; line-height: 1.4;
+    }
+    #status {
+      font-size: 13px; color: var(--muted);
+      padding: 6px 22px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    .wrap {
+      display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+      gap: 20px; padding: 20px; max-width: 1500px; margin: 0 auto;
+    }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; padding: 14px; gap: 14px; } }
+    .imgcol { min-width: 0; }
+    .stage {
+      position: relative; display: inline-block; max-width: 100%;
+      background: #000; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .stage img { display: block; max-width: 100%; height: auto; }
+    .stage video { display: block; max-width: 100%; height: auto; background: #000; }
+    .stage canvas { position: absolute; left: 0; top: 0; pointer-events: none; }
+    .face-thumb {
+      width: 46px; height: 46px; object-fit: cover; border-radius: 6px;
+      border: 1px solid var(--border); flex: 0 0 auto;
+    }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+    .panel h2 { margin: 0 0 12px; font-size: 15px; }
+    .photoname { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
+    .face-card {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px; margin-bottom: 12px;
+    }
+    .face-card .fhead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 6px;
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+    }
+    .badge.manual { background: var(--warn); color: #1a1e27; }
+    .badge.added { background: var(--accent2); color: #04240f; }
+    .addface-bar { margin-top: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .addface-bar .hint { margin-top: 0; }
+    .stage.addmode { cursor: crosshair; outline: 2px dashed var(--accent2); }
+    .stage.addmode canvas { pointer-events: auto; cursor: crosshair; }
+    .ai-hint {
+      font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 8px;
+      color: var(--accent2); background: rgba(47,191,113,.10);
+      border: 1px solid rgba(47,191,113,.35); border-radius: 6px; padding: 5px 8px;
+    }
+    .ai-hint button {
+      padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: auto;
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+    }
+    label.small { display: block; font-size: 12px; color: var(--muted); margin: 6px 0 3px; }
+    select, button, input {
+      font-family: inherit; font-size: 16px;
+    }
+    select {
+      width: 100%; padding: 10px 10px; border-radius: 6px;
+      background: #10131b; color: var(--text); border: 1px solid var(--border);
+    }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text); cursor: pointer; font-weight: 600;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { filter: brightness(1.08); }
+    button.ok { background: var(--accent2); border-color: var(--accent2); color: #04240f; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .empty { color: var(--warn); font-size: 14px; margin: 10px 0; }
+    .manual-add { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted);
+      border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FIRA Face Tagger</h1>
+    <div class="stats">
+      <div>Item <b id="stat-idx">-</b> of <b id="stat-total">-</b></div>
+      <div>Untagged left: <b id="stat-untagged">-</b></div>
+      <div>Reference faces: <b id="stat-ref">0</b></div>
+    </div>
+  </header>
+  <div id="intro">Tag who's in each photo — untagged photos come first. Your labels train the model.</div>
+  <div id="status">Loading models…</div>
+
+  <div class="wrap">
+    <div class="imgcol">
+      <div class="stage" id="stage">
+        <img id="photo" alt="camp photo" />
+        <video id="video" controls playsinline preload="metadata" style="display:none"></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="addface-bar" id="addface-bar">
+        <button id="btn-addface">＋ Add a face the AI missed</button>
+        <span id="addface-hint" class="hint" style="display:none"></span>
+      </div>
+      <div class="addface-bar" id="video-bar" style="display:none">
+        <button id="btn-vdetect">🎞 Detect faces in video</button>
+        <span id="vdetect-hint" class="hint" style="display:none"></span>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <h2 id="panel-title">Who is in this photo?</h2>
+        <div class="photoname" id="photoname"></div>
+        <div id="faces"></div>
+        <div class="actions">
+          <button class="primary ok" id="btn-save">Save &amp; Next  <span style="opacity:.7;font-weight:400">(Enter)</span></button>
+          <button id="btn-skip">Skip photo</button>
+          <button id="btn-back">Back</button>
+        </div>
+        <div class="hint">Tip: leave a face on "Unknown / skip this face" to omit it. Press <b>Enter</b> to Save &amp; Next.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/face-api.min.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // Cross-origin API on the Railway relay (github.io -> railway).
+    const API = 'https://kavosh-relay-production.up.railway.app/tag';
+
+    const els = {
+      status: document.getElementById('status'),
+      statIdx: document.getElementById('stat-idx'),
+      statTotal: document.getElementById('stat-total'),
+      statUntagged: document.getElementById('stat-untagged'),
+      statRef: document.getElementById('stat-ref'),
+      stage: document.getElementById('stage'),
+      photo: document.getElementById('photo'),
+      video: document.getElementById('video'),
+      overlay: document.getElementById('overlay'),
+      panelTitle: document.getElementById('panel-title'),
+      photoname: document.getElementById('photoname'),
+      faces: document.getElementById('faces'),
+      btnSave: document.getElementById('btn-save'),
+      btnSkip: document.getElementById('btn-skip'),
+      btnBack: document.getElementById('btn-back'),
+      btnAddFace: document.getElementById('btn-addface'),
+      addFaceHint: document.getElementById('addface-hint'),
+      addFaceBar: document.getElementById('addface-bar'),
+      videoBar: document.getElementById('video-bar'),
+      btnVDetect: document.getElementById('btn-vdetect'),
+      vdetectHint: document.getElementById('vdetect-hint'),
+    };
+
+    // AI match threshold. face-api descriptors match well around 0.5-0.6
+    // Euclidean distance; lower = stricter. Tweak here.
+    const AUTO_THRESHOLD = 0.5;
+
+    let roster = [];        // [{team, league, students:[]}]
+    let photos = [];        // [{id, name, type, tagged}]
+    let idx = 0;
+    let untaggedLeft = 0;
+    let modelsReady = false;
+    let currentDetections = []; // [{descriptor, box, added?}]
+    let busy = false;
+    let referenceFaces = [];    // growing trained set: [{name, team, descriptor:[128]}]
+    let addMode = false;        // "add a face the AI missed" mode
+
+    function setStatus(msg, spin) {
+      els.status.innerHTML = (spin ? '<span class="spinner"></span>' : '') + msg;
+    }
+
+    // ---- init ----
+    async function init() {
+      try {
+        setStatus('Loading face-recognition models…', true);
+        await faceapi.nets.tinyFaceDetector.loadFromUri('models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('models');
+        modelsReady = true;
+      } catch (e) {
+        setStatus('⚠️ Could not load face models: ' + e.message + '. You can still tag manually.', false);
+        console.error(e);
+      }
+
+      try {
+        const [r, p] = await Promise.all([
+          fetch(API + '/roster').then((x) => x.json()),
+          fetch(API + '/photos').then((x) => x.json()),
+        ]);
+        roster = Array.isArray(r) ? r : [];
+        // /tag/photos returns { items:[...], counts:{total,untagged} } (untagged-first).
+        photos = (p && Array.isArray(p.items)) ? p.items : (Array.isArray(p) ? p : []);
+        untaggedLeft = (p && p.counts && typeof p.counts.untagged === 'number')
+          ? p.counts.untagged : photos.filter((x) => !x.tagged).length;
+      } catch (e) {
+        setStatus('⚠️ Failed to load roster/photos: ' + e.message, false);
+        return;
+      }
+
+      // Load the trained reference set (labeled faces with descriptors).
+      try {
+        const refs = await fetch(API + '/reference').then((x) => x.json());
+        referenceFaces = Array.isArray(refs) ? refs.filter(validRef) : [];
+      } catch (_) { referenceFaces = []; }
+      updateRefCount();
+
+      els.statTotal.textContent = photos.length;
+      els.statUntagged.textContent = untaggedLeft;
+      if (!photos.length) {
+        setStatus('No photos found in the Drive folder yet. Add photos and refresh.', false);
+        return;
+      }
+      showPhoto(0);
+    }
+
+    // ---- render one item (photo or video) ----
+    function showPhoto(i) {
+      if (i < 0) i = 0;
+      if (i >= photos.length) {
+        setStatus('🎉 All ' + photos.length + ' items done. Thank you!', false);
+        els.faces.innerHTML = '<div class="empty">All items processed.</div>';
+        els.photo.removeAttribute('src');
+        stopVideo();
+        clearOverlay();
+        els.statIdx.textContent = photos.length;
+        return;
+      }
+      idx = i;
+      currentDetections = [];
+      manualPeople = [];
+      exitAddMode();
+      const ph = photos[idx];
+      els.statIdx.textContent = idx + 1;
+      els.photoname.textContent = ph.name + (ph.tagged ? '  (already tagged)' : '');
+      clearOverlay();
+      els.btnBack.disabled = idx === 0;
+
+      if (ph.type === 'video') showVideo(ph);
+      else showImage(ph);
+    }
+
+    // Show the image column UI (default), hide the video UI.
+    function setModeImage() {
+      els.photo.style.display = '';
+      els.overlay.style.display = '';
+      els.addFaceBar.style.display = '';
+      els.videoBar.style.display = 'none';
+      els.video.style.display = 'none';
+      els.panelTitle.textContent = 'Who is in this photo?';
+    }
+    // Show the video player UI, hide the still-image face flow.
+    function setModeVideo() {
+      els.photo.removeAttribute('src');
+      els.photo.style.display = 'none';
+      els.overlay.style.display = 'none';
+      els.addFaceBar.style.display = 'none';
+      els.videoBar.style.display = '';
+      els.video.style.display = '';
+      els.panelTitle.textContent = 'Who is in this video?';
+    }
+    function stopVideo() {
+      try { els.video.pause(); } catch (_) {}
+      els.video.removeAttribute('src');
+      try { els.video.load(); } catch (_) {}
+    }
+
+    function showImage(ph) {
+      setModeImage();
+      els.faces.innerHTML = '<div class="empty"><span class="spinner"></span>Loading image…</div>';
+      setStatus('Loading item ' + (idx + 1) + ' of ' + photos.length + '…', true);
+
+      els.photo.onload = () => onImageLoaded(ph);
+      els.photo.onerror = () => {
+        setStatus('⚠️ Could not load this photo. You can Skip.', false);
+        els.faces.innerHTML = '<div class="empty">Image failed to load.</div>';
+      };
+      // cache-bust so temp streaming is always fresh
+      els.photo.src = API + '/photo/' + encodeURIComponent(ph.id) + '?t=' + Date.now();
+    }
+
+    function showVideo(ph) {
+      setModeVideo();
+      hideVDetectProgress();
+      els.btnVDetect.disabled = false;
+      // Stable URL (no cache-bust) so Range requests hit the same resource.
+      els.video.src = API + '/photo/' + encodeURIComponent(ph.id);
+      els.video.load();
+      setStatus('Item ' + (idx + 1) + ' of ' + photos.length +
+        ' — video. Tag who is in it, or click “Detect faces in video”.', false);
+      renderVideoManual('Tag who appears in this video, or use “🎞 Detect faces in video”.');
+    }
+
+    function clearOverlay() {
+      const ctx = els.overlay.getContext('2d');
+      ctx.clearRect(0, 0, els.overlay.width, els.overlay.height);
+    }
+
+    async function onImageLoaded(ph) {
+      // Size the overlay canvas to the *displayed* image size.
+      syncOverlaySize();
+
+      if (!modelsReady) {
+        renderManualOnly('Face models not loaded.');
+        setStatus('Item ' + (idx + 1) + ' of ' + photos.length + ' — manual tagging only.', false);
+        return;
+      }
+
+      setStatus('Detecting faces in photo ' + (idx + 1) + '…', true);
+      let detections = [];
+      try {
+        const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
+        detections = await faceapi
+          .detectAllFaces(els.photo, opts)
+          .withFaceLandmarks()
+          .withFaceDescriptors();
+      } catch (e) {
+        console.error('detect error', e);
+        renderManualOnly('Detection error: ' + e.message);
+        setStatus('Item ' + (idx + 1) + ' — detection failed, tag manually.', false);
+        return;
+      }
+
+      currentDetections = detections.map((d) => ({
+        descriptor: Array.from(d.descriptor),
+        box: d.detection.box,
+      }));
+
+      drawBoxes();
+      renderFaceCards();
+      setStatus(
+        'Item ' + (idx + 1) + ' of ' + photos.length + ' — ' +
+        currentDetections.length + ' face(s) detected.',
+        false
+      );
+    }
+
+    function syncOverlaySize() {
+      const w = els.photo.clientWidth;
+      const h = els.photo.clientHeight;
+      els.overlay.width = w;
+      els.overlay.height = h;
+      els.overlay.style.width = w + 'px';
+      els.overlay.style.height = h + 'px';
+    }
+
+    function scaleFactors() {
+      // map natural (detection) coords -> displayed coords
+      const sx = els.photo.clientWidth / (els.photo.naturalWidth || els.photo.clientWidth);
+      const sy = els.photo.clientHeight / (els.photo.naturalHeight || els.photo.clientHeight);
+      return { sx, sy };
+    }
+
+    function drawBoxes() {
+      syncOverlaySize();
+      const ctx = els.overlay.getContext('2d');
+      ctx.clearRect(0, 0, els.overlay.width, els.overlay.height);
+      const { sx, sy } = scaleFactors();
+      ctx.lineWidth = Math.max(2, els.overlay.width * 0.004);
+      ctx.font = 'bold ' + Math.max(14, els.overlay.width * 0.03) + 'px Segoe UI, sans-serif';
+      currentDetections.forEach((d, i) => {
+        const x = d.box.x * sx, y = d.box.y * sy, w = d.box.width * sx, h = d.box.height * sy;
+        const color = d.added ? '#2fbf71' : '#4c8dff';
+        ctx.strokeStyle = color;
+        ctx.strokeRect(x, y, w, h);
+        const label = String(i + 1);
+        const pad = 4;
+        const tw = ctx.measureText(label).width;
+        const fh = parseInt(ctx.font, 10);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y - fh - pad * 2, tw + pad * 2, fh + pad * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(label, x + pad, y - pad);
+      });
+    }
+
+    // rebuild boxes on resize
+    window.addEventListener('resize', () => { if (currentDetections.length) drawBoxes(); });
+
+    // ---- AI auto-suggest (grows as you label) ----
+    function validRef(r) {
+      return r && Array.isArray(r.descriptor) && r.descriptor.length === 128 &&
+        r.descriptor.every((x) => typeof x === 'number' && isFinite(x));
+    }
+    function updateRefCount() {
+      if (els.statRef) els.statRef.textContent = referenceFaces.length;
+    }
+    // Nearest reference descriptor to a 128-float query; returns
+    // {name, team, distance} or null when there is no usable match.
+    function bestMatch(descriptor) {
+      if (!descriptor || !referenceFaces.length || typeof faceapi === 'undefined') return null;
+      const q = descriptor instanceof Float32Array ? descriptor : Float32Array.from(descriptor);
+      let best = null;
+      for (const r of referenceFaces) {
+        let dist;
+        try {
+          dist = faceapi.euclideanDistance(q, Float32Array.from(r.descriptor));
+        } catch (_) { continue; }
+        if (!isFinite(dist)) continue;
+        if (!best || dist < best.distance) best = { name: r.name, team: r.team, distance: dist };
+      }
+      return best;
+    }
+    // First roster index whose team matches (case-insensitive), or '' if none.
+    function teamIndexForName(team) {
+      const key = String(team || '').toLowerCase();
+      for (let i = 0; i < roster.length; i++) {
+        if ((roster[i].team || '').toLowerCase() === key) return i;
+      }
+      return '';
+    }
+
+    // Pre-fill a face card's dropdowns from the nearest reference match.
+    function applySuggestion(i) {
+      const card = els.faces.querySelector('.face-card[data-i="' + i + '"]');
+      const det = currentDetections[i];
+      if (!card || !det || !det.descriptor) return;
+      const m = bestMatch(det.descriptor);
+      const hint = card.querySelector('.ai-hint');
+      if (!m || m.distance > AUTO_THRESHOLD) return; // no confident guess
+      const tIdx = teamIndexForName(m.team);
+      if (tIdx === '') return;
+      const selTeam = card.querySelector('.sel-team');
+      const selKid = card.querySelector('.sel-kid');
+      selTeam.value = String(tIdx);
+      selKid.innerHTML = individualOptionsHtml(String(tIdx));
+      // Match name may be a free-text "Other" entry not in the roster list.
+      if (!Array.from(selKid.options).some((o) => o.value === m.name)) {
+        const opt = document.createElement('option');
+        opt.value = m.name; opt.textContent = m.name;
+        selKid.insertBefore(opt, selKid.querySelector('option[value="__other__"]'));
+      }
+      selKid.value = m.name;
+      if (hint) {
+        hint.style.display = 'flex';
+        hint.innerHTML = '🤖 AI: <b>' + escapeHtml(m.name) + '</b> · ' + escapeHtml(m.team) +
+          ' (dist ' + m.distance.toFixed(2) + ') <button type="button" class="ai-clear">✕ clear</button>';
+        const clr = hint.querySelector('.ai-clear');
+        if (clr) clr.addEventListener('click', () => {
+          selTeam.value = '';
+          selKid.innerHTML = '<option value="">— pick team first —</option>' +
+            '<option value="__unknown__">Unknown / skip this face</option>';
+          hint.style.display = 'none';
+          hint.innerHTML = '';
+        });
+      }
+    }
+
+    // ---- face cards ----
+    function teamOptionsHtml() {
+      let html = '<option value="">— select team —</option>';
+      roster.forEach((t, i) => {
+        html += '<option value="' + i + '">' + escapeHtml(t.team) + ' (' + escapeHtml(t.league) + ')</option>';
+      });
+      return html;
+    }
+
+    function renderFaceCards() {
+      if (!currentDetections.length) {
+        renderManualOnly('No faces auto-detected in this photo.');
+        return;
+      }
+      let html = '';
+      currentDetections.forEach((d, i) => {
+        html += faceCardHtml(i);
+      });
+      els.faces.innerHTML = html;
+      currentDetections.forEach((_, i) => { wireCard(i); applySuggestion(i); });
+    }
+
+    function individualOptionsHtml(teamIdx) {
+      let html = '<option value="">— select individual —</option>';
+      html += '<option value="__unknown__">Unknown / skip this face</option>';
+      if (teamIdx !== '' && teamIdx != null) {
+        const t = roster[+teamIdx];
+        (t.individuals || []).forEach((s) => {
+          html += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>';
+        });
+      }
+      html += '<option value="__other__">✎ Other (type a name)…</option>';
+      return html;
+    }
+    function handleOther(selectEl) {
+      if (selectEl.value !== '__other__') return;
+      const n = (window.prompt("Type the individual's name") || '').trim();
+      if (n) {
+        const opt = document.createElement('option');
+        opt.value = n; opt.textContent = n;
+        selectEl.insertBefore(opt, selectEl.querySelector('option[value="__other__"]'));
+        selectEl.value = n;
+      } else {
+        selectEl.value = '';
+      }
+    }
+
+    function faceCardHtml(i) {
+      const det = currentDetections[i] || {};
+      const added = !!det.added;
+      const hasDesc = !!det.descriptor;
+      let title;
+      if (det.fromVideo) title = 'Face #' + (i + 1) + ' in video' + (hasDesc ? '' : ' (no AI signature)');
+      else if (added) title = 'Added face #' + (i + 1) + (hasDesc ? '' : ' (no AI signature)');
+      else title = 'Detected face #' + (i + 1);
+      const thumb = det.thumb ? '<img class="face-thumb" src="' + det.thumb + '" alt="face thumbnail" />' : '';
+      return (
+        '<div class="face-card" data-i="' + i + '">' +
+          '<div class="fhead">' +
+            '<span class="badge' + (added ? ' added' : '') + '">' + (i + 1) + '</span>' +
+            thumb +
+            '<span>' + title + '</span>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div><label class="small">Team</label>' +
+              '<select class="sel-team">' + teamOptionsHtml() + '</select></div>' +
+            '<div><label class="small">Individual</label>' +
+              '<select class="sel-kid"><option value="">— pick team first —</option>' +
+              '<option value="__unknown__">Unknown / skip this face</option></select></div>' +
+          '</div>' +
+          '<div class="ai-hint" style="display:none"></div>' +
+        '</div>'
+      );
+    }
+
+    function wireCard(i) {
+      const card = els.faces.querySelector('.face-card[data-i="' + i + '"]');
+      if (!card) return;
+      const selTeam = card.querySelector('.sel-team');
+      const selKid = card.querySelector('.sel-kid');
+      selTeam.addEventListener('change', () => {
+        selKid.innerHTML = individualOptionsHtml(selTeam.value);
+      });
+      selKid.addEventListener('change', () => handleOther(selKid));
+    }
+
+    // Shared "add an individual" markup (manual team->kid picker + running list).
+    function manualAddSectionHtml(labelText) {
+      return '<div id="manual-list"></div>' +
+        '<div class="manual-add">' +
+          '<label class="small">' + escapeHtml(labelText || 'Add an individual who is in this photo') + '</label>' +
+          '<div class="row2">' +
+            '<select id="m-team">' + teamOptionsHtml() + '</select>' +
+            '<select id="m-kid"><option value="">— pick team —</option></select>' +
+          '</div>' +
+          '<div class="actions"><button id="m-add">+ Add individual</button></div>' +
+        '</div>';
+    }
+    function wireManualAdd() {
+      const mTeam = document.getElementById('m-team');
+      const mKid = document.getElementById('m-kid');
+      const mAdd = document.getElementById('m-add');
+      if (!mTeam || !mKid || !mAdd) return;
+      renderManualList();
+      mTeam.addEventListener('change', () => {
+        mKid.innerHTML = individualOptionsHtml(mTeam.value);
+      });
+      mKid.addEventListener('change', () => handleOther(mKid));
+      mAdd.addEventListener('click', () => {
+        if (mTeam.value === '' || !mKid.value) return;
+        if (mKid.value === '__unknown__' || mKid.value === '__other__') return;
+        const t = roster[+mTeam.value];
+        manualPeople.push({ team: t.team, name: mKid.value });
+        renderManualList();
+      });
+    }
+
+    function renderManualOnly(note) {
+      // Zero-detection (or models unavailable): allow manual team->kid add.
+      els.faces.innerHTML = '<div class="empty">' + escapeHtml(note) + '</div>' +
+        manualAddSectionHtml();
+      manualPeople = [];
+      wireManualAdd();
+    }
+
+    // ---- Feature 1: video manual tagging ----
+    function renderVideoManual(note) {
+      // Keep any people the user already added (don't reset manualPeople here).
+      let html = '';
+      if (note) html += '<div class="empty">' + escapeHtml(note) + '</div>';
+      html += manualAddSectionHtml('Add someone who appears in this video');
+      els.faces.innerHTML = html;
+      wireManualAdd();
+    }
+
+    // ---- Feature 2: labelable cards for faces detected in a video ----
+    function renderVideoDetected() {
+      let html = '';
+      currentDetections.forEach((_, i) => { html += faceCardHtml(i); });
+      html += manualAddSectionHtml('Add someone the detector missed');
+      els.faces.innerHTML = html;
+      currentDetections.forEach((_, i) => { wireCard(i); applySuggestion(i); });
+      wireManualAdd();
+    }
+
+    let manualPeople = [];
+    function renderManualList() {
+      const box = document.getElementById('manual-list');
+      if (!box) return;
+      if (!manualPeople.length) { box.innerHTML = ''; return; }
+      let html = '';
+      manualPeople.forEach((p, i) => {
+        html += '<div class="face-card"><div class="fhead">' +
+          '<span class="badge manual">' + (i + 1) + '</span>' +
+          '<span>' + escapeHtml(p.name) + ' — ' + escapeHtml(p.team) + '</span>' +
+          '<button data-rm="' + i + '" style="margin-left:auto;padding:4px 10px;">remove</button>' +
+          '</div></div>';
+      });
+      box.innerHTML = html;
+      box.querySelectorAll('button[data-rm]').forEach((b) => {
+        b.addEventListener('click', () => {
+          manualPeople.splice(+b.getAttribute('data-rm'), 1);
+          renderManualList();
+        });
+      });
+    }
+
+    // ---- collect + save ----
+    function collectFaces() {
+      const out = [];
+      // Detected faces
+      els.faces.querySelectorAll('.face-card[data-i]').forEach((card) => {
+        const i = +card.getAttribute('data-i');
+        const selTeam = card.querySelector('.sel-team');
+        const selKid = card.querySelector('.sel-kid');
+        if (!selTeam || !selKid) return;
+        if (selTeam.value === '' || !selKid.value || selKid.value === '__unknown__') return;
+        const t = roster[+selTeam.value];
+        const desc = currentDetections[i] ? currentDetections[i].descriptor : null;
+        const face = { descriptor: desc, team: t.team, name: selKid.value };
+        if (!desc) face.manual = true; // added face with no AI signature
+        out.push(face);
+      });
+      // Manually added people (zero-detection path)
+      manualPeople.forEach((p) => {
+        out.push({ descriptor: null, team: p.team, name: p.name, manual: true });
+      });
+      return out;
+    }
+
+    // Mark the current item as tagged locally and decrement the untagged counter.
+    function markTagged() {
+      const ph = photos[idx];
+      if (ph && !ph.tagged) {
+        ph.tagged = true;
+        untaggedLeft = Math.max(0, untaggedLeft - 1);
+        els.statUntagged.textContent = untaggedLeft;
+      }
+    }
+
+    async function saveAndNext() {
+      if (busy) return;
+      if (idx >= photos.length) return;
+      busy = true;
+      els.btnSave.disabled = true;
+      const ph = photos[idx];
+      const faces = collectFaces();
+      // Mark faces coming from a video item so the label carries provenance.
+      if (ph.type === 'video') faces.forEach((f) => { f.source = 'video'; });
+      try {
+        await fetch(API + '/label', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoId: ph.id, photoName: ph.name, faces, skipped: false }),
+        }).then((x) => x.json());
+        markTagged();
+        // Grow the in-memory trained set immediately (server already persisted
+        // these). Only faces that carry a real descriptor are useful matchers.
+        for (const f of faces) {
+          if (validRef(f) && f.team && f.name) {
+            referenceFaces.push({ name: f.name, team: f.team, descriptor: f.descriptor });
+          }
+        }
+        updateRefCount();
+      } catch (e) {
+        setStatus('⚠️ Save failed: ' + e.message, false);
+        busy = false; els.btnSave.disabled = false;
+        return;
+      }
+      busy = false; els.btnSave.disabled = false;
+      manualPeople = [];
+      showPhoto(idx + 1);
+    }
+
+    async function skipPhoto() {
+      if (busy) return;
+      if (idx >= photos.length) return;
+      busy = true;
+      const ph = photos[idx];
+      try {
+        await fetch(API + '/label', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoId: ph.id, photoName: ph.name, faces: [], skipped: true }),
+        });
+        markTagged();
+      } catch (_) {}
+      busy = false;
+      manualPeople = [];
+      showPhoto(idx + 1);
+    }
+
+    // ---- Feature 2: add a face the detector missed ----
+    function enterAddMode() {
+      if (addMode) return exitAddMode();
+      if (idx >= photos.length || !els.photo.getAttribute('src')) return;
+      addMode = true;
+      els.stage.classList.add('addmode');
+      els.overlay.style.pointerEvents = 'auto';
+      els.btnAddFace.textContent = '✕ Cancel add-face';
+      els.addFaceHint.style.display = '';
+      els.addFaceHint.textContent = 'Tap the face the AI missed (Esc to cancel).';
+    }
+    function exitAddMode() {
+      addMode = false;
+      els.stage.classList.remove('addmode');
+      els.overlay.style.pointerEvents = 'none';
+      if (els.btnAddFace) els.btnAddFace.textContent = '＋ Add a face the AI missed';
+      if (els.addFaceHint) { els.addFaceHint.style.display = 'none'; els.addFaceHint.textContent = ''; }
+    }
+
+    async function handleStageClick(ev) {
+      if (!addMode || busy) return;
+      // Click point in displayed coords -> natural image coords.
+      const rect = els.overlay.getBoundingClientRect();
+      const dispX = ev.clientX - rect.left;
+      const dispY = ev.clientY - rect.top;
+      const { sx, sy } = scaleFactors();
+      const natX = dispX / (sx || 1);
+      const natY = dispY / (sy || 1);
+
+      let box = null, descriptor = null;
+      if (modelsReady) {
+        els.addFaceHint.textContent = 'Looking for a face here…';
+        try {
+          // Re-detect with a lower threshold / bigger input to catch faces the
+          // first pass missed, then pick the detection nearest the click.
+          const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.2 });
+          const dets = await faceapi
+            .detectAllFaces(els.photo, opts)
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+          const pick = nearestDetection(dets, natX, natY);
+          if (pick) { box = pick.detection.box; descriptor = Array.from(pick.descriptor); }
+        } catch (e) {
+          console.error('add-face detect error', e);
+        }
+      }
+      if (!box) {
+        // No face-api signature near the click: drop a manual box so the user
+        // can still name the person (saved with manual:true, descriptor:null).
+        const side = (els.photo.naturalWidth || 400) * 0.08;
+        box = { x: natX - side / 2, y: natY - side / 2, width: side, height: side };
+      }
+      currentDetections.push({ descriptor: descriptor, box: box, added: true });
+      exitAddMode();
+      drawBoxes();
+      renderFaceCards();
+      const n = currentDetections.length;
+      setStatus('Item ' + (idx + 1) + ' of ' + photos.length + ' — ' + n +
+        ' face(s), including 1 you just added' + (descriptor ? ' (with AI signature).' : ' (no signature).'), false);
+    }
+
+    // Pick the detection whose box contains the point, else the nearest box
+    // whose center is within 15% of the image's larger dimension.
+    function nearestDetection(dets, x, y) {
+      if (!dets || !dets.length) return null;
+      let contained = null, nearest = null, nearestD = Infinity;
+      for (const d of dets) {
+        const b = d.detection.box;
+        if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height) {
+          if (!contained || d.detection.score > contained.detection.score) contained = d;
+        }
+        const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+        const dist = Math.hypot(cx - x, cy - y);
+        if (dist < nearestD) { nearestD = dist; nearest = d; }
+      }
+      if (contained) return contained;
+      const tol = Math.max(els.photo.naturalWidth || 0, els.photo.naturalHeight || 0) * 0.15;
+      return nearestD <= tol ? nearest : null;
+    }
+
+    // ---- Feature 2: detect faces IN a video (in-browser frame sampling) ----
+    const VIDEO_FRAMES = 7;       // evenly spaced samples, skipping start/end
+    const VIDEO_DEDUPE_DIST = 0.5; // euclidean < this => same person
+
+    function showVDetectProgress(k, n) {
+      els.vdetectHint.style.display = '';
+      els.vdetectHint.innerHTML = '<span class="spinner"></span>Sampling frame ' + k + ' of ' + n + '…';
+      els.btnVDetect.textContent = 'Detecting…';
+    }
+    function hideVDetectProgress() {
+      els.vdetectHint.style.display = 'none';
+      els.vdetectHint.innerHTML = '';
+      els.btnVDetect.textContent = '🎞 Detect faces in video';
+    }
+
+    // Wait for the video's metadata (duration/dimensions) to be available.
+    function waitForVideoReady(v) {
+      return new Promise((resolve, reject) => {
+        if (v.readyState >= 1 && isFinite(v.duration) && v.duration > 0) return resolve();
+        const to = setTimeout(() => { cleanup(); reject(new Error('metadata timeout')); }, 8000);
+        function cleanup() {
+          clearTimeout(to);
+          v.removeEventListener('loadedmetadata', onMeta);
+          v.removeEventListener('error', onErr);
+        }
+        function onMeta() { cleanup(); resolve(); }
+        function onErr() { cleanup(); reject(new Error('video error')); }
+        v.addEventListener('loadedmetadata', onMeta);
+        v.addEventListener('error', onErr);
+      });
+    }
+
+    // Seek to a timestamp and resolve once the frame is decoded ('seeked').
+    function seekTo(v, t) {
+      return new Promise((resolve, reject) => {
+        let done = false;
+        const to = setTimeout(() => finish(reject, new Error('seek timeout')), 6000);
+        function finish(fn, arg) {
+          if (done) return;
+          done = true;
+          clearTimeout(to);
+          v.removeEventListener('seeked', onSeeked);
+          v.removeEventListener('error', onErr);
+          fn(arg);
+        }
+        const onSeeked = () => finish(resolve);
+        const onErr = () => finish(reject, new Error('seek error'));
+        v.addEventListener('seeked', onSeeked);
+        v.addEventListener('error', onErr);
+        try { v.currentTime = t; } catch (e) { finish(reject, e); }
+      });
+    }
+
+    // Crop a square-ish thumbnail around a detection box from the frame canvas.
+    function cropThumb(srcCanvas, box) {
+      try {
+        const pad = box.width * 0.25;
+        const sx = Math.max(0, box.x - pad);
+        const sy = Math.max(0, box.y - pad);
+        const sw = Math.min(srcCanvas.width - sx, box.width + pad * 2);
+        const sh = Math.min(srcCanvas.height - sy, box.height + pad * 2);
+        const size = 96;
+        const c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        c.getContext('2d').drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, size, size);
+        return c.toDataURL('image/jpeg', 0.8);
+      } catch (_) { return ''; }
+    }
+
+    // Collapse the same person across frames: greedy cluster by descriptor
+    // distance, keep the highest-scoring (clearest) representative of each.
+    function dedupeFaces(all) {
+      const unique = [];
+      for (const f of all) {
+        let hit = null;
+        for (const u of unique) {
+          let dist;
+          try {
+            dist = faceapi.euclideanDistance(Float32Array.from(f.descriptor), Float32Array.from(u.descriptor));
+          } catch (_) { continue; }
+          if (isFinite(dist) && dist < VIDEO_DEDUPE_DIST) { hit = u; break; }
+        }
+        if (hit) {
+          if (f.score > hit.score) { hit.descriptor = f.descriptor; hit.box = f.box; hit.score = f.score; hit.thumb = f.thumb; }
+        } else {
+          unique.push(Object.assign({}, f));
+        }
+      }
+      return unique;
+    }
+
+    async function detectFacesInVideo() {
+      if (busy) return;
+      const ph = photos[idx];
+      if (!ph || ph.type !== 'video') return;
+      const v = els.video;
+      busy = true;
+      els.btnVDetect.disabled = true;
+      try {
+        if (!modelsReady) throw new Error('models-not-ready');
+        await waitForVideoReady(v);
+        const dur = v.duration;
+        if (!isFinite(dur) || dur <= 0 || !v.videoWidth) throw new Error('cannot-decode');
+        try { v.pause(); } catch (_) {}
+
+        const times = [];
+        for (let k = 1; k <= VIDEO_FRAMES; k++) times.push(dur * (k / (VIDEO_FRAMES + 1)));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = v.videoWidth;
+        canvas.height = v.videoHeight;
+        const cx = canvas.getContext('2d');
+        const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
+
+        const all = [];
+        let framesOk = 0;
+        for (let fi = 0; fi < times.length; fi++) {
+          showVDetectProgress(fi + 1, times.length);
+          try {
+            await seekTo(v, times[fi]);
+            cx.drawImage(v, 0, 0, canvas.width, canvas.height);
+            const dets = await faceapi.detectAllFaces(canvas, opts).withFaceLandmarks().withFaceDescriptors();
+            framesOk++;
+            for (const d of dets) {
+              const b = d.detection.box;
+              all.push({
+                descriptor: Array.from(d.descriptor),
+                box: { x: b.x, y: b.y, width: b.width, height: b.height },
+                score: d.detection.score,
+                thumb: cropThumb(canvas, b),
+              });
+            }
+          } catch (e) {
+            console.warn('video frame', fi, 'failed:', e.message);
+          }
+        }
+        if (framesOk === 0) throw new Error('cannot-decode');
+
+        const unique = dedupeFaces(all);
+        if (!unique.length) {
+          setStatus('Item ' + (idx + 1) + ' of ' + photos.length +
+            ' — no faces found across ' + framesOk + ' sampled frame(s). Tag manually.', false);
+          renderVideoManual('No faces were detected in the sampled frames. Add people manually.');
+          return;
+        }
+        currentDetections = unique.map((u) => ({
+          descriptor: u.descriptor, box: u.box, added: true, fromVideo: true, thumb: u.thumb,
+        }));
+        renderVideoDetected();
+        setStatus('Item ' + (idx + 1) + ' of ' + photos.length + ' — ' + unique.length +
+          ' unique face(s) found across ' + framesOk + ' frame(s). Label each and Save.', false);
+      } catch (e) {
+        console.error('detectFacesInVideo', e);
+        let note;
+        if (e.message === 'models-not-ready') note = 'Face models are not loaded — add people manually.';
+        else if (e.message === 'cannot-decode') note = 'This video could not be decoded in the browser (common on iPhone Safari). Add people manually.';
+        else note = 'Face detection failed (' + e.message + '). Add people manually.';
+        setStatus('Item ' + (idx + 1) + ' of ' + photos.length + ' — ' + note, false);
+        renderVideoManual(note);
+      } finally {
+        busy = false;
+        els.btnVDetect.disabled = false;
+        hideVDetectProgress();
+      }
+    }
+
+    // ---- utils ----
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    // ---- events ----
+    els.btnSave.addEventListener('click', saveAndNext);
+    els.btnSkip.addEventListener('click', skipPhoto);
+    els.btnBack.addEventListener('click', () => { manualPeople = []; showPhoto(idx - 1); });
+    els.btnAddFace.addEventListener('click', enterAddMode);
+    els.btnVDetect.addEventListener('click', detectFacesInVideo);
+    els.overlay.addEventListener('click', handleStageClick);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && addMode) { exitAddMode(); return; }
+      const tag = (e.target && e.target.tagName) || '';
+      if (e.key === 'Enter' && tag !== 'SELECT') {
+        e.preventDefault();
+        if (addMode) return; // don't save mid-add
+        saveAndNext();
+      }
+    });
+
+    init();
+  })();
+  </script>
+</body>
+</html>
