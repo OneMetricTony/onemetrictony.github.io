@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KAVOSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  :root{
+    --crimson:#f0394e;
+    --brand:#c8102e;
+    --gold:#f2a73e;
+    --ink:#0a0608;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#050305;cursor:none}
+  body{display:grid;place-items:center;font-family:'Chakra Petch','Segoe UI',sans-serif}
+
+  /* ==== live space scene ==== */
+  #scene{position:fixed;inset:0;z-index:0;display:block}
+
+  /* ==== forerunner hex grid, drifting ==== */
+  .hexgrid{position:fixed;inset:-40px;z-index:1;pointer-events:none;opacity:.10;
+    background-image:
+      linear-gradient(60deg,transparent 49%,rgba(240,57,78,.7) 50%,transparent 51%),
+      linear-gradient(-60deg,transparent 49%,rgba(240,57,78,.7) 50%,transparent 51%),
+      linear-gradient(0deg,transparent 49%,rgba(242,167,62,.5) 50%,transparent 51%);
+    background-size:46px 80px,46px 80px,46px 80px;
+    mask-image:radial-gradient(circle at 50% 50%,transparent 30%,#000 90%);
+    animation:hexdrift 24s linear infinite}
+  @keyframes hexdrift{to{background-position:46px 80px,-46px 80px,0 80px}}
+
+  /* ==== scanline sweep + vignette + grain ==== */
+  .scan{position:fixed;inset:0;z-index:5;pointer-events:none;
+    background:linear-gradient(rgba(255,255,255,.05),transparent 12%);height:100%;
+    background-size:100% 6px;opacity:.4;
+    mix-blend-mode:overlay;
+    background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+  .sweep{position:fixed;left:0;right:0;height:38vh;z-index:5;pointer-events:none;
+    background:linear-gradient(transparent,rgba(240,57,78,.10),rgba(255,255,255,.05),transparent);
+    animation:beam 7s linear infinite}
+  @keyframes beam{0%{top:-40vh}100%{top:100vh}}
+  .vignette{position:fixed;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 46%,transparent 46%,rgba(3,1,3,.86) 100%)}
+  .grain{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+
+  /* ==== stage ==== */
+  .stage{position:relative;z-index:4;display:grid;place-items:center;width:min(90vw,1500px)}
+  .keylight{position:absolute;width:150%;height:340%;z-index:-1;
+    background:
+      radial-gradient(ellipse 26% 30% at 50% 50%, rgba(255,246,236,.42) 0%, rgba(255,210,180,.18) 45%, transparent 72%),
+      radial-gradient(ellipse 54% 48% at 50% 50%, rgba(255,238,225,.24) 0%, rgba(255,120,90,.10) 36%, transparent 66%);
+    animation:breathe 7s ease-in-out infinite}
+  @keyframes breathe{50%{transform:scale(1.07);opacity:.85}}
+
+  .ring-halo{position:absolute;z-index:-1;width:70%;aspect-ratio:1;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent,rgba(240,57,78,.30),transparent 38%,transparent 62%,rgba(242,167,62,.22),transparent);
+    filter:blur(30px);opacity:.55;animation:spin 20s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .logo-wrap{position:relative;animation:float 8s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-1.5%)}}
+  .logo{display:block;width:min(80vw,1200px);height:auto;
+    filter:drop-shadow(0 0 30px rgba(200,18,18,.55)) drop-shadow(0 10px 40px rgba(0,0,0,.6));
+    animation:glow 4.5s ease-in-out infinite, reveal 1.9s cubic-bezier(.16,1,.3,1) both}
+  @keyframes glow{0%,100%{filter:drop-shadow(0 0 24px rgba(200,18,18,.45)) drop-shadow(0 10px 40px rgba(0,0,0,.6))}
+    50%{filter:drop-shadow(0 0 54px rgba(255,60,60,.9)) drop-shadow(0 0 90px rgba(242,167,62,.35)) drop-shadow(0 10px 40px rgba(0,0,0,.6))}}
+  @keyframes reveal{0%{opacity:0;transform:translateY(30px) scale(.9);filter:blur(16px)}100%{opacity:1;transform:none;filter:blur(0)}}
+
+  .shine{position:absolute;inset:0;pointer-events:none;
+    -webkit-mask:var(--logo) center/contain no-repeat;mask:var(--logo) center/contain no-repeat}
+  .shine::after{content:"";position:absolute;top:-20%;left:-60%;width:38%;height:140%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.9),transparent);
+    filter:blur(6px);transform:skewX(-18deg);animation:sweepx 6.5s ease-in-out 2.4s infinite}
+  @keyframes sweepx{0%{left:-60%}22%,100%{left:150%}}
+
+  /* ==== HUD reticle brackets around the logo ==== */
+  .reticle{position:absolute;inset:-4% -3%;z-index:5;pointer-events:none;
+    animation:reticlefade 1.4s ease 1s both}
+  @keyframes reticlefade{from{opacity:0}to{opacity:1}}
+  .reticle i{position:absolute;width:44px;height:44px;border:2px solid var(--crimson);
+    filter:drop-shadow(0 0 6px rgba(240,57,78,.8))}
+  .reticle .tl{top:0;left:0;border-right:0;border-bottom:0}
+  .reticle .tr{top:0;right:0;border-left:0;border-bottom:0}
+  .reticle .bl{bottom:0;left:0;border-right:0;border-top:0}
+  .reticle .br{bottom:0;right:0;border-left:0;border-top:0}
+  .tick{position:absolute;left:50%;transform:translateX(-50%);width:2px;height:16px;
+    background:var(--gold);box-shadow:0 0 6px var(--gold);opacity:.8}
+  .tick.t{top:-22px}.tick.b{bottom:-22px}
+
+  /* ==== outer screen frame corners ==== */
+  .frame i{position:fixed;z-index:5;width:60px;height:60px;border:2px solid rgba(242,167,62,.5);pointer-events:none}
+  .frame .a{top:22px;left:22px;border-right:0;border-bottom:0}
+  .frame .b{top:22px;right:22px;border-left:0;border-bottom:0}
+  .frame .c{bottom:22px;left:22px;border-right:0;border-top:0}
+  .frame .d{bottom:22px;right:22px;border-left:0;border-top:0}
+
+  .hint{position:fixed;bottom:16px;left:0;right:0;z-index:6;text-align:center;
+    color:rgba(255,220,220,.3);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    animation:hintfade 1s ease 6s both}
+  @keyframes hintfade{from{opacity:1}to{opacity:0}}
+
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="hexgrid"></div>
+
+  <div class="frame"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
+
+  <div class="stage">
+    <div class="keylight"></div>
+    <div class="ring-halo"></div>
+    <div class="logo-wrap">
+      <img class="logo" src="kavosh-logo.png" alt="Kavosh AI &amp; Robotics Academy">
+      <div class="shine"></div>
+    </div>
+    <div class="reticle">
+      <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+      <span class="tick t"></span><span class="tick b"></span>
+    </div>
+  </div>
+
+  <div class="sweep"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="hint">click for fullscreen</div>
+
+<script>
+  document.querySelector('.shine').style.setProperty('--logo','url("kavosh-logo.png")');
+  addEventListener('click',()=>{const d=document.documentElement;
+    if(!document.fullscreenElement){(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}
+    else{document.exitFullscreen&&document.exitFullscreen()}});
+
+  const cv=document.getElementById('scene'),g=cv.getContext('2d');
+  let W,H,DPR,stars=[],motes=[],t=0;
+  function resize(){DPR=Math.min(devicePixelRatio||1,2);W=cv.width=innerWidth*DPR;H=cv.height=innerHeight*DPR;
+    cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';build()}
+  function rnd(a,b){return a+Math.random()*(b-a)}
+  function build(){
+    stars=[];const n=Math.round(innerWidth*innerHeight/2600);
+    for(let i=0;i<n;i++)stars.push({x:Math.random()*W,y:Math.random()*H,z:Math.random(),
+      r:rnd(.3,1.6)*DPR,tw:rnd(0,6.28),ts:rnd(.6,2)});
+    motes=[];for(let i=0;i<70;i++)motes.push(newMote(true));
+  }
+  function newMote(seed){return{x:Math.random()*W,y:seed?Math.random()*H:H+20,
+    r:rnd(.6,2.6)*DPR,vy:-rnd(.15,.6)*DPR,vx:rnd(-.2,.2)*DPR,
+    life:0,max:rnd(300,600),hue:rnd(2,40),a:0}}
+
+  // ---- giant ringworld arcing across the sky ----
+  function drawHalo(){
+    const cx=W*0.5, cy=H*2.15, R=H*1.95, band=H*0.15;
+    // atmospheric haze above the near band
+    const hz=g.createRadialGradient(cx,cy,R-band*2.4,cx,cy,R+band);
+    hz.addColorStop(0,'rgba(0,0,0,0)');hz.addColorStop(.86,'rgba(240,57,78,.06)');
+    hz.addColorStop(.97,'rgba(255,150,120,.12)');hz.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=hz;g.beginPath();g.arc(cx,cy,R+band,Math.PI*1.12,Math.PI*1.88);g.arc(cx,cy,R-band*2.4,Math.PI*1.88,Math.PI*1.12,true);g.closePath();g.fill();
+
+    // near band (the surface curving overhead)
+    g.save();g.beginPath();
+    g.arc(cx,cy,R,Math.PI*1.12,Math.PI*1.88);
+    g.arc(cx,cy,R-band,Math.PI*1.88,Math.PI*1.12,true);g.closePath();g.clip();
+    const bg=g.createLinearGradient(0,cy-R-band,0,cy-R+band);
+    bg.addColorStop(0,'#2a1418');bg.addColorStop(.5,'#5b2230');bg.addColorStop(1,'#160a0e');
+    g.fillStyle=bg;g.fillRect(0,0,W,H);
+    // surface striations, slowly panning
+    g.globalAlpha=.5;g.lineWidth=1*DPR;
+    for(let k=-40;k<40;k++){
+      const a=Math.PI*1.5 + (k*0.018) + Math.sin(t*.0004)*0.02;
+      g.strokeStyle=k%5===0?'rgba(242,167,62,.5)':'rgba(255,180,160,.18)';
+      g.beginPath();
+      g.moveTo(cx+Math.cos(a)*(R-band),cy+Math.sin(a)*(R-band));
+      g.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);g.stroke();
+    }
+    g.restore();
+    // bright inner rim
+    g.globalAlpha=1;g.lineWidth=2.5*DPR;g.strokeStyle='rgba(255,210,180,.6)';
+    g.shadowColor='rgba(255,120,90,.8)';g.shadowBlur=18*DPR;
+    g.beginPath();g.arc(cx,cy,R-band,Math.PI*1.12,Math.PI*1.88);g.stroke();g.shadowBlur=0;
+
+    // far side of the ring — thin bright arc high in the sky
+    const R2=H*2.55;
+    g.lineWidth=3*DPR;g.strokeStyle='rgba(255,190,160,.45)';
+    g.shadowColor='rgba(240,57,78,.7)';g.shadowBlur=20*DPR;
+    g.beginPath();g.arc(cx,cy,R2,Math.PI*1.2,Math.PI*1.8);g.stroke();
+    g.lineWidth=1*DPR;g.strokeStyle='rgba(242,167,62,.35)';
+    g.beginPath();g.arc(cx,cy,R2-6*DPR,Math.PI*1.2,Math.PI*1.8);g.stroke();
+    g.shadowBlur=0;
+  }
+
+  // ---- distant gas giant ----
+  function drawPlanet(){
+    const px=W*0.80,py=H*0.26,pr=H*0.17;
+    const gr=g.createRadialGradient(px-pr*.4,py-pr*.4,pr*.1,px,py,pr);
+    gr.addColorStop(0,'#7a2130');gr.addColorStop(.6,'#3a121c');gr.addColorStop(1,'#100609');
+    g.fillStyle=gr;g.beginPath();g.arc(px,py,pr,0,7);g.fill();
+    // banding
+    g.save();g.beginPath();g.arc(px,py,pr,0,7);g.clip();
+    g.globalAlpha=.25;
+    for(let i=-6;i<7;i++){g.fillStyle=i%2?'rgba(242,167,62,.25)':'rgba(200,18,46,.2)';
+      g.fillRect(px-pr,py+i*pr*0.16+Math.sin(t*.0002+i)*3,pr*2,pr*0.09)}
+    g.restore();
+    // crimson rim light
+    g.globalAlpha=1;g.lineWidth=3*DPR;g.strokeStyle='rgba(255,90,80,.5)';
+    g.shadowColor='rgba(240,57,78,.9)';g.shadowBlur=26*DPR;
+    g.beginPath();g.arc(px,py,pr,-2.2,0.6);g.stroke();g.shadowBlur=0;
+  }
+
+  function frame(){
+    t++;
+    g.clearRect(0,0,W,H);
+    // deep space wash
+    const sky=g.createRadialGradient(W*.5,H*.42,0,W*.5,H*.42,Math.max(W,H)*.8);
+    sky.addColorStop(0,'#170a10');sky.addColorStop(.5,'#0a050a');sky.addColorStop(1,'#040207');
+    g.fillStyle=sky;g.fillRect(0,0,W,H);
+    // nebula smudges
+    for(const nb of [[W*.2,H*.7,'rgba(120,20,40,'],[W*.7,H*.6,'rgba(160,60,20,'],[W*.45,H*.25,'rgba(90,30,70,']]){
+      const r=Math.max(W,H)*.35, gr=g.createRadialGradient(nb[0],nb[1],0,nb[0],nb[1],r);
+      gr.addColorStop(0,nb[2]+(.16+.05*Math.sin(t*.002))+')');gr.addColorStop(1,nb[2]+'0)');
+      g.fillStyle=gr;g.fillRect(0,0,W,H);
+    }
+    // stars
+    for(const s of stars){s.tw+=0.03*s.ts;const a=(0.35+0.65*(0.5+0.5*Math.sin(s.tw)))*(0.4+0.6*s.z);
+      g.globalAlpha=a;g.fillStyle=s.z>.85?'#fff':'#ffe6d6';
+      g.beginPath();g.arc(s.x,s.y,s.r,0,7);g.fill();}
+    g.globalAlpha=1;
+
+    drawPlanet();
+    drawHalo();
+
+    // energy motes rising
+    for(const m of motes){m.life++;m.x+=m.vx;m.y+=m.vy;m.vy-=0.0004*DPR;
+      const tt=m.life/m.max;m.a=Math.sin(Math.min(tt,1)*Math.PI)*.9;
+      if(m.life>m.max||m.y<-30)Object.assign(m,newMote(false));
+      g.fillStyle=`hsla(${m.hue},95%,62%,${m.a})`;
+      g.shadowColor=`hsla(${m.hue},95%,55%,${m.a})`;g.shadowBlur=10*DPR;
+      g.beginPath();g.arc(m.x,m.y,m.r,0,7);g.fill();}
+    g.shadowBlur=0;
+
+    requestAnimationFrame(frame);
+  }
+  resize();addEventListener('resize',resize);frame();
+</script>
+</body>
+</html>
