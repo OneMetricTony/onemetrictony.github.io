@@ -405,11 +405,11 @@ const KAVOSH_DATA = {
    "affiliation": "Kavosh",
    "students": [
     {
-     "name": "Shuning Yang",
-     "dob": "2013-10-28",
-     "id": "147852",
-     "fee": "$3850",
-     "ptag": "p.cnrs",
+     "name": "Sam Yazdanbakhsh",
+     "dob": "2016-01-31",
+     "id": "147301",
+     "fee": "$516.41",
+     "ptag": "p.kavosh",
      "parent": "",
      "phone": "",
      "email": "",
@@ -497,11 +497,11 @@ const KAVOSH_DATA = {
      "pstatus": 0
     },
     {
-     "name": "Sam Yazdanbakhsh",
-     "dob": "2016-01-31",
-     "id": "147301",
-     "fee": "$516.41",
-     "ptag": "p.kavosh",
+     "name": "Shuning Yang",
+     "dob": "2013-10-28",
+     "id": "147852",
+     "fee": "$3850",
+     "ptag": "p.cnrs",
      "parent": "",
      "phone": "",
      "email": "",
