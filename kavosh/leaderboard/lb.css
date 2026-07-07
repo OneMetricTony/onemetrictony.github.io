@@ -84,9 +84,11 @@ header.top {
   align-items: end; margin-bottom: 26px;
 }
 .podium.four { grid-template-columns: 1fr 1.15fr 1fr 1fr; }
+/* wrapper is NOT clipped, so the medal badge above the card stays visible */
+.p-cell { position: relative; }
 .p-card {
   background: var(--c-bg-2); border: 1px solid var(--c-line); box-shadow: var(--glow);
-  padding: 24px 14px 22px; text-align: center; position: relative;
+  padding: 24px 14px 22px; text-align: center;
   clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
 }
 .p-card.first {
@@ -220,7 +222,7 @@ footer.foot a:hover { text-decoration: underline; }
 
 @media (max-width: 560px) {
   .podium, .podium.four { grid-template-columns: 1fr 1fr; }
-  .p-card.first { grid-column: span 2; }
+  .p-cell.first { grid-column: span 2; }
   .hide-sm { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
