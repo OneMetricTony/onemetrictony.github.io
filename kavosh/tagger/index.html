@@ -177,6 +177,13 @@
     .gaccuracy { font-size: 14px; color: var(--muted); }
     .gaccuracy b { color: var(--accent2); font-size: 16px; }
     #gallery .close { margin-left: auto; }
+    /* Always-reachable floating Close (no need to scroll back to the header) */
+    #gallery .close, #hall .close {
+      position: fixed; top: 10px; right: 12px; z-index: 120;
+      padding: 10px 16px; font-size: 15px;
+      background: var(--accent); color: #fff; border-color: var(--accent);
+      box-shadow: 0 2px 10px rgba(0,0,0,.4);
+    }
     .gsection h3 {
       font-size: 15px; margin: 20px 0 10px; color: var(--accent);
       border-bottom: 1px solid var(--border); padding-bottom: 6px;
@@ -213,7 +220,7 @@
     <h1>FIRA Face Tagger</h1>
     <button id="btn-gallery" style="margin-left:6px">👥 Who the model knows</button>
     <button id="btn-hall" style="margin-left:6px">🏛️ Unique faces</button>
-    <a class="navlink" href="scan.html">🔍 Scan photos</a>
+    <button id="btn-scan" class="navlink" style="cursor:pointer">🔍 Scan photos</button>
     <div class="stats">
       <div>Item <b id="stat-idx">-</b> of <b id="stat-total">-</b></div>
       <div>Untagged left: <b id="stat-untagged">-</b></div>
@@ -1294,6 +1301,14 @@
     }
     document.getElementById('btn-hall').addEventListener('click', openHall);
     document.getElementById('btn-hall-close').addEventListener('click', closeHall);
+
+    // Scan is heavy (runs face-api in the clicker's browser) — gate it behind a password.
+    document.getElementById('btn-scan').addEventListener('click', () => {
+      const p = prompt('Scan runs the face detector on your device. Enter password to continue:');
+      if (p === null) return;                 // cancelled
+      if (p === 'K@vosh2026') location.href = 'scan.html';
+      else alert('Wrong password.');
+    });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && hallEl.classList.contains('open')) { closeHall(); return; }
       if (e.key === 'Escape' && els.gallery.classList.contains('open')) { closeGallery(); return; }
