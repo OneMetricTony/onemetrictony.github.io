@@ -461,30 +461,38 @@
       if (hint) hint.textContent = open ? 'Submit below ↓' : 'tap to identify';
     }
 
-    // ---- submit ONE attribute (name or team) for card i, independently ----
+    // ---- submit: commit the pressed attribute; and if the OTHER field is
+    // ALSO filled (and not locked), commit BOTH in one vote — so it doesn't
+    // matter which button you press when both dropdowns are set. ----
     async function submitAttr(i, attr) {
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
-      const isName = attr === 'name';
-      const flash = card.querySelector(isName ? '.flash-name' : '.flash-team');
-      const btn = card.querySelector(isName ? '.btn-name' : '.btn-team');
-      let value;
-      if (isName) {
-        const inp = card.querySelector('.inp-name');
-        value = (inp && inp.value ? inp.value : '').trim();
-      } else {
-        const sel = card.querySelector('.sel-team');
-        value = sel ? sel.value : '';
-      }
-      if (!value) {
-        if (flash) { flash.textContent = isName ? 'Type or pick a name first.' : 'Pick a team first.'; flash.style.color = 'var(--warn)'; flash.classList.add('show'); }
+      const inp = card.querySelector('.inp-name');
+      const sel = card.querySelector('.sel-team');
+      // Only count a field if it's filled AND not already locked (disabled).
+      const nameVal = (inp && !inp.disabled && inp.value ? inp.value : '').trim();
+      const teamVal = (sel && !sel.disabled && sel.value ? sel.value : '');
+
+      // The button you pressed must have a value in its own field.
+      const clickedVal = attr === 'name' ? nameVal : teamVal;
+      const clickedFlash = card.querySelector(attr === 'name' ? '.flash-name' : '.flash-team');
+      if (!clickedVal) {
+        if (clickedFlash) { clickedFlash.textContent = attr === 'name' ? 'Type or pick a name first.' : 'Pick a team first.'; clickedFlash.style.color = 'var(--warn)'; clickedFlash.classList.add('show'); }
         return;
       }
+
+      // Include every field that is filled → both go in when both are set.
       const body = { personKey: p.personKey };
-      body[attr] = value;
-      const label = isName ? 'name' : 'team';
-      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…'; }
+      const attrs = [];
+      if (nameVal) { body.name = nameVal; attrs.push('name'); }
+      if (teamVal) { body.team = teamVal; attrs.push('team'); }
+
+      const btns = attrs.map((a) => card.querySelector(a === 'name' ? '.btn-name' : '.btn-team')).filter(Boolean);
+      btns.forEach((b) => { b.disabled = true; });
+      const clickedBtn = card.querySelector(attr === 'name' ? '.btn-name' : '.btn-team');
+      if (clickedBtn) clickedBtn.innerHTML = '<span class="spinner"></span>Submitting…';
+
       let res;
       try {
         res = await fetch(API + '/vote', {
@@ -493,17 +501,22 @@
           body: JSON.stringify(body),
         }).then((x) => x.json());
       } catch (e) {
-        if (btn) { btn.disabled = false; btn.textContent = isName ? 'Submit name' : 'Submit team'; }
-        if (flash) { flash.textContent = '⚠️ ' + label + ' failed: ' + e.message; flash.style.color = 'var(--err)'; flash.classList.add('show'); }
+        btns.forEach((b) => { b.disabled = false; });
+        if (clickedBtn) clickedBtn.textContent = attr === 'name' ? 'Submit name' : 'Submit team';
+        if (clickedFlash) { clickedFlash.textContent = '⚠️ failed: ' + e.message; clickedFlash.style.color = 'var(--err)'; clickedFlash.classList.add('show'); }
         return;
       }
-      if (btn) { btn.disabled = false; btn.textContent = isName ? 'Submit name' : 'Submit team'; }
+      btns.forEach((b) => { b.disabled = false; });
+      if (clickedBtn) clickedBtn.textContent = attr === 'name' ? 'Submit name' : 'Submit team';
 
-      // Merge ONLY this attribute's returned tally; leave the other untouched.
+      // Merge the returned tallies for EVERY attribute we submitted, and refresh
+      // each of their status lines + flashes + lock state.
       const tally = (res && res.tally) ? res.tally : {};
       p.votes = p.votes || {};
-      if (tally[attr]) p.votes[attr] = tally[attr];
-      updateAttr(i, attr);
+      for (const a of attrs) {
+        if (tally[a]) p.votes[a] = tally[a];
+        updateAttr(i, a);
+      }
     }
 
     // Update ONE attribute's status line in place (no grid reload), flash + lock.
