@@ -51,23 +51,24 @@
     var ranked = LBStore.rankSort(state.players, state.metric);
     document.getElementById("empty").hidden = ranked.length > 0;
 
+    var rankOf = LBStore.ranks(ranked);
     var top = ranked.slice(0, topN);
-    var order, medals;
-    if (topN === 3) { order = [top[1], top[0], top[2]]; medals = ["s","g","b"]; }
-    else { order = [top[1], top[0], top[2], top[3]]; medals = ["s","g","b","n"]; }
-    var rankOf = new Map(); top.forEach(function(p,i){ if(p) rankOf.set(p.id, i+1); });
+    var order;
+    if (topN === 3) { order = [top[1], top[0], top[2]]; }
+    else { order = [top[1], top[0], top[2], top[3]]; }
+    var medalCls = function(r){ return r === 1 ? "g" : r === 2 ? "s" : r === 3 ? "b" : "n"; };
 
     podium.className = "podium" + (topN === 4 ? " four" : "");
     podium.innerHTML = order.map(function(p, i){
       if (!p) return "<div></div>";
       var r = rankOf.get(p.id);
-      var first = (r === 1);
+      var first = (i === 1); // centre slot is always the enlarged one
       var ch = p.change || 0;
       var tcls = ch>0?"up":ch<0?"down":"flat";
       var arrow = ch>0?"&#9650;":ch<0?"&#9660;":"&#8211;";
       var chTxt = ch===0 ? "&mdash;" : arrow + " " + Math.abs(ch).toLocaleString();
       return '<div class="p-cell '+(first?"first":"")+'">'
-        + '<div class="p-medal '+medals[i]+'">'+r+'</div>'
+        + '<div class="p-medal '+medalCls(r)+'">'+r+'</div>'
         + '<div class="p-card '+(first?"first":"")+'">'
         + '<div class="p-avatar" style="background:'+colorFor(p.name)+'">'+initials(p.name)+'</div>'
         + '<div class="p-name">'+esc(p.name)+'</div>'

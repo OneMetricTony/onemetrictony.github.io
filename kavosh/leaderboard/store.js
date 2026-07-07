@@ -103,6 +103,19 @@
     return state;
   }
 
+  // Dense ranking on an already-sorted list: equal values share a place and
+  // the next distinct value is the next integer — 1, 2, 2, 3 (no gap).
+  function ranks(sortedPlayers) {
+    var m = new Map(), lastVal = null, rank = 0;
+    for (var i = 0; i < sortedPlayers.length; i++) {
+      var p = sortedPlayers[i];
+      if (i === 0 || p.value !== lastVal) rank++;
+      lastVal = p.value;
+      m.set(p.id, rank);
+    }
+    return m;
+  }
+
   // Sort players best-first: metric decides, manual order breaks ties.
   function rankSort(players, metric) {
     var lower = metric && metric.lowerIsBetter;
@@ -155,7 +168,7 @@
 
   global.LBStore = {
     load: load, save: save, uid: uid,
-    rankSort: rankSort, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr,
+    rankSort: rankSort, ranks: ranks, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr,
     hasBackend: function () { return !!global.LB_BACKEND; }
   };
 })(window);

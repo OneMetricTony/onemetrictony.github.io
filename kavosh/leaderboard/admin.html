@@ -139,7 +139,7 @@
     var q = $("search").value.trim().toLowerCase();
     var ranked = LBStore.rankSort(state.players, state.metric);
     rankedIds = ranked.map(function(p){ return p.id; });
-    var rankMap = new Map(); ranked.forEach(function(p,i){ rankMap.set(p.id, i+1); });
+    var rankMap = LBStore.ranks(ranked);
 
     // mark tie groups (same value) so ties are visually obvious
     var tieVals = {}; ranked.forEach(function(p){ tieVals[p.value]=(tieVals[p.value]||0)+1; });
