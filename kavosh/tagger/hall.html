@@ -90,7 +90,9 @@
       border: 1px solid var(--border); display: flex; align-items: center;
       justify-content: center; font-size: 48px; color: var(--muted); cursor: pointer;
     }
-    .card .status { margin: 10px 0 2px; font-size: 13px; line-height: 1.4; min-height: 18px; }
+    .statuswrap { margin: 10px 0 2px; text-align: left; }
+    .card .status { margin: 4px 0; font-size: 13px; line-height: 1.35; }
+    .card .status .attr-label { color: var(--muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
     .card .status .lead { color: var(--text); font-weight: 700; }
     .card .status .team { color: var(--muted); }
     .card .status .votes { color: var(--muted); font-size: 12px; }
@@ -100,8 +102,8 @@
       color: var(--accent2); font-weight: 700;
     }
     .confbar {
-      height: 8px; border-radius: 5px; background: #10131b;
-      border: 1px solid var(--border); overflow: hidden; margin: 8px 0 2px;
+      height: 7px; border-radius: 5px; background: #10131b;
+      border: 1px solid var(--border); overflow: hidden; margin: 4px 0 2px;
     }
     .confbar > span { display: block; height: 100%; border-radius: 5px; transition: width .3s ease; }
     .confbar > span.red { background: var(--err); }
@@ -116,12 +118,15 @@
       text-align: left; display: none;
     }
     .card.open .vote { display: block; }
+    .vsec { margin-bottom: 12px; }
+    .vsec + .vsec { border-top: 1px solid var(--border); padding-top: 10px; }
     label.small { display: block; font-size: 12px; color: var(--muted); margin: 6px 0 3px; }
-    select {
+    select, input.inp-name {
       width: 100%; padding: 11px 10px; border-radius: 8px; font-size: 16px; font-family: inherit;
       background: #10131b; color: var(--text); border: 1px solid var(--border);
     }
-    .vote .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .vsec .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .vote .actions.close-row { margin-top: 4px; }
     button.vbtn {
       padding: 11px 14px; border-radius: 8px; border: 1px solid var(--border);
       background: var(--panel2); color: var(--text); cursor: pointer;
@@ -133,7 +138,7 @@
     button.vbtn:disabled { opacity: .5; cursor: not-allowed; }
     .flash {
       font-size: 12px; font-weight: 700; color: var(--accent2);
-      margin-top: 8px; opacity: 0; transition: opacity .2s ease;
+      margin-top: 8px; opacity: 0; transition: opacity .2s ease; min-height: 14px;
     }
     .flash.show { opacity: 1; }
 
@@ -159,8 +164,9 @@
       <button id="btn-refresh" title="Re-check for new votes">↻ Refresh</button>
     </div>
   </header>
-  <div id="intro">Tap a face and tell us who you think it is. The more people vote, the more confident the leading guess — a face locks in once the crowd agrees.</div>
+  <div id="intro">Tap a face and tell us who you think it is. You can submit a <b>name</b>, a <b>team</b>, or both — they're counted separately. The more people agree, the more confident each guess, and it locks in once the crowd agrees.</div>
   <div id="legend">
+    <span class="lg">Each face shows <b>Name</b> and <b>Team</b> separately:</span>
     <span class="lg"><span class="dot red"></span> low confidence (&lt;50%)</span>
     <span class="lg"><span class="dot amber"></span> building (50–66%)</span>
     <span class="lg"><span class="dot green"></span> strong (≥67%)</span>
@@ -171,6 +177,9 @@
   <div class="wrap">
     <div class="grid" id="grid"></div>
   </div>
+
+  <!-- Shared datalist: union of every team's individuals across the whole roster -->
+  <datalist id="all-individuals"></datalist>
 
   <script>
   (function () {
@@ -185,10 +194,11 @@
       grid: document.getElementById('grid'),
       counts: document.getElementById('stat-counts'),
       refresh: document.getElementById('btn-refresh'),
+      datalist: document.getElementById('all-individuals'),
     };
 
     let roster = [];        // [{team, league, individuals:[]}]
-    let people = [];        // [{personKey, size, rep, exampleThumbs, votes}]
+    let people = [];        // [{personKey, size, rep, exampleThumbs, votes:{name,team}}]
     let openKey = null;     // personKey whose vote control is expanded
     let refreshTimer = null;
     let loading = false;
@@ -212,9 +222,24 @@
         setStatus('⚠️ Could not load roster: ' + escapeHtml(e.message), false);
         return;
       }
+      buildNameDatalist();
       await loadHall(true);
       // auto-refresh to pick up other people's votes
       refreshTimer = setInterval(() => { loadHall(false); }, REFRESH_MS);
+    }
+
+    // ---- build the flat union of ALL individuals across every team ----
+    function allIndividuals() {
+      const set = new Set();
+      roster.forEach((t) => (t.individuals || []).forEach((n) => {
+        if (n) set.add(n);
+      }));
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+    function buildNameDatalist() {
+      els.datalist.innerHTML = allIndividuals()
+        .map((n) => '<option value="' + escapeHtml(n) + '"></option>')
+        .join('');
     }
 
     // ---- load / reload the hall ----
@@ -238,7 +263,7 @@
         (rosterMax ? ' · roster has ~<b>' + rosterMax + '</b>' : '');
       // Keep backend order (unidentified first). Render.
       renderGrid();
-      setStatus(count ? 'Tap any face to cast a vote.' : '', false);
+      setStatus(count ? 'Tap any face to submit a name and/or a team.' : '', false);
       loading = false; els.refresh.disabled = false;
     }
 
@@ -252,61 +277,44 @@
     }
     function pct(conf) { return Math.round((Number(conf) || 0) * 100); }
 
-    // ---- status line for a card (from a person's votes tally) ----
-    function statusHtml(v) {
+    // ---- one status line for a single attribute (name OR team) ----
+    // v = { leading, count, total, confidence, locked }
+    function attrLineHtml(label, v) {
       v = v || {};
       const total = Number(v.total) || 0;
-      if (v.locked && v.leadingName) {
-        return '<div class="status locked"><span class="lockbadge">✅ ' +
-          escapeHtml(v.leadingName) + '</span> <span class="team">(locked)</span></div>';
+      const leading = v.leading || '';
+      const lbl = '<span class="attr-label">' + label + ':</span> ';
+      if (v.locked && leading) {
+        return '<div class="status locked">' + lbl +
+          '<span class="lockbadge">✅ ' + escapeHtml(leading) + '</span> ' +
+          '<span class="team">(locked)</span></div>';
       }
-      if (total > 0 && v.leadingName) {
-        // leading count: from top[0] if present, else total
-        let leadCount = total;
-        if (Array.isArray(v.top) && v.top.length && typeof v.top[0].count === 'number') {
-          leadCount = v.top[0].count;
-        }
+      if (total > 0 && leading) {
         const cls = confClass(v.confidence);
         const w = Math.max(4, pct(v.confidence));
-        return '<div class="confbar"><span class="' + cls + '" style="width:' + w + '%"></span></div>' +
-          '<div class="status"><span class="lead">' + escapeHtml(v.leadingName) + '</span>' +
-          (v.leadingTeam ? ' <span class="team">· ' + escapeHtml(v.leadingTeam) + '</span>' : '') +
-          '<br><span class="votes">' + leadCount + '/' + total + ' votes (' + pct(v.confidence) + '%)</span></div>';
+        const count = (typeof v.count === 'number') ? v.count : total;
+        return '<div class="status">' + lbl +
+          '<span class="lead">' + escapeHtml(leading) + '</span> ' +
+          '<span class="votes">' + count + '/' + total + ' (' + pct(v.confidence) + '%)</span>' +
+          '<div class="confbar"><span class="' + cls + '" style="width:' + w + '%"></span></div></div>';
       }
-      return '<div class="status unknown">❓ Not identified yet — tap to vote</div>';
+      const unknown = label === 'Name' ? 'name unknown' : 'team unknown';
+      return '<div class="status unknown">' + lbl + '❓ ' + unknown + '</div>';
     }
 
-    // ---- dropdown helpers ----
+    function statusHtml(votes) {
+      votes = votes || {};
+      return attrLineHtml('Name', votes.name) + attrLineHtml('Team', votes.team);
+    }
+
+    // ---- team dropdown (value = team name) ----
     function teamOptionsHtml() {
       let html = '<option value="">— select team —</option>';
-      roster.forEach((t, i) => {
-        html += '<option value="' + i + '">' + escapeHtml(t.team) +
+      roster.forEach((t) => {
+        html += '<option value="' + escapeHtml(t.team) + '">' + escapeHtml(t.team) +
           (t.league ? ' (' + escapeHtml(t.league) + ')' : '') + '</option>';
       });
       return html;
-    }
-    function individualOptionsHtml(teamIdx) {
-      let html = '<option value="">— select individual —</option>';
-      if (teamIdx !== '' && teamIdx != null) {
-        const t = roster[+teamIdx];
-        if (t) (t.individuals || []).forEach((s) => {
-          html += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>';
-        });
-      }
-      html += '<option value="__other__">✎ Other (type a name)…</option>';
-      return html;
-    }
-    function handleOther(selectEl) {
-      if (selectEl.value !== '__other__') return;
-      const n = (window.prompt("Type this person's name") || '').trim();
-      if (n) {
-        const opt = document.createElement('option');
-        opt.value = n; opt.textContent = n;
-        selectEl.insertBefore(opt, selectEl.querySelector('option[value="__other__"]'));
-        selectEl.value = n;
-      } else {
-        selectEl.value = '';
-      }
     }
 
     // ---- render the whole grid ----
@@ -321,11 +329,15 @@
       people.forEach((p, i) => wireCard(i));
     }
 
+    function bothLocked(votes) {
+      return !!(votes && votes.name && votes.name.locked && votes.team && votes.team.locked);
+    }
+
     function cardHtml(p, i) {
       const key = p.personKey;
       const rep = p.rep || {};
       const isOpen = key === openKey;
-      const locked = !!(p.votes && p.votes.locked);
+      const locked = bothLocked(p.votes);
       const img = rep.thumb
         ? '<img class="face" src="' + rep.thumb + '" alt="face" loading="lazy" />'
         : '<div class="face-ph">🙂</div>';
@@ -333,18 +345,27 @@
       return '<div class="' + cls + '" data-i="' + i + '" data-key="' + escapeHtml(key) + '">' +
         img +
         '<div class="statuswrap">' + statusHtml(p.votes) + '</div>' +
-        (locked ? '' : '<div class="tap-hint">' + (isOpen ? 'Pick below ↓' : 'tap to vote') + '</div>') +
+        (locked ? '' : '<div class="tap-hint">' + (isOpen ? 'Submit below ↓' : 'tap to identify') + '</div>') +
         '<div class="vote">' +
-          '<label class="small">Team</label>' +
-          '<select class="sel-team">' + teamOptionsHtml() + '</select>' +
-          '<label class="small">Individual</label>' +
-          '<select class="sel-kid"><option value="">— pick team first —</option>' +
-          '<option value="__other__">✎ Other (type a name)…</option></select>' +
-          '<div class="actions">' +
-            '<button class="vbtn ok btn-vote">Submit vote</button>' +
-            '<button class="vbtn btn-cancel">Cancel</button>' +
+          '<div class="vsec vsec-name">' +
+            '<label class="small">Name — search or type anyone from the roster</label>' +
+            '<input class="inp-name" list="all-individuals" placeholder="Search or type a name…" autocomplete="off" />' +
+            '<div class="actions">' +
+              '<button class="vbtn ok btn-name">Submit name</button>' +
+            '</div>' +
+            '<div class="flash flash-name"></div>' +
           '</div>' +
-          '<div class="flash"></div>' +
+          '<div class="vsec vsec-team">' +
+            '<label class="small">Team</label>' +
+            '<select class="sel-team">' + teamOptionsHtml() + '</select>' +
+            '<div class="actions">' +
+              '<button class="vbtn ok btn-team">Submit team</button>' +
+            '</div>' +
+            '<div class="flash flash-team"></div>' +
+          '</div>' +
+          '<div class="actions close-row">' +
+            '<button class="vbtn btn-cancel">Close</button>' +
+          '</div>' +
         '</div>' +
         '</div>';
     }
@@ -355,20 +376,38 @@
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
-      const locked = !!(p.votes && p.votes.locked);
       const face = card.querySelector('.face, .face-ph');
-      // Tapping the image toggles the vote control (unless locked).
-      if (face && !locked) face.addEventListener('click', () => toggleOpen(i));
-      const selTeam = card.querySelector('.sel-team');
-      const selKid = card.querySelector('.sel-kid');
-      if (selTeam) selTeam.addEventListener('change', () => {
-        selKid.innerHTML = individualOptionsHtml(selTeam.value);
-      });
-      if (selKid) selKid.addEventListener('change', () => handleOther(selKid));
-      const btnVote = card.querySelector('.btn-vote');
+      // Tapping the image toggles the vote control (unless fully locked).
+      if (face && !bothLocked(p.votes)) face.addEventListener('click', () => toggleOpen(i));
+      const btnName = card.querySelector('.btn-name');
+      const btnTeam = card.querySelector('.btn-team');
       const btnCancel = card.querySelector('.btn-cancel');
-      if (btnVote) btnVote.addEventListener('click', () => submitVote(i));
+      if (btnName) btnName.addEventListener('click', () => submitAttr(i, 'name'));
+      if (btnTeam) btnTeam.addEventListener('click', () => submitAttr(i, 'team'));
       if (btnCancel) btnCancel.addEventListener('click', () => { openKey = null; setOpenState(i, false); });
+      // Lock down any attribute that is already locked.
+      applyAttrLockState(i, 'name');
+      applyAttrLockState(i, 'team');
+    }
+
+    // Disable a section's input+button once that attribute is locked.
+    function applyAttrLockState(i, attr) {
+      const card = cardEl(i);
+      if (!card) return;
+      const p = people[i];
+      const v = p.votes && p.votes[attr];
+      if (!(v && v.locked)) return;
+      if (attr === 'name') {
+        const inp = card.querySelector('.inp-name');
+        const btn = card.querySelector('.btn-name');
+        if (inp) { inp.disabled = true; inp.placeholder = '✅ locked'; }
+        if (btn) { btn.disabled = true; btn.textContent = '✅ Name locked'; }
+      } else {
+        const sel = card.querySelector('.sel-team');
+        const btn = card.querySelector('.btn-team');
+        if (sel) sel.disabled = true;
+        if (btn) { btn.disabled = true; btn.textContent = '✅ Team locked'; }
+      }
     }
 
     // Expand one card's vote control at a time.
@@ -388,67 +427,70 @@
       if (!card) return;
       card.classList.toggle('open', open);
       const hint = card.querySelector('.tap-hint');
-      if (hint) hint.textContent = open ? 'Pick below ↓' : 'tap to vote';
+      if (hint) hint.textContent = open ? 'Submit below ↓' : 'tap to identify';
     }
 
-    // ---- submit a vote for card i ----
-    async function submitVote(i) {
+    // ---- submit ONE attribute (name or team) for card i, independently ----
+    async function submitAttr(i, attr) {
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
-      const selTeam = card.querySelector('.sel-team');
-      const selKid = card.querySelector('.sel-kid');
-      const flash = card.querySelector('.flash');
-      const btn = card.querySelector('.btn-vote');
-      const name = selKid ? selKid.value : '';
-      if (!selTeam || selTeam.value === '' || !name || name === '__other__') {
-        if (flash) { flash.textContent = 'Pick a team and individual first.'; flash.style.color = 'var(--warn)'; flash.classList.add('show'); }
+      const isName = attr === 'name';
+      const flash = card.querySelector(isName ? '.flash-name' : '.flash-team');
+      const btn = card.querySelector(isName ? '.btn-name' : '.btn-team');
+      let value;
+      if (isName) {
+        const inp = card.querySelector('.inp-name');
+        value = (inp && inp.value ? inp.value : '').trim();
+      } else {
+        const sel = card.querySelector('.sel-team');
+        value = sel ? sel.value : '';
+      }
+      if (!value) {
+        if (flash) { flash.textContent = isName ? 'Type or pick a name first.' : 'Pick a team first.'; flash.style.color = 'var(--warn)'; flash.classList.add('show'); }
         return;
       }
-      const team = roster[+selTeam.value] ? roster[+selTeam.value].team : '';
-      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Voting…'; }
+      const body = { personKey: p.personKey };
+      body[attr] = value;
+      const label = isName ? 'name' : 'team';
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…'; }
       let res;
       try {
         res = await fetch(API + '/vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ personKey: p.personKey, team: team, name: name }),
+          body: JSON.stringify(body),
         }).then((x) => x.json());
       } catch (e) {
-        if (btn) { btn.disabled = false; btn.textContent = 'Submit vote'; }
-        if (flash) { flash.textContent = '⚠️ Vote failed: ' + e.message; flash.style.color = 'var(--err)'; flash.classList.add('show'); }
+        if (btn) { btn.disabled = false; btn.textContent = isName ? 'Submit name' : 'Submit team'; }
+        if (flash) { flash.textContent = '⚠️ ' + label + ' failed: ' + e.message; flash.style.color = 'var(--err)'; flash.classList.add('show'); }
         return;
       }
-      if (btn) { btn.disabled = false; btn.textContent = 'Submit vote'; }
+      if (btn) { btn.disabled = false; btn.textContent = isName ? 'Submit name' : 'Submit team'; }
 
-      // Merge the returned tally into this person's votes and re-render just this card.
+      // Merge ONLY this attribute's returned tally; leave the other untouched.
       const tally = (res && res.tally) ? res.tally : {};
       p.votes = p.votes || {};
-      if (tally.leadingName !== undefined) p.votes.leadingName = tally.leadingName;
-      if (tally.leadingTeam !== undefined) p.votes.leadingTeam = tally.leadingTeam;
-      if (typeof tally.total === 'number') p.votes.total = tally.total;
-      if (typeof tally.confidence === 'number') p.votes.confidence = tally.confidence;
-      if (tally.locked !== undefined) p.votes.locked = tally.locked;
-      // tally.votes is the leading name's count → surface it via top[0]
-      if (typeof tally.votes === 'number') {
-        p.votes.top = [{ name: tally.leadingName, team: tally.leadingTeam, count: tally.votes }];
-      }
-      updateCard(i);
+      if (tally[attr]) p.votes[attr] = tally[attr];
+      updateAttr(i, attr);
     }
 
-    // Update ONE card in place (status line + lock state) without reloading the grid.
-    function updateCard(i) {
+    // Update ONE attribute's status line in place (no grid reload), flash + lock.
+    function updateAttr(i, attr) {
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
+      // Re-render just this attribute's line inside the statuswrap.
       const sw = card.querySelector('.statuswrap');
       if (sw) sw.innerHTML = statusHtml(p.votes);
-      const locked = !!(p.votes && p.votes.locked);
-      card.classList.toggle('locked', locked);
-      const flash = card.querySelector('.flash');
-      if (flash) { flash.textContent = '✓ vote counted'; flash.style.color = 'var(--accent2)'; flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1600); }
-      if (locked) {
-        // collapse & disable further voting on a locked face
+      const isName = attr === 'name';
+      const flash = card.querySelector(isName ? '.flash-name' : '.flash-team');
+      if (flash) { flash.textContent = '✓ counted'; flash.style.color = 'var(--accent2)'; flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1600); }
+      // If this attribute just locked, disable its control.
+      applyAttrLockState(i, attr);
+      // If BOTH attributes are now locked, mark the card and collapse.
+      if (bothLocked(p.votes)) {
+        card.classList.add('locked');
         openKey = (openKey === p.personKey) ? null : openKey;
         setOpenState(i, false);
         const hint = card.querySelector('.tap-hint');
