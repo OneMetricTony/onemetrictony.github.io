@@ -119,6 +119,11 @@
       border-radius: 6px; padding: 4px 7px; margin: 2px 0 8px;
     }
     .suggest-hint b { color: var(--text); font-style: normal; font-weight: 700; }
+    .prefill-note {
+      font-size: 11px; color: var(--accent); background: rgba(76,141,255,.10);
+      border: 1px dashed var(--accent); border-radius: 6px; padding: 3px 7px; margin-bottom: 8px;
+    }
+    .card.prefilled .inp-name, .card.prefilled .sel-team { border-color: var(--accent); }
     .suggest-hint.none { opacity: .6; }
 
     /* inline vote control */
@@ -473,9 +478,48 @@
       if (btnCancel) btnCancel.addEventListener('click', () => { openKey = null; setOpenState(i, false); });
       const btnNot = card.querySelector('.btn-notperson');
       if (btnNot) btnNot.addEventListener('click', () => rejectPerson(i));
+      // Pre-fill the AI guess into the inputs (convenience — human still submits).
+      prefillSuggestion(i);
       // Lock down any attribute that is already locked.
       applyAttrLockState(i, 'name');
       applyAttrLockState(i, 'team');
+    }
+
+    // If a card has an AI suggestion, pre-fill it into the (empty, unlocked)
+    // name input + team dropdown so the user just confirms and hits Submit.
+    // NEVER auto-submits/auto-votes — only humans move the count.
+    function prefillSuggestion(i) {
+      const card = cardEl(i);
+      if (!card) return;
+      const p = people[i];
+      const sug = p && p.suggestion;
+      if (!sug) return;
+      const votes = p.votes || {};
+      const nameLocked = !!(votes.name && votes.name.locked);
+      const teamLocked = !!(votes.team && votes.team.locked);
+      let did = false;
+      // Team first, so the team→name filter narrows the name list correctly.
+      if (!teamLocked && sug.team) {
+        const sel = card.querySelector('.sel-team');
+        if (sel && !sel.value) {
+          const match = Array.prototype.some.call(sel.options, (o) => o.value === sug.team);
+          if (match) { sel.value = sug.team; fillCardNames(card, sel.value); did = true; }
+        }
+      }
+      if (!nameLocked && sug.name) {
+        const inp = card.querySelector('.inp-name');
+        if (inp && !inp.value) { inp.value = sug.name; did = true; }
+      }
+      if (did) {
+        card.classList.add('prefilled');
+        const vote = card.querySelector('.vote');
+        if (vote && !vote.querySelector('.prefill-note')) {
+          const note = document.createElement('div');
+          note.className = 'prefill-note';
+          note.textContent = '🤖 pre-filled from the AI guess — confirm or change, then Submit';
+          vote.insertBefore(note, vote.firstChild);
+        }
+      }
     }
 
     // Disable a section's input+button once that attribute is locked.
