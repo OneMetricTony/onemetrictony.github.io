@@ -154,6 +154,19 @@
       -webkit-overflow-scrolling: touch;
     }
     #gallery.open { display: block; }
+    /* ---- unique-faces (Hall) overlay: same feel as gallery, hosts hall.html ---- */
+    #hall {
+      position: fixed; inset: 0; z-index: 101; display: none;
+      background: rgba(8,10,14,.98);
+    }
+    #hall.open { display: flex; flex-direction: column; }
+    #hall .hhead {
+      display: flex; align-items: center; gap: 14px;
+      padding: 8px 16px; border-bottom: 1px solid var(--border); background: rgba(8,10,14,.98);
+    }
+    #hall .hhead h2 { margin: 0; font-size: 18px; }
+    #hall .close { margin-left: auto; }
+    #hall iframe { flex: 1 1 auto; width: 100%; border: 0; background: var(--bg, #0b0e14); }
     .gwrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
     .ghead {
       display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -199,8 +212,7 @@
   <header>
     <h1>FIRA Face Tagger</h1>
     <button id="btn-gallery" style="margin-left:6px">👥 Who the model knows</button>
-    <a class="navlink" href="hall.html">🏛️ Unique faces</a>
-    <a class="navlink" href="candidates.html">❓ Who is this?</a>
+    <button id="btn-hall" style="margin-left:6px">🏛️ Unique faces</button>
     <a class="navlink" href="scan.html">🔍 Scan photos</a>
     <div class="stats">
       <div>Item <b id="stat-idx">-</b> of <b id="stat-total">-</b></div>
@@ -251,6 +263,14 @@
       </div>
       <div id="gallery-body"></div>
     </div>
+  </div>
+
+  <div id="hall" aria-hidden="true">
+    <div class="hhead">
+      <h2>🏛️ Unique faces</h2>
+      <button class="close" id="btn-hall-close">✕ Close</button>
+    </div>
+    <iframe id="hall-frame" title="Unique faces" loading="lazy"></iframe>
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>
@@ -1259,7 +1279,23 @@
     els.overlay.addEventListener('click', handleStageClick);
     els.btnGallery.addEventListener('click', openGallery);
     els.btnGalleryClose.addEventListener('click', closeGallery);
+
+    // ---- Unique faces (Hall) overlay: hosts hall.html in-page ----
+    const hallEl = document.getElementById('hall');
+    const hallFrame = document.getElementById('hall-frame');
+    function openHall() {
+      if (!hallFrame.src) hallFrame.src = 'hall.html';         // lazy-load on first open
+      hallEl.classList.add('open');
+      hallEl.setAttribute('aria-hidden', 'false');
+    }
+    function closeHall() {
+      hallEl.classList.remove('open');
+      hallEl.setAttribute('aria-hidden', 'true');
+    }
+    document.getElementById('btn-hall').addEventListener('click', openHall);
+    document.getElementById('btn-hall-close').addEventListener('click', closeHall);
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && hallEl.classList.contains('open')) { closeHall(); return; }
       if (e.key === 'Escape' && els.gallery.classList.contains('open')) { closeGallery(); return; }
       if (e.key === 'Escape' && addMode) { exitAddMode(); return; }
       const tag = (e.target && e.target.tagName) || '';
