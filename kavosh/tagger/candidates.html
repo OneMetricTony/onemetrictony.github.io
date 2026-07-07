@@ -64,6 +64,13 @@
     }
     .q { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
     .q-sub { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+    /* AI suggestion — display-only HINT, distinct from the inputs; never pre-fills */
+    .suggest-hint {
+      font-size: 12px; font-style: italic; color: var(--muted); line-height: 1.45;
+      background: rgba(76,141,255,.08); border: 1px dashed var(--border);
+      border-radius: 8px; padding: 7px 10px; margin: 0 0 14px; text-align: left;
+    }
+    .suggest-hint b { color: var(--text); font-style: normal; font-weight: 700; }
     label.small { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 4px; text-align: left; }
     select, input.inp-name {
       width: 100%; padding: 12px 10px; border-radius: 8px; font-size: 16px; font-family: inherit;
@@ -155,6 +162,7 @@
     let totalClusters = 0; // K at load time (for "of K")
     let reviewed = 0;      // how many advanced past
     let busy = false;
+    let suggestionIndex = {}; // faceId -> suggestion (from /hall; display-only)
 
     function setStatus(msg, spin) {
       els.status.innerHTML = (spin ? '<span class="spinner"></span>' : '') + msg;
@@ -169,14 +177,18 @@
     async function init() {
       try {
         setStatus('Loading roster and candidates…', true);
-        const [r, c] = await Promise.all([
+        // /clusters has no suggestions, so we ALSO pull /hall once and join by faceId.
+        // The /hall fetch has its own catch so a failure never blocks the page.
+        const [r, c, hall] = await Promise.all([
           fetch(API + '/roster').then((x) => x.json()),
           fetch(API + '/clusters?eps=0.5').then((x) => x.json()),
+          fetch(API + '/hall').then((x) => x.json()).catch(() => null),
         ]);
         roster = Array.isArray(r) ? r : [];
         clusters = (c && Array.isArray(c.clusters)) ? c.clusters.slice() : [];
         rosterMax = (c && typeof c.rosterMax === 'number') ? c.rosterMax : 0;
         totalClusters = (c && typeof c.count === 'number') ? c.count : clusters.length;
+        buildSuggestionIndex(hall);
       } catch (e) {
         setStatus('⚠️ Could not load candidates: ' + escapeHtml(e.message), false);
         return;
@@ -199,6 +211,59 @@
       els.datalist.innerHTML = allIndividuals()
         .map((n) => '<option value="' + escapeHtml(n) + '"></option>')
         .join('');
+    }
+
+    // ---- AI suggestion join (display-only) ----
+    // /clusters ids don't match /hall personKeys, so we join on shared faceId.
+    function idOf(f) {
+      if (f == null) return null;
+      if (typeof f === 'string' || typeof f === 'number') return String(f);
+      if (typeof f === 'object') {
+        if (f.faceId != null) return String(f.faceId);
+        if (f.id != null) return String(f.id);
+      }
+      return null;
+    }
+    function faceIdsOf(o) {
+      const ids = [];
+      if (o && Array.isArray(o.faceIds)) o.faceIds.forEach((f) => ids.push(idOf(f)));
+      if (o && o.rep) ids.push(idOf(o.rep));
+      return ids.filter((x) => x != null);
+    }
+    function hasSuggestion(sug) {
+      return !!(sug && ((sug.name != null && sug.name !== '') || (sug.team != null && sug.team !== '')));
+    }
+    // Build faceId -> suggestion map from /hall people (skip empty guesses).
+    function buildSuggestionIndex(hall) {
+      suggestionIndex = {};
+      const ppl = (hall && Array.isArray(hall.people)) ? hall.people : [];
+      ppl.forEach((p) => {
+        const sug = p && p.suggestion;
+        if (!hasSuggestion(sug)) return;
+        faceIdsOf(p).forEach((fid) => { if (!(fid in suggestionIndex)) suggestionIndex[fid] = sug; });
+      });
+    }
+    // Find a suggestion for a cluster via any shared faceId. null if no clean match.
+    function suggestionForCluster(cl) {
+      const ids = faceIdsOf(cl);
+      for (let k = 0; k < ids.length; k++) {
+        if (suggestionIndex[ids[k]]) return suggestionIndex[ids[k]];
+      }
+      return null;
+    }
+    // Render the "🤖 Might be…" hint (display-only). Omits any null half.
+    function suggestionHtml(sug) {
+      if (!hasSuggestion(sug)) return '';
+      const segs = [];
+      if (sug.name != null && sug.name !== '') {
+        const c = (sug.nameConf != null) ? ' (' + Math.round(Number(sug.nameConf) * 100) + '%)' : '';
+        segs.push('<b>' + escapeHtml(sug.name) + '</b>' + c);
+      }
+      if (sug.team != null && sug.team !== '') {
+        const c = (sug.teamConf != null) ? ' (' + Math.round(Number(sug.teamConf) * 100) + '%)' : '';
+        segs.push('Team: <b>' + escapeHtml(sug.team) + '</b>' + c);
+      }
+      return '<div class="suggest-hint">🤖 Might be: ' + segs.join(' · ') + '</div>';
     }
 
     // ---- team dropdown (value = team name) ----
@@ -245,6 +310,7 @@
           (exHtml ? '<div class="examples">' + exHtml + '</div>' : '') +
           '<p class="q">Who is this person?</p>' +
           '<p class="q-sub">Fill in a name, a team, or both — either one alone is fine.</p>' +
+          suggestionHtml(suggestionForCluster(cl)) +
           '<div class="row2">' +
             '<div><label class="small">Name (optional)</label>' +
               '<input class="inp-name" list="all-individuals" placeholder="Search or type a name…" autocomplete="off" /></div>' +

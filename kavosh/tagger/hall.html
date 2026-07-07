@@ -112,6 +112,15 @@
 
     .tap-hint { font-size: 12px; color: var(--accent); margin-top: 6px; }
 
+    /* AI suggestion — display-only HINT, visually distinct from the real vote tallies */
+    .suggest-hint {
+      font-size: 11px; font-style: italic; color: var(--muted); line-height: 1.4;
+      background: rgba(76,141,255,.08); border: 1px dashed var(--border);
+      border-radius: 6px; padding: 4px 7px; margin: 2px 0 8px;
+    }
+    .suggest-hint b { color: var(--text); font-style: normal; font-weight: 700; }
+    .suggest-hint.none { opacity: .6; }
+
     /* inline vote control */
     .vote {
       margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px;
@@ -307,6 +316,28 @@
       return attrLineHtml('Name', votes.name) + attrLineHtml('Team', votes.team);
     }
 
+    // ---- AI suggestion HINT (display-only) ----
+    // sug = { name|null, nameConf|null, team|null, teamConf|null }
+    // Renders a subtle "🤖 Might be…" line. NEVER pre-fills inputs or auto-submits.
+    function suggestionHtml(sug) {
+      if (!sug) return '';
+      const hasName = sug.name != null && sug.name !== '';
+      const hasTeam = sug.team != null && sug.team !== '';
+      if (!hasName && !hasTeam) {
+        return '<div class="suggest-hint none">🤖 no guess yet</div>';
+      }
+      const segs = [];
+      if (hasName) {
+        const c = (sug.nameConf != null) ? ' (' + Math.round(Number(sug.nameConf) * 100) + '%)' : '';
+        segs.push('<b>' + escapeHtml(sug.name) + '</b>' + c);
+      }
+      if (hasTeam) {
+        const c = (sug.teamConf != null) ? ' (' + Math.round(Number(sug.teamConf) * 100) + '%)' : '';
+        segs.push('Team: <b>' + escapeHtml(sug.team) + '</b>' + c);
+      }
+      return '<div class="suggest-hint">🤖 Might be: ' + segs.join(' · ') + '</div>';
+    }
+
     // ---- team dropdown (value = team name) ----
     function teamOptionsHtml() {
       let html = '<option value="">— select team —</option>';
@@ -344,7 +375,7 @@
       const cls = 'card' + (isOpen ? ' open' : '') + (locked ? ' locked' : '');
       return '<div class="' + cls + '" data-i="' + i + '" data-key="' + escapeHtml(key) + '">' +
         img +
-        '<div class="statuswrap">' + statusHtml(p.votes) + '</div>' +
+        '<div class="statuswrap">' + suggestionHtml(p.suggestion) + statusHtml(p.votes) + '</div>' +
         (locked ? '' : '<div class="tap-hint">' + (isOpen ? 'Submit below ↓' : 'tap to identify') + '</div>') +
         '<div class="vote">' +
           '<div class="vsec vsec-name">' +
