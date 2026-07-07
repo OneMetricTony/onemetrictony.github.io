@@ -420,6 +420,7 @@
             '<div class="flash flash-team"></div>' +
           '</div>' +
           '<div class="actions close-row">' +
+            '<button class="vbtn btn-notperson">🚫 Not a person</button>' +
             '<button class="vbtn btn-cancel">Close</button>' +
           '</div>' +
         '</div>' +
@@ -427,6 +428,29 @@
     }
 
     function cardEl(i) { return els.grid.querySelector('.card[data-i="' + i + '"]'); }
+
+    // "Not a person" — reject this whole cluster as a false detection.
+    async function rejectPerson(i) {
+      const p = people[i];
+      if (!p || !p.personKey) return;
+      if (!confirm('Mark this as NOT a person? It will be removed and the model will learn to filter similar false detections.')) return;
+      const card = cardEl(i);
+      const btn = card && card.querySelector('.btn-notperson');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Removing…'; }
+      try {
+        await fetch(API + '/reject', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personKey: p.personKey }),
+        }).then((x) => x.json());
+      } catch (e) {
+        if (btn) { btn.disabled = false; btn.textContent = '🚫 Not a person'; }
+        setStatus('⚠️ Could not remove: ' + escapeHtml(e.message), false);
+        return;
+      }
+      if (openKey === p.personKey) openKey = null;
+      if (card) card.remove(); // removed from pool server-side → won't re-list on refresh
+      setStatus('Removed — the model will now auto-filter similar false detections.', false);
+    }
 
     function wireCard(i) {
       const card = cardEl(i);
@@ -447,6 +471,8 @@
         fillCardNames(card, selTeam.value); // apply current selection on first render
       }
       if (btnCancel) btnCancel.addEventListener('click', () => { openKey = null; setOpenState(i, false); });
+      const btnNot = card.querySelector('.btn-notperson');
+      if (btnNot) btnNot.addEventListener('click', () => rejectPerson(i));
       // Lock down any attribute that is already locked.
       applyAttrLockState(i, 'name');
       applyAttrLockState(i, 'team');

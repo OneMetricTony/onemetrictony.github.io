@@ -675,13 +675,16 @@
       const rmBtn = added
         ? '<button type="button" class="rm-face" data-rm-face="' + i + '" title="Remove this face">✕ Remove</button>'
         : '';
+      // Any face can be marked "not a person" — a false detection (robot, pattern,
+      // background). It's dropped AND (if it has a signature) taught to the model.
+      const notBtn = '<button type="button" class="rm-face notperson" data-not-face="' + i + '" title="Mark as not a person (false detection)">🚫 Not a person</button>';
       return (
         '<div class="face-card" data-i="' + i + '">' +
           '<div class="fhead">' +
             '<span class="badge' + (added ? ' added' : '') + '">' + (i + 1) + '</span>' +
             thumb +
             '<span>' + title + '</span>' +
-            rmBtn +
+            rmBtn + notBtn +
           '</div>' +
           '<div class="row2">' +
             '<div><label class="small">Team</label>' +
@@ -704,8 +707,28 @@
         selKid.innerHTML = individualOptionsHtml(selTeam.value);
       });
       selKid.addEventListener('change', () => handleOther(selKid));
-      const rm = card.querySelector('.rm-face');
+      const rm = card.querySelector('.rm-face[data-rm-face]');
       if (rm) rm.addEventListener('click', () => removeFace(+rm.getAttribute('data-rm-face')));
+      const notb = card.querySelector('.notperson');
+      if (notb) notb.addEventListener('click', () => rejectFace(+notb.getAttribute('data-not-face')));
+    }
+
+    // "Not a person": teach the model it's a false detection (if we have a
+    // signature), then drop it locally so it won't be saved.
+    async function rejectFace(i) {
+      const det = currentDetections[i];
+      if (!det) return;
+      const desc = (det.descriptor && det.descriptor.length === 128) ? Array.from(det.descriptor) : null;
+      if (desc) {
+        try {
+          await fetch(API + '/reject', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descriptors: [desc] }),
+          });
+        } catch (e) { /* non-fatal — still remove locally */ }
+      }
+      removeFace(i);
+      setStatus('Marked as not a person' + (desc ? ' — the model will learn to filter it.' : '.'), false);
     }
 
     // Delete an unsaved (added/manual) face from the current photo: drop it from

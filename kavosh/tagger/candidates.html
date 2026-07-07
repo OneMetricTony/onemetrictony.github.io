@@ -347,7 +347,22 @@
       selTeam.addEventListener('change', refresh);
       btnYes.addEventListener('click', () => labelCurrent(inpName, selTeam));
       els.stage.querySelector('#btn-skip').addEventListener('click', () => advance(false));
-      els.stage.querySelector('#btn-junk').addEventListener('click', () => advance(false));
+      els.stage.querySelector('#btn-junk').addEventListener('click', () => rejectCurrent(cl));
+    }
+
+    // "Not a person / junk": remove this cluster's faces from the pool + labels
+    // (recorded as negatives so similar false detections auto-filter), then advance.
+    async function rejectCurrent(cl) {
+      const faceIds = faceIdsOf(cl);
+      if (faceIds.length) {
+        try {
+          await fetch(API + '/reject', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ faceIds }),
+          });
+        } catch (e) { /* non-fatal — still advance */ }
+      }
+      advance(false);
     }
 
     async function labelCurrent(inpName, selTeam) {
