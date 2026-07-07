@@ -125,6 +125,13 @@
     }
     .card.prefilled .inp-name, .card.prefilled .sel-team { border-color: var(--accent); }
     .suggest-hint.none { opacity: .6; }
+    /* enrolled = has a real label (from a captioned frontal or a human tag) */
+    .enrolled-badge {
+      font-size: 12.5px; font-weight: 700; color: var(--accent2);
+      background: rgba(47,191,113,.12); border: 1px solid rgba(47,191,113,.42);
+      border-radius: 7px; padding: 5px 9px; margin: 9px 0 2px; text-align: left; line-height: 1.35;
+    }
+    .enrolled-badge .team { color: var(--muted); font-weight: 600; }
 
     /* inline vote control */
     .vote {
@@ -348,6 +355,13 @@
     // ---- AI suggestion HINT (display-only) ----
     // sug = { name|null, nameConf|null, team|null, teamConf|null }
     // Renders a subtle "🤖 Might be…" line. NEVER pre-fills inputs or auto-submits.
+    // Green "✓ enrolled" badge when a face already has a real label (captioned
+    // frontal or a human tag) — so users SEE their enrolled headshots recognized.
+    function labelHtml(label) {
+      if (!label || !label.name) return '';
+      const team = label.team ? ' — <span class="team">' + escapeHtml(label.team) + '</span>' : '';
+      return '<div class="enrolled-badge">✓ enrolled: <b>' + escapeHtml(label.name) + '</b>' + team + '</div>';
+    }
     function suggestionHtml(sug) {
       if (!sug) return '';
       const hasName = sug.name != null && sug.name !== '';
@@ -404,6 +418,7 @@
       const cls = 'card' + (isOpen ? ' open' : '') + (locked ? ' locked' : '');
       return '<div class="' + cls + '" data-i="' + i + '" data-key="' + escapeHtml(key) + '">' +
         img +
+        labelHtml(p.label) +
         '<div class="statuswrap">' + suggestionHtml(p.suggestion) + statusHtml(p.votes) + '</div>' +
         (locked ? '' : '<div class="tap-hint">' + (isOpen ? 'Submit below ↓' : 'tap to identify') + '</div>') +
         '<div class="vote">' +
@@ -492,7 +507,9 @@
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
-      const sug = p && p.suggestion;
+      // A real label (enrolled/captioned) is stronger than an AI guess — prefer it.
+      const fromLabel = !!(p && p.label && p.label.name);
+      const sug = fromLabel ? { name: p.label.name, team: p.label.team } : (p && p.suggestion);
       if (!sug) return;
       const votes = p.votes || {};
       const nameLocked = !!(votes.name && votes.name.locked);
@@ -516,7 +533,9 @@
         if (vote && !vote.querySelector('.prefill-note')) {
           const note = document.createElement('div');
           note.className = 'prefill-note';
-          note.textContent = '🤖 pre-filled from the AI guess — confirm or change, then Submit';
+          note.textContent = fromLabel
+            ? '✓ enrolled — pre-filled from the caption. Confirm to lock it in.'
+            : '🤖 pre-filled from the AI guess — confirm or change, then Submit';
           vote.insertBefore(note, vote.firstChild);
         }
       }
