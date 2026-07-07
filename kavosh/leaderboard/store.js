@@ -85,6 +85,8 @@
     if (!Array.isArray(state.players)) state.players = [];
     state.title = String(state.title || "Leaderboard").slice(0, 60);
     state.subtitle = String(state.subtitle || "Season Standings").slice(0, 60);
+    // standalone tally: times people have nagged about ice cream / prizes
+    state.annoyCount = Math.max(0, Math.round(num(state.annoyCount)));
     state.players = state.players.map(function (p, i) {
       // entries = named point sources that tally into the total
       var entries = Array.isArray(p.entries) ? p.entries.map(function (e) {

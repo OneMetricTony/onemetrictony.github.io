@@ -247,6 +247,47 @@ footer.foot a:hover { text-decoration: underline; }
 .field input:focus, .field select:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 
+/* Ice-cream / prize nag tally panel */
+.tally-panel {
+  margin-top: 16px; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; background: var(--c-bg-2); border: 1px solid var(--c-line);
+  box-shadow: var(--glow); padding: 16px 20px;
+  clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+}
+.tally-head { display: flex; flex-direction: column; gap: 2px; }
+.tally-title { font-family: var(--font-head); font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+.tally-sub { font-size: 12px; color: var(--c-text-mute); }
+.tally-controls { display: flex; align-items: center; gap: 14px; }
+.tally-btn {
+  width: 38px; height: 38px; border: 1px solid var(--c-line); background: var(--c-bg-3);
+  color: var(--c-text); font-size: 22px; line-height: 1; cursor: pointer; border-radius: 8px;
+  font-family: var(--font-head); transition: border-color .15s, box-shadow .15s;
+}
+.tally-btn:hover { border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+.tally-value {
+  min-width: 48px; text-align: center; font-family: var(--font-head); font-weight: 700;
+  font-size: 30px; color: #ff3b3b; font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(240,57,78,.5);
+}
+
+/* Floating draggable ice-cream cone */
+#iceCone {
+  position: fixed; right: 24px; bottom: 24px; z-index: 60; width: 72px; height: 72px;
+  display: grid; place-items: center; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none;
+}
+#iceCone.dragging { cursor: grabbing; }
+#iceCone .cone { font-size: 48px; line-height: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); pointer-events: none; }
+#iceCone .count {
+  position: absolute; top: -4px; right: -4px; min-width: 28px; height: 28px; padding: 0 7px;
+  border-radius: 999px; background: #160e0e; border: 2px solid var(--c-accent);
+  color: #ff3b3b; font-family: var(--font-head); font-weight: 700; font-size: 15px;
+  display: grid; place-items: center; font-variant-numeric: tabular-nums; pointer-events: none;
+  box-shadow: 0 0 14px rgba(240,57,78,.55);
+}
+#iceCone.pop .cone { animation: conePop .3s var(--ease); }
+@keyframes conePop { 0%{ transform: scale(1); } 40%{ transform: scale(1.35) rotate(-8deg); } 100%{ transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { #iceCone.pop .cone { animation: none; } }
+
 @media (max-width: 560px) {
   .podium, .podium.four { grid-template-columns: 1fr 1fr; }
   .p-cell.first { grid-column: span 2; }

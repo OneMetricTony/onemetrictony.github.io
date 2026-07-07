@@ -49,7 +49,25 @@
     <div class="empty" id="empty" hidden>No teams yet &mdash; add one to get started.</div>
   </div>
 
+  <div class="tally-panel">
+    <div class="tally-head">
+      <span class="tally-title">&#127846; Ice-cream / Prize Nags</span>
+      <span class="tally-sub">Times someone has annoyed you about it</span>
+    </div>
+    <div class="tally-controls">
+      <button class="tally-btn" id="tallyMinus" title="Minus one" aria-label="Decrease">&minus;</button>
+      <span class="tally-value" id="tallyValue">0</span>
+      <button class="tally-btn" id="tallyPlus" title="Plus one" aria-label="Increase">+</button>
+    </div>
+  </div>
+
   <footer class="foot"><span id="status" class="status">Loading&hellip;</span></footer>
+</div>
+
+<!-- Floating, draggable ice-cream cone counter -->
+<div id="iceCone" title="Click to add a nag · drag to move">
+  <span class="cone">&#127846;</span>
+  <span class="count" id="coneCount">0</span>
 </div>
 
 <!-- Add / edit team -->
@@ -118,8 +136,8 @@
   </div>
 </div>
 
-<script src="config.js?v=2"></script>
-<script src="store.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="store.js?v=3"></script>
 <script>
   var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
   var state = { title:"Leaderboard", subtitle:"KAVOSH Challenge", metric:{label:"Score",unit:"",lowerIsBetter:false}, players: [] };
@@ -375,11 +393,64 @@
 
   $("search").oninput = render;
 
+  /* ---- Ice-cream / prize nag tally + floating cone ---- */
+  function renderTally(){
+    var n = state.annoyCount || 0;
+    $("tallyValue").textContent = n;
+    $("coneCount").textContent = n;
+  }
+  function bumpTally(delta){
+    state.annoyCount = Math.max(0, (state.annoyCount || 0) + delta);
+    renderTally();
+    // pop animation on the cone
+    var c = $("iceCone"); c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop");
+    persist();
+  }
+  $("tallyPlus").onclick = function(){ bumpTally(1); };
+  $("tallyMinus").onclick = function(){ bumpTally(-1); };
+
+  // Floating cone: drag to move (position saved per-browser), click to +1.
+  (function(){
+    var cone = $("iceCone");
+    var CONE_KEY = "kavosh.iceCone.pos";
+    try { var pos = JSON.parse(localStorage.getItem(CONE_KEY)); if (pos){ cone.style.left = pos.left+"px"; cone.style.top = pos.top+"px"; cone.style.right="auto"; cone.style.bottom="auto"; } } catch(e){}
+    var dragging=false, moved=false, sx=0, sy=0, ox=0, oy=0;
+    function down(e){
+      dragging=true; moved=false;
+      var pt = e.touches ? e.touches[0] : e;
+      var r = cone.getBoundingClientRect();
+      ox = r.left; oy = r.top; sx = pt.clientX; sy = pt.clientY;
+      cone.classList.add("dragging");
+      document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+      document.addEventListener("touchmove", move, {passive:false}); document.addEventListener("touchend", up);
+    }
+    function move(e){
+      if(!dragging) return;
+      var pt = e.touches ? e.touches[0] : e;
+      var dx = pt.clientX - sx, dy = pt.clientY - sy;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+      var nx = Math.max(4, Math.min(window.innerWidth - cone.offsetWidth - 4, ox + dx));
+      var ny = Math.max(4, Math.min(window.innerHeight - cone.offsetHeight - 4, oy + dy));
+      cone.style.left = nx+"px"; cone.style.top = ny+"px"; cone.style.right="auto"; cone.style.bottom="auto";
+      if (e.cancelable) e.preventDefault();
+    }
+    function up(){
+      dragging=false; cone.classList.remove("dragging");
+      document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up);
+      document.removeEventListener("touchmove", move); document.removeEventListener("touchend", up);
+      var r = cone.getBoundingClientRect();
+      if (moved){ try { localStorage.setItem(CONE_KEY, JSON.stringify({left:Math.round(r.left), top:Math.round(r.top)})); } catch(e){} }
+      else { bumpTally(1); } // a click (no real drag) counts a nag
+    }
+    cone.addEventListener("mousedown", down);
+    cone.addEventListener("touchstart", down, {passive:true});
+  })();
+
   LBStore.load().then(function(s){
-    state = s; render();
+    state = s; render(); renderTally();
     setStatus("ok", LBStore.hasBackend() ? "Connected to Drive" : "Local mode (no backend configured)");
   });
 </script>
-<script src="bg.js?v=2"></script>
+<script src="bg.js?v=3"></script>
 </body>
 </html>
