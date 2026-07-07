@@ -954,36 +954,36 @@
       const natX = dispX / (sx || 1);
       const natY = dispY / (sy || 1);
 
-      let box = null, descriptor = null;
-      if (modelsReady) {
-        els.addFaceHint.textContent = 'Looking for a face here…';
-        try {
-          // Re-detect with a lower threshold / bigger input to catch faces the
-          // first pass missed, then pick the detection nearest the click.
-          const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.2 });
-          const dets = await faceapi
-            .detectAllFaces(els.photo, opts)
-            .withFaceLandmarks()
-            .withFaceDescriptors();
-          const pick = nearestDetection(dets, natX, natY);
-          if (pick) { box = pick.detection.box; descriptor = Array.from(pick.descriptor); }
-        } catch (e) {
-          console.error('add-face detect error', e);
-        }
-      }
-      if (!box) {
-        // No face-api signature near the click: drop a manual box so the user
-        // can still name the person (saved with manual:true, descriptor:null).
-        const side = (els.photo.naturalWidth || 400) * 0.08;
-        box = { x: natX - side / 2, y: natY - side / 2, width: side, height: side };
-      }
-      currentDetections.push({ descriptor: descriptor, box: box, added: true });
+      // 1) Drop a box AT THE CLICK IMMEDIATELY — instant visual feedback, no wait.
+      const side = (els.photo.naturalWidth || 400) * 0.08;
+      const det = {
+        descriptor: null, added: true,
+        box: { x: natX - side / 2, y: natY - side / 2, width: side, height: side },
+      };
+      currentDetections.push(det);
       exitAddMode();
       drawBoxes();
       renderFaceCards();
       const n = currentDetections.length;
       setStatus('Item ' + (idx + 1) + ' of ' + photos.length + ' — ' + n +
-        ' face(s), including 1 you just added' + (descriptor ? ' (with AI signature).' : ' (no signature).'), false);
+        ' face(s), including 1 you just added — you can name it now.', false);
+
+      // 2) In the BACKGROUND, try to snap it to a real face-api signature so it
+      // still gets a descriptor (for matching + the pool). Non-blocking; only
+      // updates the box + descriptor, never re-renders the cards (would wipe a
+      // name you're typing).
+      if (modelsReady) {
+        try {
+          const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.2 });
+          const dets = await faceapi.detectAllFaces(els.photo, opts).withFaceLandmarks().withFaceDescriptors();
+          const pick = nearestDetection(dets, natX, natY);
+          if (pick && currentDetections.includes(det)) {
+            det.box = pick.detection.box;
+            det.descriptor = Array.from(pick.descriptor);
+            drawBoxes(); // redraw the tightened box (safe — doesn't touch inputs)
+          }
+        } catch (e) { console.error('add-face background detect error', e); }
+      }
     }
 
     // Pick the detection whose box contains the point, else the nearest box
