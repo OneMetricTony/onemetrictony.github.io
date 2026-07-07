@@ -119,11 +119,59 @@
       vertical-align: middle; margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- gallery overlay ---- */
+    #gallery {
+      position: fixed; inset: 0; z-index: 100; display: none;
+      background: rgba(8,10,14,.96); overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #gallery.open { display: block; }
+    .gwrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
+    .ghead {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      position: sticky; top: 0; padding: 8px 0 14px; background: rgba(8,10,14,.96);
+      border-bottom: 1px solid var(--border); margin-bottom: 16px;
+    }
+    .ghead h2 { margin: 0; font-size: 18px; }
+    .gaccuracy { font-size: 14px; color: var(--muted); }
+    .gaccuracy b { color: var(--accent2); font-size: 16px; }
+    #gallery .close { margin-left: auto; }
+    .gsection h3 {
+      font-size: 15px; margin: 20px 0 10px; color: var(--accent);
+      border-bottom: 1px solid var(--border); padding-bottom: 6px;
+    }
+    .ggrid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 520px) { .ggrid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+    .gcard {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px; text-align: center;
+    }
+    .gcard.untrained { opacity: .5; }
+    .gcard .gimg {
+      width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px;
+      background: #10131b; border: 1px solid var(--border); display: block;
+    }
+    .gcard .gph {
+      width: 100%; aspect-ratio: 1/1; border-radius: 8px; background: #10131b;
+      border: 1px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 40px; color: var(--muted);
+    }
+    .gcard .gname { font-weight: 700; font-size: 13px; margin: 8px 0 2px; word-break: break-word; }
+    .gcard .gteam { font-size: 11px; color: var(--muted); word-break: break-word; }
+    .gcard .gmeta { font-size: 11px; margin-top: 5px; color: var(--text); }
+    .gcard .gmeta.muted { color: var(--muted); }
+    .gcard .gmeta .acc { color: var(--accent2); font-weight: 700; }
+    .gcard .gmeta .need { color: var(--warn); }
   </style>
 </head>
 <body>
   <header>
     <h1>FIRA Face Tagger</h1>
+    <button id="btn-gallery" style="margin-left:6px">👥 Who the model knows</button>
     <div class="stats">
       <div>Item <b id="stat-idx">-</b> of <b id="stat-total">-</b></div>
       <div>Untagged left: <b id="stat-untagged">-</b></div>
@@ -164,6 +212,17 @@
     </div>
   </div>
 
+  <div id="gallery" aria-hidden="true">
+    <div class="gwrap">
+      <div class="ghead">
+        <h2>👥 Who the model knows</h2>
+        <span class="gaccuracy" id="gallery-accuracy"></span>
+        <button class="close" id="btn-gallery-close">✕ Close</button>
+      </div>
+      <div id="gallery-body"></div>
+    </div>
+  </div>
+
   <script src="vendor/face-api.min.js"></script>
   <script>
   (function () {
@@ -194,6 +253,11 @@
       videoBar: document.getElementById('video-bar'),
       btnVDetect: document.getElementById('btn-vdetect'),
       vdetectHint: document.getElementById('vdetect-hint'),
+      btnGallery: document.getElementById('btn-gallery'),
+      btnGalleryClose: document.getElementById('btn-gallery-close'),
+      gallery: document.getElementById('gallery'),
+      galleryBody: document.getElementById('gallery-body'),
+      galleryAccuracy: document.getElementById('gallery-accuracy'),
     };
 
     // AI match threshold. face-api descriptors match well around 0.5-0.6
@@ -657,6 +721,39 @@
       });
     }
 
+    // Crop a small face thumbnail (jpeg data-URL) from a source image/canvas
+    // using a detection box in the source's natural coords. ~30% padding,
+    // clamped to bounds, max ~140px on the long side. Returns null on failure.
+    function makeFaceThumb(src, box, srcW, srcH) {
+      try {
+        if (!src || !box || !srcW || !srcH) return null;
+        const pad = Math.max(box.width, box.height) * 0.3;
+        const sx = Math.max(0, box.x - pad);
+        const sy = Math.max(0, box.y - pad);
+        const sw = Math.min(srcW - sx, box.width + pad * 2);
+        const sh = Math.min(srcH - sy, box.height + pad * 2);
+        if (sw <= 1 || sh <= 1) return null;
+        const maxSide = 140;
+        const scale = Math.min(1, maxSide / Math.max(sw, sh));
+        const cw = Math.max(1, Math.round(sw * scale));
+        const ch = Math.max(1, Math.round(sh * scale));
+        const c = document.createElement('canvas');
+        c.width = cw; c.height = ch;
+        c.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch);
+        return c.toDataURL('image/jpeg', 0.7);
+      } catch (_) { return null; }
+    }
+    // Best-available face thumb for a detection: video crops already carry one;
+    // image/added faces get cropped from the current <img> using their box.
+    function faceThumbFor(det) {
+      if (!det) return null;
+      if (det.thumb) return det.thumb; // video frame crop
+      if (!det.box) return null;
+      const src = els.photo;
+      if (!src || !src.naturalWidth) return null;
+      return makeFaceThumb(src, det.box, src.naturalWidth, src.naturalHeight);
+    }
+
     // ---- collect + save ----
     function collectFaces() {
       const out = [];
@@ -671,6 +768,8 @@
         const desc = currentDetections[i] ? currentDetections[i].descriptor : null;
         const face = { descriptor: desc, team: t.team, name: selKid.value };
         if (!desc) face.manual = true; // added face with no AI signature
+        const thumb = faceThumbFor(currentDetections[i]);
+        if (thumb) face.faceThumb = thumb;
         out.push(face);
       });
       // Manually added people (zero-detection path)
@@ -988,6 +1087,93 @@
       }
     }
 
+    // ---- "Who the model knows" gallery ----
+    // Bucket a person into a league group from their (case-insensitive) league.
+    const LEAGUE_ORDER = ['AIR', 'MISSION', 'ENJOY AI', 'Other'];
+    function leagueBucket(league) {
+      const s = String(league || '').toLowerCase();
+      if (s.indexOf('air') !== -1) return 'AIR';
+      if (s.indexOf('mission') !== -1) return 'MISSION';
+      if (s.indexOf('enjoy') !== -1) return 'ENJOY AI';
+      return 'Other';
+    }
+
+    function galleryCardHtml(p) {
+      const untrained = !p.count;
+      let img;
+      if (p.thumb) {
+        img = '<img class="gimg" src="' + p.thumb + '" alt="face" loading="lazy" />';
+      } else if (p.samplePhotoId) {
+        img = '<img class="gimg" src="' + API + '/photo/' + encodeURIComponent(p.samplePhotoId) +
+          '" alt="face" loading="lazy" />';
+      } else {
+        img = '<div class="gph">🙂</div>';
+      }
+      let meta;
+      if (untrained) {
+        meta = '<div class="gmeta muted">not tagged yet</div>';
+      } else if (p.accuracy === null || p.accuracy === undefined) {
+        meta = '<div class="gmeta">' + p.count + ' sample' + (p.count === 1 ? '' : 's') +
+          ' · <span class="need">needs more</span></div>';
+      } else {
+        meta = '<div class="gmeta">' + p.count + ' sample' + (p.count === 1 ? '' : 's') +
+          ' · <span class="acc">' + Math.round(p.accuracy * 100) + '% accuracy</span></div>';
+      }
+      return '<div class="gcard' + (untrained ? ' untrained' : '') + '">' +
+        img +
+        '<div class="gname">' + escapeHtml(p.name) + '</div>' +
+        '<div class="gteam">' + escapeHtml(p.team || '') + '</div>' +
+        meta +
+        '</div>';
+    }
+
+    function renderGallery(data) {
+      const people = (data && Array.isArray(data.people)) ? data.people : [];
+      // overall accuracy line
+      if (data && typeof data.overallAccuracy === 'number') {
+        els.galleryAccuracy.innerHTML = 'Model accuracy so far: <b>' +
+          Math.round(data.overallAccuracy * 100) + '%</b>';
+      } else {
+        els.galleryAccuracy.innerHTML = '<span style="color:var(--warn)">not enough data yet</span>';
+      }
+      // bucket + sort (trained first, then by name) within each league
+      const buckets = { AIR: [], MISSION: [], 'ENJOY AI': [], Other: [] };
+      for (const p of people) buckets[leagueBucket(p.league)].push(p);
+      let html = '';
+      for (const lg of LEAGUE_ORDER) {
+        const arr = buckets[lg];
+        if (!arr.length) continue;
+        arr.sort((a, b) => {
+          if (!!a.count !== !!b.count) return a.count ? -1 : 1;
+          return String(a.name).localeCompare(String(b.name));
+        });
+        html += '<div class="gsection"><h3>' + escapeHtml(lg) + ' <span style="color:var(--muted);font-weight:400">(' +
+          arr.length + ')</span></h3><div class="ggrid">';
+        for (const p of arr) html += galleryCardHtml(p);
+        html += '</div></div>';
+      }
+      if (!html) html = '<div class="empty">No people found.</div>';
+      els.galleryBody.innerHTML = html;
+    }
+
+    async function openGallery() {
+      els.gallery.classList.add('open');
+      els.gallery.setAttribute('aria-hidden', 'false');
+      els.galleryAccuracy.textContent = '';
+      els.galleryBody.innerHTML = '<div class="empty"><span class="spinner"></span>Loading…</div>';
+      try {
+        const data = await fetch(API + '/gallery').then((x) => x.json());
+        renderGallery(data);
+      } catch (e) {
+        els.galleryBody.innerHTML = '<div class="empty">⚠️ Could not load gallery: ' +
+          escapeHtml(e.message) + '</div>';
+      }
+    }
+    function closeGallery() {
+      els.gallery.classList.remove('open');
+      els.gallery.setAttribute('aria-hidden', 'true');
+    }
+
     // ---- utils ----
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, (c) => ({
@@ -1002,10 +1188,14 @@
     els.btnAddFace.addEventListener('click', enterAddMode);
     els.btnVDetect.addEventListener('click', detectFacesInVideo);
     els.overlay.addEventListener('click', handleStageClick);
+    els.btnGallery.addEventListener('click', openGallery);
+    els.btnGalleryClose.addEventListener('click', closeGallery);
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && els.gallery.classList.contains('open')) { closeGallery(); return; }
       if (e.key === 'Escape' && addMode) { exitAddMode(); return; }
       const tag = (e.target && e.target.tagName) || '';
       if (e.key === 'Enter' && tag !== 'SELECT') {
+        if (els.gallery.classList.contains('open')) return; // gallery open
         e.preventDefault();
         if (addMode) return; // don't save mid-add
         saveAndNext();
