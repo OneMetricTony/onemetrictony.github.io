@@ -446,6 +446,24 @@
     cone.addEventListener("touchstart", down, {passive:true});
   })();
 
+  // Live tally sync: instant across same-browser tabs, and a light poll for
+  // other devices — only the count updates, never the table you're editing.
+  window.addEventListener("storage", function(e){
+    if (e.key && e.key.indexOf("kavosh.leaderboard") === 0 && e.newValue){
+      try { var s = JSON.parse(e.newValue); state.annoyCount = s.annoyCount || 0; renderTally(); } catch(_){}
+    }
+  });
+  if (LBStore.hasBackend()) setInterval(function(){
+    fetch(window.LB_BACKEND, { cache: "no-store" })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.annoyCount != null){
+          state.annoyCount = Math.max(0, Math.round(Number(d.annoyCount) || 0));
+          renderTally();
+        }
+      }).catch(function(){});
+  }, 5000);
+
   LBStore.load().then(function(s){
     state = s; render(); renderTally();
     setStatus("ok", LBStore.hasBackend() ? "Connected to Drive" : "Local mode (no backend configured)");

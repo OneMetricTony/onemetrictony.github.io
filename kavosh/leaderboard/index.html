@@ -31,6 +31,12 @@
   </footer>
 </div>
 
+<!-- Floating, draggable ice-cream cone counter -->
+<div id="iceCone" title="Click to add a nag · drag to move">
+  <span class="cone">&#127846;</span>
+  <span class="count" id="coneCount">0</span>
+</div>
+
 <script src="config.js?v=3"></script>
 <script src="store.js?v=3"></script>
 <script>
@@ -81,9 +87,11 @@
   }
 
   var last = null;
+  // Ice-cream nag cone count — kept in sync on every refresh (function hoisted).
+  function updateCone(s){ var c = document.getElementById("coneCount"); if (c && s) c.textContent = s.annoyCount || 0; }
   function refresh(){
     LBStore.load().then(function(state){
-      last = state; render(state);
+      last = state; render(state); updateCone(state);
       var s = document.getElementById("status");
       s.className = "status ok";
       s.textContent = LBStore.hasBackend() ? "Synced " + new Date().toLocaleTimeString() : "Local preview (no backend)";
@@ -112,13 +120,53 @@
     if (!e.key || e.key.indexOf("kavosh.leaderboard") !== 0 || !e.newValue) return;
     try {
       var s = JSON.parse(e.newValue);
-      last = s; render(s);
+      last = s; render(s); updateCone(s);
       var st = document.getElementById("status");
       st.className = "status ok"; st.textContent = "Updated " + new Date().toLocaleTimeString();
     } catch (_) { refresh(); }
   });
   // Also refresh the instant the tab regains focus.
   window.addEventListener("focus", refresh);
+
+  // Floating ice-cream cone: click to +1 (persists), drag to move (saved per browser).
+  (function(){
+    var cone = document.getElementById("iceCone");
+    var CONE_KEY = "kavosh.iceCone.pos";
+    try { var pos = JSON.parse(localStorage.getItem(CONE_KEY)); if (pos){ cone.style.left=pos.left+"px"; cone.style.top=pos.top+"px"; cone.style.right="auto"; cone.style.bottom="auto"; } } catch(e){}
+    var dragging=false, moved=false, sx=0, sy=0, ox=0, oy=0;
+    function down(e){
+      dragging=true; moved=false;
+      var pt = e.touches ? e.touches[0] : e;
+      var r = cone.getBoundingClientRect(); ox=r.left; oy=r.top; sx=pt.clientX; sy=pt.clientY;
+      cone.classList.add("dragging");
+      document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+      document.addEventListener("touchmove", move, {passive:false}); document.addEventListener("touchend", up);
+    }
+    function move(e){
+      if(!dragging) return;
+      var pt = e.touches ? e.touches[0] : e;
+      var dx=pt.clientX-sx, dy=pt.clientY-sy;
+      if (Math.abs(dx)>4 || Math.abs(dy)>4) moved=true;
+      var nx=Math.max(4, Math.min(window.innerWidth-cone.offsetWidth-4, ox+dx));
+      var ny=Math.max(4, Math.min(window.innerHeight-cone.offsetHeight-4, oy+dy));
+      cone.style.left=nx+"px"; cone.style.top=ny+"px"; cone.style.right="auto"; cone.style.bottom="auto";
+      if (e.cancelable) e.preventDefault();
+    }
+    function up(){
+      dragging=false; cone.classList.remove("dragging");
+      document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up);
+      document.removeEventListener("touchmove", move); document.removeEventListener("touchend", up);
+      var r = cone.getBoundingClientRect();
+      if (moved){ try { localStorage.setItem(CONE_KEY, JSON.stringify({left:Math.round(r.left), top:Math.round(r.top)})); } catch(e){} }
+      else if (last){ // a click counts a nag
+        last.annoyCount = (last.annoyCount||0)+1; updateCone(last);
+        cone.classList.remove("pop"); void cone.offsetWidth; cone.classList.add("pop");
+        LBStore.save(last);
+      }
+    }
+    cone.addEventListener("mousedown", down);
+    cone.addEventListener("touchstart", down, {passive:true});
+  })();
 </script>
 <script src="bg.js?v=3"></script>
 </body>
