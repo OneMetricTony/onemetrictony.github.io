@@ -110,6 +110,9 @@
     button.primary:hover { filter: brightness(1.08); }
     button.ok { background: var(--accent2); border-color: var(--accent2); color: #04240f; }
     button:disabled { opacity: .5; cursor: not-allowed; }
+    .navlink { display:inline-block; margin-left:6px; padding:7px 12px; border:1px solid var(--accent);
+      border-radius:8px; color:var(--accent); text-decoration:none; font-size:13px; white-space:nowrap; }
+    .navlink:hover { background:var(--accent); color:#fff; }
     .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
     .empty { color: var(--warn); font-size: 14px; margin: 10px 0; }
     .manual-add { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; }
@@ -196,6 +199,9 @@
   <header>
     <h1>FIRA Face Tagger</h1>
     <button id="btn-gallery" style="margin-left:6px">👥 Who the model knows</button>
+    <a class="navlink" href="hall.html">🏛️ Unique faces</a>
+    <a class="navlink" href="candidates.html">❓ Who is this?</a>
+    <a class="navlink" href="scan.html">🔍 Scan photos</a>
     <div class="stats">
       <div>Item <b id="stat-idx">-</b> of <b id="stat-total">-</b></div>
       <div>Untagged left: <b id="stat-untagged">-</b></div>
