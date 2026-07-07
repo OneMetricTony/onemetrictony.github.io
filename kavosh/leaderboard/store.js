@@ -149,7 +149,18 @@
     if (!backend) return Promise.resolve(readLocal());
     return fetch(backend, { cache: "no-store" })
       .then(function (r) { return r.json(); })
-      .then(function (d) { var s = normalize(d); writeLocal(s); return s; })
+      .then(function (d) {
+        var remote = normalize(d);
+        // First-run migration: if the backend is empty but this browser already
+        // has data (e.g. scores keyed in before the backend existed), push the
+        // local copy up instead of letting the empty backend wipe it.
+        if (remote.players.length === 0) {
+          var local = readLocal();
+          if (local.players.length > 0) { save(local); return local; }
+        }
+        writeLocal(remote);
+        return remote;
+      })
       .catch(function () { return readLocal(); });
   }
 
