@@ -23,12 +23,12 @@
   </header>
 
   <div class="controls">
-    <input type="search" class="search" id="search" placeholder="Search players&hellip;" aria-label="Search players">
+    <input type="search" class="search" id="search" placeholder="Search teams&hellip;" aria-label="Search teams">
     <button class="btn" id="settingsBtn" title="Board name &amp; metric">Board settings</button>
-    <button class="btn primary" id="addBtn">+ Add player</button>
+    <button class="btn primary" id="addBtn">+ Add team</button>
   </div>
 
-  <p class="tie-hint">Metric decides the ranking. When two entries <b>tie</b>, drag the &#8942;&#8942; handle to set who ranks higher.</p>
+  <p class="tie-hint">Each team's total is the sum of its point entries. When two totals <b>tie</b>, drag the &#8942;&#8942; handle to set who ranks higher.</p>
 
   <div class="table-wrap">
     <div class="scroll-x">
@@ -37,7 +37,7 @@
           <tr>
             <th aria-label="Reorder"></th>
             <th class="num">#</th>
-            <th>Player</th>
+            <th>Team</th>
             <th class="num" id="metricHead">Score</th>
             <th class="num hide-sm">Change</th>
             <th class="num" aria-label="Actions"></th>
@@ -46,28 +46,30 @@
         <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div class="empty" id="empty" hidden>No players yet &mdash; add one to get started.</div>
+    <div class="empty" id="empty" hidden>No teams yet &mdash; add one to get started.</div>
   </div>
 
   <footer class="foot"><span id="status" class="status">Loading&hellip;</span></footer>
 </div>
 
-<!-- Add / edit player -->
+<!-- Add / edit team -->
 <div class="modal-bg" id="modalBg">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <h2 id="modalTitle">Add player</h2>
+    <h2 id="modalTitle">Add team</h2>
     <div class="field">
-      <label for="fName">Name</label>
-      <input id="fName" type="text" placeholder="e.g. Alex Rivera" maxlength="60">
+      <label for="fName">Team name</label>
+      <input id="fName" type="text" placeholder="e.g. Team 1 Nova" maxlength="60">
     </div>
     <div class="field">
-      <label for="fScore" id="fScoreLabel">Score</label>
-      <input id="fScore" type="text" placeholder="e.g. 12+8+5" inputmode="text" autocomplete="off">
-      <div class="field-hint" id="fScoreHint">Type a number or a formula (+ &minus; &times; &divide;) to add across challenges.</div>
+      <label id="fEntriesLabel">Point entries</label>
+      <div id="entryList"></div>
+      <button class="btn entry-add" id="addEntryBtn" type="button">+ Add entry</button>
+      <div class="entry-total">Total <span id="entryTotal">0</span> <span id="entryUnit"></span></div>
+      <div class="field-hint">Each row is one challenge / source. Values may be numbers or formulas (3+2). Leave the label blank if you just want a total.</div>
     </div>
     <div class="field">
       <label for="fChange">Recent change (optional)</label>
-      <input id="fChange" type="number" step="any" placeholder="0" inputmode="decimal">
+      <input id="fChange" type="text" placeholder="e.g. 15 or -5" inputmode="text" autocomplete="off">
     </div>
     <div class="modal-actions">
       <button class="btn" id="cancelBtn">Cancel</button>
@@ -86,10 +88,10 @@
     </div>
     <div class="field">
       <label for="sSub">Subtitle</label>
-      <input id="sSub" type="text" maxlength="60" placeholder="Season Standings">
+      <input id="sSub" type="text" maxlength="60" placeholder="KAVOSH Challenge">
     </div>
     <div class="field">
-      <label for="sMetric">What ranks entries? (metric)</label>
+      <label for="sMetric">What ranks teams? (metric)</label>
       <input id="sMetric" type="text" maxlength="24" placeholder="Score / Time / Weight / Distance">
     </div>
     <div class="field">
@@ -99,8 +101,8 @@
     <div class="field">
       <label for="sDir">Winner is&hellip;</label>
       <select id="sDir" class="search" style="flex:none;width:100%">
-        <option value="high">Highest value (points, weight, distance)</option>
-        <option value="low">Lowest value (time, penalties)</option>
+        <option value="high">Highest total (points, weight, distance)</option>
+        <option value="low">Lowest total (time, penalties)</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -114,7 +116,7 @@
 <script src="store.js"></script>
 <script>
   var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
-  var state = { title:"Leaderboard", subtitle:"Season Standings", metric:{label:"Score",unit:"",lowerIsBetter:false}, players: [] };
+  var state = { title:"Leaderboard", subtitle:"KAVOSH Challenge", metric:{label:"Score",unit:"",lowerIsBetter:false}, players: [] };
   var editingId = null;
   var tbody = document.getElementById("tbody");
   var $ = function(id){ return document.getElementById(id); };
@@ -140,8 +142,6 @@
     var ranked = LBStore.rankSort(state.players, state.metric);
     rankedIds = ranked.map(function(p){ return p.id; });
     var rankMap = LBStore.ranks(ranked);
-
-    // mark tie groups (same value) so ties are visually obvious
     var tieVals = {}; ranked.forEach(function(p){ tieVals[p.value]=(tieVals[p.value]||0)+1; });
 
     var rows = ranked.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
@@ -153,12 +153,15 @@
       var arrow = ch>0?"&#9650;":ch<0?"&#9660;":"&#8211;";
       var chTxt = ch===0 ? "" : Math.abs(ch).toLocaleString();
       var tied = tieVals[p.value] > 1;
+      var nEntries = (p.entries && p.entries.length) || 0;
+      var breakdown = nEntries ? p.entries.map(function(e){ return (e.label||"—")+": "+e.points; }).join("\n") : "";
+      var sumBadge = nEntries > 1 ? ' <span class="fx" title="'+esc(breakdown)+'">Σ'+nEntries+'</span>' : "";
       return '<tr draggable="true" data-id="'+p.id+'" class="'+(tied?"tied":"")+'">'
         + '<td class="drag-cell" title="Drag to reorder ties">&#8942;&#8942;</td>'
         + '<td class="num rank '+(r<=3?"top":"")+'">'+r+'</td>'
         + '<td><div class="player"><div class="avatar" style="background:'+colorFor(p.name)+'">'+initials(p.name)+'</div>'
         + '<span class="pname">'+esc(p.name)+'</span></div></td>'
-        + '<td class="num score-cell"'+(p.formula?' title="'+esc(p.formula+" = "+p.value)+'"':'')+'>'+esc(LBStore.fmt(p.value, state.metric))+(p.formula?' <span class="fx">ƒ</span>':'')+'</td>'
+        + '<td class="num score-cell"'+(breakdown?' title="'+esc(breakdown)+'"':'')+'>'+esc(LBStore.fmt(p.value, state.metric))+sumBadge+'</td>'
         + '<td class="num hide-sm"><span class="trend '+tcls+'">'+arrow+' '+chTxt+'</span></td>'
         + '<td class="num"><div class="row-actions">'
         + '<button class="icon-btn" data-edit="'+p.id+'">Edit</button>'
@@ -197,49 +200,89 @@
     var targetId = tr.getAttribute("data-id");
     var rect = tr.getBoundingClientRect();
     var after = e.clientY > rect.top + rect.height/2;
-
     var ids = rankedIds.slice();
     ids.splice(ids.indexOf(dragId), 1);
     var ti = ids.indexOf(targetId) + (after ? 1 : 0);
     ids.splice(ti, 0, dragId);
-
-    // write the new sequence into each player's tiebreak order
     var pos = {}; ids.forEach(function(id,i){ pos[id]=i; });
     state.players.forEach(function(p){ p.order = pos[p.id]; });
     render(); persist();
   });
 
-  /* ---- Add / edit ---- */
+  /* ---- Entry rows (multiple point sources) ---- */
+  function entryRow(label, points){
+    var row = document.createElement("div");
+    row.className = "entry-row";
+    row.innerHTML =
+      '<input class="entry-label" type="text" maxlength="40" placeholder="Challenge / source" value="'+esc(label||"")+'">'
+      + '<input class="entry-points" type="text" inputmode="decimal" placeholder="0" value="'+esc(points==null?"":String(points))+'">'
+      + '<button class="entry-del" type="button" title="Remove entry" aria-label="Remove entry">&times;</button>';
+    row.querySelector(".entry-points").addEventListener("input", recomputeTotal);
+    row.querySelector(".entry-del").addEventListener("click", function(){
+      row.remove();
+      if (!$("entryList").children.length) addEntryRow();
+      recomputeTotal();
+    });
+    return row;
+  }
+  function addEntryRow(label, points){
+    $("entryList").appendChild(entryRow(label, points));
+  }
+  function recomputeTotal(){
+    var total = 0;
+    Array.prototype.forEach.call($("entryList").querySelectorAll(".entry-points"), function(inp){
+      var v = LBStore.evalExpr(inp.value); if (isFinite(v)) total += v;
+    });
+    $("entryTotal").textContent = (Math.round(total*100)/100).toLocaleString();
+  }
+  function gatherEntries(){
+    var out = [];
+    Array.prototype.forEach.call($("entryList").querySelectorAll(".entry-row"), function(row){
+      var label = row.querySelector(".entry-label").value.trim();
+      var raw = row.querySelector(".entry-points").value.trim();
+      if (raw === "" && label === "") return;           // skip fully empty rows
+      var pts = LBStore.evalExpr(raw);
+      if (!isFinite(pts)) pts = 0;
+      out.push({ label: label, points: pts });
+    });
+    return out;
+  }
+
   function openModal(id){
     editingId = id || null;
     var p = id ? state.players.filter(function(x){return x.id===id;})[0] : null;
-    $("modalTitle").textContent = p ? "Edit player" : "Add player";
-    $("fScoreLabel").textContent = state.metric.label + (state.metric.unit ? " ("+state.metric.unit+")" : "");
+    $("modalTitle").textContent = p ? "Edit team" : "Add team";
+    $("entryUnit").textContent = state.metric.unit || "";
+    $("fEntriesLabel").textContent = "Point entries" + (state.metric.unit ? " ("+state.metric.unit+")" : "");
     $("fName").value = p ? p.name : "";
-    $("fScore").value = p ? (p.formula || p.value) : "";
     $("fChange").value = p ? (p.change || "") : "";
+    $("entryList").innerHTML = "";
+    var entries = (p && p.entries && p.entries.length) ? p.entries
+                 : (p ? [{label:"", points:p.value}] : [{label:"", points:""}]);
+    entries.forEach(function(e){ addEntryRow(e.label, e.points); });
+    recomputeTotal();
     $("modalBg").classList.add("open");
     $("fName").focus();
   }
   function closeModal(){ $("modalBg").classList.remove("open"); editingId = null; }
 
+  $("addEntryBtn").onclick = function(){ addEntryRow(); var rows=$("entryList").querySelectorAll(".entry-label"); rows[rows.length-1].focus(); };
+
   $("saveBtn").onclick = function(){
     var name = $("fName").value.trim();
-    var raw = $("fScore").value.trim();
-    var value = LBStore.evalExpr(raw);
-    var change = LBStore.evalExpr($("fChange").value); if (!isFinite(change)) change = 0;
     if (!name){ $("fName").focus(); return; }
-    if (!isFinite(value)){ $("fScoreHint").textContent = "That formula isn't valid — use numbers and + − × ÷ ( )."; $("fScore").focus(); return; }
-    // keep the raw expression only if it's an actual formula (has an operator)
-    var formula = /[+\-*/]/.test(raw.replace(/^-/, "")) ? raw : "";
+    var entries = gatherEntries();
+    var value = entries.reduce(function(s,e){ return s + e.points; }, 0);
+    var change = LBStore.evalExpr($("fChange").value); if (!isFinite(change)) change = 0;
     if (editingId){
       var p = state.players.filter(function(x){return x.id===editingId;})[0];
-      p.name = name; p.value = value; p.formula = formula; p.change = change;
+      p.name = name; p.entries = entries; p.value = value; p.formula = ""; p.change = change;
     } else {
-      state.players.push({ id: LBStore.uid(), name:name, value:value, formula:formula, change:change, order: state.players.length });
+      state.players.push({ id: LBStore.uid(), name:name, entries:entries, value:value, formula:"", change:change, order: state.players.length });
     }
     render(); closeModal(); persist();
   };
+
   $("addBtn").onclick = function(){ openModal(null); };
   $("cancelBtn").onclick = closeModal;
   $("modalBg").onclick = function(e){ if (e.target === $("modalBg")) closeModal(); };
@@ -283,7 +326,6 @@
 
   document.addEventListener("keydown", function(e){
     if (e.key === "Escape"){ closeModal(); $("setBg").classList.remove("open"); }
-    if (e.key === "Enter" && $("modalBg").classList.contains("open")) $("saveBtn").click();
   });
 
   $("search").oninput = render;

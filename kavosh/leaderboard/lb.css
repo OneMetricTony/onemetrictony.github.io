@@ -212,7 +212,20 @@ footer.foot a:hover { text-decoration: underline; }
 .field { margin-bottom: 16px; }
 .field label { display: block; font-family: var(--font-head); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--c-text-mute); font-weight: 600; margin-bottom: 6px; }
 .field-hint { margin-top: 6px; font-size: 11px; color: var(--c-text-mute); }
-.score-cell .fx { color: var(--c-gold); font-size: 11px; opacity: .8; }
+.score-cell .fx { color: var(--c-gold); font-size: 11px; opacity: .85; cursor: help; }
+
+/* Multi-entry point editor */
+#entryList { display: flex; flex-direction: column; gap: 8px; }
+.entry-row { display: flex; gap: 8px; align-items: center; }
+.entry-row .entry-label { flex: 1 1 auto; min-width: 0; }
+.entry-row .entry-points { flex: 0 0 88px; width: 88px; text-align: right; font-variant-numeric: tabular-nums; }
+.entry-row input { background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text); font-size: 14px; padding: 8px 10px; font-family: var(--font-body); }
+.entry-row input:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+.entry-del { flex: 0 0 auto; width: 30px; height: 34px; border: 1px solid var(--c-line); background: var(--c-bg-3); color: var(--c-text-mute); cursor: pointer; font-size: 16px; line-height: 1; border-radius: 4px; }
+.entry-del:hover { color: var(--down); border-color: var(--down); }
+.btn.entry-add { margin-top: 10px; padding: 8px 14px; font-size: 12px; }
+.entry-total { margin-top: 12px; font-family: var(--font-head); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-mute); }
+.entry-total span#entryTotal { color: var(--c-gold); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .field input, .field select {
   width: 100%; background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text);
   font-size: 15px; padding: 10px 12px; font-family: var(--font-body);

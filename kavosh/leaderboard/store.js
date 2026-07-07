@@ -86,15 +86,26 @@
     state.title = String(state.title || "Leaderboard").slice(0, 60);
     state.subtitle = String(state.subtitle || "Season Standings").slice(0, 60);
     state.players = state.players.map(function (p, i) {
+      // entries = named point sources that tally into the total
+      var entries = Array.isArray(p.entries) ? p.entries.map(function (e) {
+        return { label: String(e && e.label || "").slice(0, 40), points: num(e && e.points) };
+      }) : [];
       var formula = (p.formula != null && String(p.formula).trim() !== "") ? String(p.formula).slice(0, 120) : "";
       var stored = num(p.value != null ? p.value : p.score);
-      var value = stored;
-      if (formula) { var e = evalExpr(formula); if (isFinite(e)) value = e; }
+      var value;
+      if (entries.length) {
+        value = entries.reduce(function (s, e) { return s + e.points; }, 0);
+      } else if (formula) {
+        var ev = evalExpr(formula); value = isFinite(ev) ? ev : stored;
+      } else {
+        value = stored;
+      }
       return {
         id: p.id || uid(),
         name: String(p.name || "").slice(0, 60),
         value: num(value),
-        formula: formula,               // raw expression, kept for re-editing
+        entries: entries,               // [{label, points}] — tally source
+        formula: formula,               // legacy single-expression fallback
         change: num(p.change),
         // manual tiebreak order (lower = ranked higher when values are equal)
         order: p.order != null ? num(p.order) : i
