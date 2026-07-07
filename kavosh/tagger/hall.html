@@ -158,7 +158,14 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty { color: var(--warn); font-size: 14px; margin: 20px 0; text-align: center; }
+    /* When shown inside the tagger's overlay (?embed=1): drop the Hall's own
+       header/nav so it can't navigate away (no nested windows) and there's no
+       duplicate title — the overlay supplies the header + Close. */
+    html.embed header { display: none; }
+    html.embed #intro { display: none; }
+    html.embed .wrap { padding-top: 6px; }
   </style>
+  <script>if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed');</script>
 </head>
 <body>
   <header>

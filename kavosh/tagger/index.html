@@ -266,6 +266,7 @@
       <div class="ghead">
         <h2>👥 Who the model knows</h2>
         <span class="gaccuracy" id="gallery-accuracy"></span>
+        <button id="btn-gallery-to-hall">🏛️ Unique faces</button>
         <button class="close" id="btn-gallery-close">✕ Close</button>
       </div>
       <div id="gallery-body"></div>
@@ -275,6 +276,7 @@
   <div id="hall" aria-hidden="true">
     <div class="hhead">
       <h2>🏛️ Unique faces</h2>
+      <button id="btn-hall-to-gallery">👥 Who the model knows</button>
       <button class="close" id="btn-hall-close">✕ Close</button>
     </div>
     <iframe id="hall-frame" title="Unique faces" loading="lazy"></iframe>
@@ -1242,6 +1244,7 @@
     }
 
     async function openGallery() {
+      closeHall();                                            // only one overlay at a time
       els.gallery.classList.add('open');
       els.gallery.setAttribute('aria-hidden', 'false');
       els.galleryAccuracy.textContent = '';
@@ -1291,7 +1294,8 @@
     const hallEl = document.getElementById('hall');
     const hallFrame = document.getElementById('hall-frame');
     function openHall() {
-      if (!hallFrame.src) hallFrame.src = 'hall.html';         // lazy-load on first open
+      closeGallery();                                          // only one overlay at a time
+      if (!hallFrame.src) hallFrame.src = 'hall.html?embed=1';  // lazy-load, no in-frame nav
       hallEl.classList.add('open');
       hallEl.setAttribute('aria-hidden', 'false');
     }
@@ -1301,6 +1305,9 @@
     }
     document.getElementById('btn-hall').addEventListener('click', openHall);
     document.getElementById('btn-hall-close').addEventListener('click', closeHall);
+    // Switch straight between the two overlays (each takes over the other).
+    document.getElementById('btn-hall-to-gallery').addEventListener('click', openGallery);
+    document.getElementById('btn-gallery-to-hall').addEventListener('click', openHall);
 
     // Scan is heavy (runs face-api in the clicker's browser) — gate it behind a password.
     document.getElementById('btn-scan').addEventListener('click', () => {
