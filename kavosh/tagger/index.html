@@ -157,7 +157,7 @@
     /* ---- unique-faces (Hall) overlay: same feel as gallery, hosts hall.html ---- */
     #hall {
       position: fixed; inset: 0; z-index: 101; display: none;
-      background: rgba(8,10,14,.98);
+      background: rgba(8,10,14,.90);
     }
     #hall.open { display: flex; flex-direction: column; }
     #hall .hhead {
@@ -166,7 +166,7 @@
     }
     #hall .hhead h2 { margin: 0; font-size: 18px; }
     #hall .close { margin-left: auto; }
-    #hall iframe { flex: 1 1 auto; width: 100%; border: 0; background: var(--bg, #0b0e14); }
+    #hall iframe { flex: 1 1 auto; width: 100%; max-width: 1000px; margin: 0 auto; border: 0; background: var(--bg, #0b0e14); }
     .gwrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
     .ghead {
       display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -1308,6 +1308,9 @@
     // Switch straight between the two overlays (each takes over the other).
     document.getElementById('btn-hall-to-gallery').addEventListener('click', openGallery);
     document.getElementById('btn-gallery-to-hall').addEventListener('click', openHall);
+    // Click the sides (backdrop, not the content) to leave the overlay.
+    hallEl.addEventListener('click', (e) => { if (e.target === hallEl) closeHall(); });
+    els.gallery.addEventListener('click', (e) => { if (e.target === els.gallery) closeGallery(); });
 
     // Scan is heavy (runs face-api in the clicker's browser) — gate it behind a password.
     document.getElementById('btn-scan').addEventListener('click', () => {
