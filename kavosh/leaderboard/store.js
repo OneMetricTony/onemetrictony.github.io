@@ -155,7 +155,7 @@
 
   global.LBStore = {
     load: load, save: save, uid: uid,
-    rankSort: rankSort, fmt: fmt, num: num, initials: initials,
+    rankSort: rankSort, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr,
     hasBackend: function () { return !!global.LB_BACKEND; }
   };
 })(window);
