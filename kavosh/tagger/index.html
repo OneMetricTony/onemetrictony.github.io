@@ -1138,12 +1138,15 @@
 
     // ---- "Who the model knows" gallery ----
     // Bucket a person into a league group from their (case-insensitive) league.
-    const LEAGUE_ORDER = ['AIR', 'MISSION', 'ENJOY AI', 'Other'];
+    const LEAGUE_ORDER = ['AIR', 'MISSION', 'ENJOY AI', 'Mentor / Supporter', 'Other'];
+    // Nicer section headers (plain league name otherwise).
+    const LEAGUE_LABELS = { 'Mentor / Supporter': '🧑‍🏫 Mentor / Supporter' };
     function leagueBucket(league) {
       const s = String(league || '').toLowerCase();
       if (s.indexOf('air') !== -1) return 'AIR';
       if (s.indexOf('mission') !== -1) return 'MISSION';
       if (s.indexOf('enjoy') !== -1) return 'ENJOY AI';
+      if (s.indexOf('mentor') !== -1 || s.indexOf('supporter') !== -1) return 'Mentor / Supporter';
       return 'Other';
     }
 
@@ -1186,7 +1189,7 @@
         els.galleryAccuracy.innerHTML = '<span style="color:var(--warn)">not enough data yet</span>';
       }
       // bucket + sort (trained first, then by name) within each league
-      const buckets = { AIR: [], MISSION: [], 'ENJOY AI': [], Other: [] };
+      const buckets = { AIR: [], MISSION: [], 'ENJOY AI': [], 'Mentor / Supporter': [], Other: [] };
       for (const p of people) buckets[leagueBucket(p.league)].push(p);
       let html = '';
       for (const lg of LEAGUE_ORDER) {
@@ -1196,7 +1199,7 @@
           if (!!a.count !== !!b.count) return a.count ? -1 : 1;
           return String(a.name).localeCompare(String(b.name));
         });
-        html += '<div class="gsection"><h3>' + escapeHtml(lg) + ' <span style="color:var(--muted);font-weight:400">(' +
+        html += '<div class="gsection"><h3>' + escapeHtml(LEAGUE_LABELS[lg] || lg) + ' <span style="color:var(--muted);font-weight:400">(' +
           arr.length + ')</span></h3><div class="ggrid">';
         for (const p of arr) html += galleryCardHtml(p);
         html += '</div></div>';
