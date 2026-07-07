@@ -258,6 +258,23 @@
         .join('');
     }
 
+    // Individuals for one team (falls back to the full union when no team is
+    // selected or the team isn't found) — used to narrow a card's name options.
+    function individualsForTeam(teamName) {
+      if (!teamName) return allIndividuals();
+      const t = roster.find((r) => r.team === teamName);
+      if (!t) return allIndividuals();
+      return Array.from(new Set(t.individuals || [])).sort((a, b) => a.localeCompare(b));
+    }
+    function nameOptionsHtml(names) {
+      return names.map((n) => '<option value="' + escapeHtml(n) + '"></option>').join('');
+    }
+    // Refill ONE card's own name datalist to match the team currently selected.
+    function fillCardNames(card, teamName) {
+      const dl = card && card.querySelector('datalist.card-names');
+      if (dl) dl.innerHTML = nameOptionsHtml(individualsForTeam(teamName));
+    }
+
     // ---- load / reload the hall ----
     async function loadHall(showSpinner) {
       if (loading) return;
@@ -387,7 +404,8 @@
         '<div class="vote">' +
           '<div class="vsec vsec-name">' +
             '<label class="small">Name — search or type anyone from the roster</label>' +
-            '<input class="inp-name" list="all-individuals" placeholder="Search or type a name…" autocomplete="off" />' +
+            '<input class="inp-name" list="names-' + i + '" placeholder="Search or type a name…" autocomplete="off" />' +
+            '<datalist class="card-names" id="names-' + i + '">' + nameOptionsHtml(allIndividuals()) + '</datalist>' +
             '<div class="actions">' +
               '<button class="vbtn ok btn-name">Submit name</button>' +
             '</div>' +
@@ -422,6 +440,12 @@
       const btnCancel = card.querySelector('.btn-cancel');
       if (btnName) btnName.addEventListener('click', () => submitAttr(i, 'name'));
       if (btnTeam) btnTeam.addEventListener('click', () => submitAttr(i, 'team'));
+      // Picking a team narrows this card's name options to that team's members.
+      const selTeam = card.querySelector('.sel-team');
+      if (selTeam) {
+        selTeam.addEventListener('change', () => fillCardNames(card, selTeam.value));
+        fillCardNames(card, selTeam.value); // apply current selection on first render
+      }
       if (btnCancel) btnCancel.addEventListener('click', () => { openKey = null; setOpenState(i, false); });
       // Lock down any attribute that is already locked.
       applyAttrLockState(i, 'name');
