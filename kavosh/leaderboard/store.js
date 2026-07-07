@@ -100,11 +100,16 @@
       } else {
         value = stored;
       }
+      // notes = timestamped remarks; the newest (max ts) shows on the display card
+      var notes = Array.isArray(p.notes) ? p.notes.map(function (n) {
+        return { text: String(n && n.text || "").slice(0, 140), ts: num(n && n.ts) };
+      }).filter(function (n) { return n.text; }) : [];
       return {
         id: p.id || uid(),
         name: String(p.name || "").slice(0, 60),
         value: num(value),
         entries: entries,               // [{label, points}] — tally source
+        notes: notes,                   // [{text, ts}] — newest shows on card
         formula: formula,               // legacy single-expression fallback
         change: num(p.change),
         // manual tiebreak order (lower = ranked higher when values are equal)
@@ -125,6 +130,16 @@
       m.set(p.id, rank);
     }
     return m;
+  }
+
+  // Most recent note (by timestamp) for a player, or "" if none.
+  function latestNote(p) {
+    if (!p || !p.notes || !p.notes.length) return "";
+    var best = p.notes[0];
+    for (var i = 1; i < p.notes.length; i++) {
+      if ((p.notes[i].ts || 0) > (best.ts || 0)) best = p.notes[i];
+    }
+    return best.text || "";
   }
 
   // Sort players best-first: metric decides, manual order breaks ties.
@@ -190,7 +205,7 @@
 
   global.LBStore = {
     load: load, save: save, uid: uid,
-    rankSort: rankSort, ranks: ranks, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr,
+    rankSort: rankSort, ranks: ranks, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr, latestNote: latestNote,
     hasBackend: function () { return !!global.LB_BACKEND; }
   };
 })(window);

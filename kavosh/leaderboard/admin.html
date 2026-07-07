@@ -68,6 +68,12 @@
       <div class="field-hint">Each row is one challenge / source. Values may be numbers or formulas (3+2). Leave the label blank if you just want a total.</div>
     </div>
     <div class="field">
+      <label id="fNotesLabel">Notes</label>
+      <div id="noteList"></div>
+      <button class="btn entry-add" id="addNoteBtn" type="button">+ Add note</button>
+      <div class="field-hint">Newest note shows on the display card. Add a new one to update it.</div>
+    </div>
+    <div class="field">
       <label for="fChange">Recent change (optional)</label>
       <input id="fChange" type="text" placeholder="e.g. 15 or -5" inputmode="text" autocomplete="off">
     </div>
@@ -248,6 +254,36 @@
     return out;
   }
 
+  /* ---- Note rows (newest shows on the display card) ---- */
+  function noteTime(ts){ ts = Number(ts); if (!ts) return ""; try { return new Date(ts).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); } catch(e){ return ""; } }
+  function noteRow(text, ts){
+    var row = document.createElement("div");
+    row.className = "note-row";
+    row.dataset.ts = ts || Date.now();
+    row.innerHTML =
+      '<input class="note-text" type="text" maxlength="140" placeholder="Note (e.g. penalty applied, great run)" value="'+esc(text||"")+'">'
+      + '<span class="note-time">'+noteTime(row.dataset.ts)+'</span>'
+      + '<button class="entry-del note-del" type="button" title="Remove note" aria-label="Remove note">&times;</button>';
+    row.querySelector(".note-del").addEventListener("click", function(){ row.remove(); });
+    return row;
+  }
+  function addNoteRow(text, ts, prepend){
+    var row = noteRow(text, ts);
+    var list = $("noteList");
+    if (prepend && list.firstChild) list.insertBefore(row, list.firstChild);
+    else list.appendChild(row);
+    return row;
+  }
+  function gatherNotes(){
+    var out = [];
+    Array.prototype.forEach.call($("noteList").querySelectorAll(".note-row"), function(row){
+      var text = row.querySelector(".note-text").value.trim();
+      if (!text) return;
+      out.push({ text: text, ts: Number(row.dataset.ts) || Date.now() });
+    });
+    return out;
+  }
+
   function openModal(id){
     editingId = id || null;
     var p = id ? state.players.filter(function(x){return x.id===id;})[0] : null;
@@ -261,24 +297,30 @@
                  : (p ? [{label:"", points:p.value}] : [{label:"", points:""}]);
     entries.forEach(function(e){ addEntryRow(e.label, e.points); });
     recomputeTotal();
+    // notes, newest first
+    $("noteList").innerHTML = "";
+    var notes = (p && p.notes) ? p.notes.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); }) : [];
+    notes.forEach(function(n){ addNoteRow(n.text, n.ts); });
     $("modalBg").classList.add("open");
     $("fName").focus();
   }
   function closeModal(){ $("modalBg").classList.remove("open"); editingId = null; }
 
   $("addEntryBtn").onclick = function(){ addEntryRow(); var rows=$("entryList").querySelectorAll(".entry-label"); rows[rows.length-1].focus(); };
+  $("addNoteBtn").onclick = function(){ var r = addNoteRow("", Date.now(), true); r.querySelector(".note-text").focus(); };
 
   $("saveBtn").onclick = function(){
     var name = $("fName").value.trim();
     if (!name){ $("fName").focus(); return; }
     var entries = gatherEntries();
     var value = entries.reduce(function(s,e){ return s + e.points; }, 0);
+    var notes = gatherNotes();
     var change = LBStore.evalExpr($("fChange").value); if (!isFinite(change)) change = 0;
     if (editingId){
       var p = state.players.filter(function(x){return x.id===editingId;})[0];
-      p.name = name; p.entries = entries; p.value = value; p.formula = ""; p.change = change;
+      p.name = name; p.entries = entries; p.value = value; p.notes = notes; p.formula = ""; p.change = change;
     } else {
-      state.players.push({ id: LBStore.uid(), name:name, entries:entries, value:value, formula:"", change:change, order: state.players.length });
+      state.players.push({ id: LBStore.uid(), name:name, entries:entries, value:value, notes:notes, formula:"", change:change, order: state.players.length });
     }
     render(); closeModal(); persist();
   };

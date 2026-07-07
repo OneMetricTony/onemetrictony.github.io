@@ -67,6 +67,7 @@
       var tcls = ch>0?"up":ch<0?"down":"flat";
       var arrow = ch>0?"&#9650;":ch<0?"&#9660;":"&#8211;";
       var chTxt = ch===0 ? "&mdash;" : arrow + " " + Math.abs(ch).toLocaleString();
+      var note = LBStore.latestNote(p);
       return '<div class="p-cell '+(first?"first":"")+'">'
         + '<div class="p-medal '+medalCls(r)+'">'+r+'</div>'
         + '<div class="p-card '+(first?"first":"")+'">'
@@ -74,6 +75,7 @@
         + '<div class="p-name">'+esc(p.name)+'</div>'
         + '<div class="p-score">'+esc(LBStore.fmt(p.value, state.metric))+'</div>'
         + '<div class="p-trend '+tcls+'">'+chTxt+'</div>'
+        + (note ? '<div class="p-note">&ldquo;'+esc(note)+'&rdquo;</div>' : '')
         + '</div></div>';
     }).join("");
   }

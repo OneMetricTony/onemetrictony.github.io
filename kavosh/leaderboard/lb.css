@@ -118,6 +118,12 @@ header.top {
 .first .p-score { font-size: 32px; }
 .p-trend { margin-top: 5px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .p-trend.up { color: var(--up); } .p-trend.down { color: var(--down); } .p-trend.flat { color: var(--c-text-mute); }
+.p-note {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--c-line);
+  font-size: 12.5px; font-style: italic; line-height: 1.4; color: var(--c-text-dim);
+  overflow-wrap: anywhere;
+}
+.first .p-note { font-size: 13.5px; }
 
 /* Controls */
 .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
@@ -226,6 +232,14 @@ footer.foot a:hover { text-decoration: underline; }
 .btn.entry-add { margin-top: 10px; padding: 8px 14px; font-size: 12px; }
 .entry-total { margin-top: 12px; font-family: var(--font-head); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-mute); }
 .entry-total span#entryTotal { color: var(--c-gold); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Notes editor */
+#noteList { display: flex; flex-direction: column; gap: 8px; }
+.note-row { display: flex; gap: 8px; align-items: center; }
+.note-row .note-text { flex: 1 1 auto; min-width: 0; background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text); font-size: 14px; padding: 8px 10px; font-family: var(--font-body); }
+.note-row .note-text:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+.note-row .note-time { flex: 0 0 auto; font-size: 10.5px; color: var(--c-text-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.note-row .note-del { height: 34px; }
 .field input, .field select {
   width: 100%; background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text);
   font-size: 15px; padding: 10px 12px; font-family: var(--font-body);
