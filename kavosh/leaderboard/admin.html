@@ -28,7 +28,7 @@
     <button class="btn primary" id="addBtn">+ Add team</button>
   </div>
 
-  <p class="tie-hint">Each team's total is the sum of its point entries. When two totals <b>tie</b>, drag the &#8942;&#8942; handle to set who ranks higher.</p>
+  <p class="tie-hint">Rows stay in a fixed order as you enter scores &mdash; the <b>#</b> column shows each team's live rank. Drag the &#8942;&#8942; handle to change a team's row order (also breaks ties).</p>
 
   <div class="table-wrap">
     <div class="scroll-x">
@@ -146,11 +146,14 @@
     $("metricHead").textContent = state.metric.label + (state.metric.unit ? " ("+state.metric.unit+")" : "");
     var q = $("search").value.trim().toLowerCase();
     var ranked = LBStore.rankSort(state.players, state.metric);
-    rankedIds = ranked.map(function(p){ return p.id; });
     var rankMap = LBStore.ranks(ranked);
     var tieVals = {}; ranked.forEach(function(p){ tieVals[p.value]=(tieVals[p.value]||0)+1; });
 
-    var rows = ranked.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
+    // Admin rows stay in a fixed manual order (they don't jump around as scores
+    // change). The # column still shows each team's live rank. Drag to reorder.
+    var byOrder = state.players.slice().sort(function(a,b){ return (a.order||0)-(b.order||0); });
+    rankedIds = byOrder.map(function(p){ return p.id; });
+    var rows = byOrder.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
     $("empty").hidden = state.players.length > 0;
     tbody.innerHTML = rows.map(function(p){
       var r = rankMap.get(p.id);
