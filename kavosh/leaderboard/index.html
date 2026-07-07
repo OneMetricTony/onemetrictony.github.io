@@ -103,7 +103,22 @@
   };
 
   refresh();
-  if (LBStore.hasBackend()) setInterval(refresh, 15000);
+  // Cross-device liveness: poll the backend every 5s.
+  if (LBStore.hasBackend()) setInterval(refresh, 5000);
+
+  // Same-browser liveness: when the data-entry tab saves, localStorage changes
+  // fire a 'storage' event here — render the new state instantly (no round-trip).
+  window.addEventListener("storage", function (e) {
+    if (!e.key || e.key.indexOf("kavosh.leaderboard") !== 0 || !e.newValue) return;
+    try {
+      var s = JSON.parse(e.newValue);
+      last = s; render(s);
+      var st = document.getElementById("status");
+      st.className = "status ok"; st.textContent = "Updated " + new Date().toLocaleTimeString();
+    } catch (_) { refresh(); }
+  });
+  // Also refresh the instant the tab regains focus.
+  window.addEventListener("focus", refresh);
 </script>
 <script src="bg.js"></script>
 </body>
