@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard &middot; Data Entry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="lb.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="../index.html"><img src="kavosh-logo.png" alt="KAVOSH AI & Robotics Academy"></a>
+  <header class="top">
+    <div class="title-block">
+      <h1>Data Entry</h1>
+      <div class="sub">Manage Scores <span class="accent-dot">&#9670;</span> Saves to Drive</div>
+    </div>
+    <div class="head-tools">
+      <a class="chip-btn" href="index.html" target="_blank" rel="noopener">Open display &#8599;</a>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="search" class="search" id="search" placeholder="Search players&hellip;" aria-label="Search players">
+    <button class="btn" id="settingsBtn" title="Board name &amp; metric">Board settings</button>
+    <button class="btn primary" id="addBtn">+ Add player</button>
+  </div>
+
+  <p class="tie-hint">Metric decides the ranking. When two entries <b>tie</b>, drag the &#8942;&#8942; handle to set who ranks higher.</p>
+
+  <div class="table-wrap">
+    <div class="scroll-x">
+      <table>
+        <thead>
+          <tr>
+            <th aria-label="Reorder"></th>
+            <th class="num">#</th>
+            <th>Player</th>
+            <th class="num" id="metricHead">Score</th>
+            <th class="num hide-sm">Change</th>
+            <th class="num" aria-label="Actions"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>No players yet &mdash; add one to get started.</div>
+  </div>
+
+  <footer class="foot"><span id="status" class="status">Loading&hellip;</span></footer>
+</div>
+
+<!-- Add / edit player -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">Add player</h2>
+    <div class="field">
+      <label for="fName">Name</label>
+      <input id="fName" type="text" placeholder="e.g. Alex Rivera" maxlength="60">
+    </div>
+    <div class="field">
+      <label for="fScore" id="fScoreLabel">Score</label>
+      <input id="fScore" type="text" placeholder="e.g. 12+8+5" inputmode="text" autocomplete="off">
+      <div class="field-hint" id="fScoreHint">Type a number or a formula (+ &minus; &times; &divide;) to add across challenges.</div>
+    </div>
+    <div class="field">
+      <label for="fChange">Recent change (optional)</label>
+      <input id="fChange" type="number" step="any" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Board settings -->
+<div class="modal-bg" id="setBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Board settings</h2>
+    <div class="field">
+      <label for="sTitle">Board title</label>
+      <input id="sTitle" type="text" maxlength="60" placeholder="Leaderboard">
+    </div>
+    <div class="field">
+      <label for="sSub">Subtitle</label>
+      <input id="sSub" type="text" maxlength="60" placeholder="Season Standings">
+    </div>
+    <div class="field">
+      <label for="sMetric">What ranks entries? (metric)</label>
+      <input id="sMetric" type="text" maxlength="24" placeholder="Score / Time / Weight / Distance">
+    </div>
+    <div class="field">
+      <label for="sUnit">Unit (optional)</label>
+      <input id="sUnit" type="text" maxlength="12" placeholder="pts / s / kg / m">
+    </div>
+    <div class="field">
+      <label for="sDir">Winner is&hellip;</label>
+      <select id="sDir" class="search" style="flex:none;width:100%">
+        <option value="high">Highest value (points, weight, distance)</option>
+        <option value="low">Lowest value (time, penalties)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="setCancel">Cancel</button>
+      <button class="btn primary" id="setSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script>
+  var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
+  var state = { title:"Leaderboard", subtitle:"Season Standings", metric:{label:"Score",unit:"",lowerIsBetter:false}, players: [] };
+  var editingId = null;
+  var tbody = document.getElementById("tbody");
+  var $ = function(id){ return document.getElementById(id); };
+
+  function colorFor(name){ var h=0; for (var i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return PALETTE[h % PALETTE.length]; }
+  var initials = LBStore.initials;
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+  function setStatus(kind,msg){ var s=$("status"); s.className="status "+(kind||""); s.textContent=msg; }
+
+  function persist(){
+    setStatus("", "Saving…");
+    LBStore.save(state).then(function(res){
+      if (res && res.ok === false) setStatus("err","Save failed: "+(res.error||"unknown"));
+      else if (res && res.local) setStatus("ok","Saved locally (no backend configured)");
+      else setStatus("ok","Saved to Drive · "+new Date().toLocaleTimeString());
+    }).catch(function(e){ setStatus("err","Save failed: "+e); });
+  }
+
+  var rankedIds = [];
+  function render(){
+    $("metricHead").textContent = state.metric.label + (state.metric.unit ? " ("+state.metric.unit+")" : "");
+    var q = $("search").value.trim().toLowerCase();
+    var ranked = LBStore.rankSort(state.players, state.metric);
+    rankedIds = ranked.map(function(p){ return p.id; });
+    var rankMap = new Map(); ranked.forEach(function(p,i){ rankMap.set(p.id, i+1); });
+
+    // mark tie groups (same value) so ties are visually obvious
+    var tieVals = {}; ranked.forEach(function(p){ tieVals[p.value]=(tieVals[p.value]||0)+1; });
+
+    var rows = ranked.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
+    $("empty").hidden = state.players.length > 0;
+    tbody.innerHTML = rows.map(function(p){
+      var r = rankMap.get(p.id);
+      var ch = p.change || 0;
+      var tcls = ch>0?"up":ch<0?"down":"flat";
+      var arrow = ch>0?"&#9650;":ch<0?"&#9660;":"&#8211;";
+      var chTxt = ch===0 ? "" : Math.abs(ch).toLocaleString();
+      var tied = tieVals[p.value] > 1;
+      return '<tr draggable="true" data-id="'+p.id+'" class="'+(tied?"tied":"")+'">'
+        + '<td class="drag-cell" title="Drag to reorder ties">&#8942;&#8942;</td>'
+        + '<td class="num rank '+(r<=3?"top":"")+'">'+r+'</td>'
+        + '<td><div class="player"><div class="avatar" style="background:'+colorFor(p.name)+'">'+initials(p.name)+'</div>'
+        + '<span class="pname">'+esc(p.name)+'</span></div></td>'
+        + '<td class="num score-cell"'+(p.formula?' title="'+esc(p.formula+" = "+p.value)+'"':'')+'>'+esc(LBStore.fmt(p.value, state.metric))+(p.formula?' <span class="fx">ƒ</span>':'')+'</td>'
+        + '<td class="num hide-sm"><span class="trend '+tcls+'">'+arrow+' '+chTxt+'</span></td>'
+        + '<td class="num"><div class="row-actions">'
+        + '<button class="icon-btn" data-edit="'+p.id+'">Edit</button>'
+        + '<button class="icon-btn del" data-del="'+p.id+'">Remove</button>'
+        + '</div></td></tr>';
+    }).join("");
+  }
+
+  /* ---- Drag to reorder (tiebreak) ---- */
+  var dragId = null;
+  tbody.addEventListener("dragstart", function(e){
+    var tr = e.target.closest("tr"); if (!tr) return;
+    dragId = tr.getAttribute("data-id");
+    tr.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", dragId); } catch(_){}
+  });
+  tbody.addEventListener("dragend", function(){
+    dragId = null;
+    Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function(tr){
+      tr.classList.remove("dragging","drop-before","drop-after");
+    });
+  });
+  tbody.addEventListener("dragover", function(e){
+    e.preventDefault();
+    var tr = e.target.closest("tr"); if (!tr || tr.getAttribute("data-id")===dragId) return;
+    Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function(x){ x.classList.remove("drop-before","drop-after"); });
+    var rect = tr.getBoundingClientRect();
+    var after = e.clientY > rect.top + rect.height/2;
+    tr.classList.add(after ? "drop-after" : "drop-before");
+  });
+  tbody.addEventListener("drop", function(e){
+    e.preventDefault();
+    var tr = e.target.closest("tr");
+    if (!tr || !dragId || tr.getAttribute("data-id")===dragId) return;
+    var targetId = tr.getAttribute("data-id");
+    var rect = tr.getBoundingClientRect();
+    var after = e.clientY > rect.top + rect.height/2;
+
+    var ids = rankedIds.slice();
+    ids.splice(ids.indexOf(dragId), 1);
+    var ti = ids.indexOf(targetId) + (after ? 1 : 0);
+    ids.splice(ti, 0, dragId);
+
+    // write the new sequence into each player's tiebreak order
+    var pos = {}; ids.forEach(function(id,i){ pos[id]=i; });
+    state.players.forEach(function(p){ p.order = pos[p.id]; });
+    render(); persist();
+  });
+
+  /* ---- Add / edit ---- */
+  function openModal(id){
+    editingId = id || null;
+    var p = id ? state.players.filter(function(x){return x.id===id;})[0] : null;
+    $("modalTitle").textContent = p ? "Edit player" : "Add player";
+    $("fScoreLabel").textContent = state.metric.label + (state.metric.unit ? " ("+state.metric.unit+")" : "");
+    $("fName").value = p ? p.name : "";
+    $("fScore").value = p ? (p.formula || p.value) : "";
+    $("fChange").value = p ? (p.change || "") : "";
+    $("modalBg").classList.add("open");
+    $("fName").focus();
+  }
+  function closeModal(){ $("modalBg").classList.remove("open"); editingId = null; }
+
+  $("saveBtn").onclick = function(){
+    var name = $("fName").value.trim();
+    var raw = $("fScore").value.trim();
+    var value = LBStore.evalExpr(raw);
+    var change = LBStore.evalExpr($("fChange").value); if (!isFinite(change)) change = 0;
+    if (!name){ $("fName").focus(); return; }
+    if (!isFinite(value)){ $("fScoreHint").textContent = "That formula isn't valid — use numbers and + − × ÷ ( )."; $("fScore").focus(); return; }
+    // keep the raw expression only if it's an actual formula (has an operator)
+    var formula = /[+\-*/]/.test(raw.replace(/^-/, "")) ? raw : "";
+    if (editingId){
+      var p = state.players.filter(function(x){return x.id===editingId;})[0];
+      p.name = name; p.value = value; p.formula = formula; p.change = change;
+    } else {
+      state.players.push({ id: LBStore.uid(), name:name, value:value, formula:formula, change:change, order: state.players.length });
+    }
+    render(); closeModal(); persist();
+  };
+  $("addBtn").onclick = function(){ openModal(null); };
+  $("cancelBtn").onclick = closeModal;
+  $("modalBg").onclick = function(e){ if (e.target === $("modalBg")) closeModal(); };
+
+  tbody.addEventListener("click", function(e){
+    var ed = e.target.closest("[data-edit]"), dl = e.target.closest("[data-del]");
+    if (ed) openModal(ed.getAttribute("data-edit"));
+    if (dl){
+      var p = state.players.filter(function(x){return x.id===dl.getAttribute("data-del");})[0];
+      if (p && confirm("Remove "+p.name+"?")){
+        state.players = state.players.filter(function(x){ return x.id !== dl.getAttribute("data-del"); });
+        render(); persist();
+      }
+    }
+  });
+
+  /* ---- Board settings (title + metric) ---- */
+  function openSettings(){
+    $("sTitle").value = state.title;
+    $("sSub").value = state.subtitle;
+    $("sMetric").value = state.metric.label;
+    $("sUnit").value = state.metric.unit;
+    $("sDir").value = state.metric.lowerIsBetter ? "low" : "high";
+    $("setBg").classList.add("open");
+    $("sTitle").focus();
+  }
+  $("settingsBtn").onclick = openSettings;
+  $("setCancel").onclick = function(){ $("setBg").classList.remove("open"); };
+  $("setBg").onclick = function(e){ if (e.target === $("setBg")) $("setBg").classList.remove("open"); };
+  $("setSave").onclick = function(){
+    state.title = ($("sTitle").value.trim() || "Leaderboard").slice(0,60);
+    state.subtitle = $("sSub").value.trim().slice(0,60);
+    state.metric = {
+      label: ($("sMetric").value.trim() || "Score").slice(0,24),
+      unit: $("sUnit").value.trim().slice(0,12),
+      lowerIsBetter: $("sDir").value === "low"
+    };
+    $("setBg").classList.remove("open");
+    render(); persist();
+  };
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ closeModal(); $("setBg").classList.remove("open"); }
+    if (e.key === "Enter" && $("modalBg").classList.contains("open")) $("saveBtn").click();
+  });
+
+  $("search").oninput = render;
+
+  LBStore.load().then(function(s){
+    state = s; render();
+    setStatus("ok", LBStore.hasBackend() ? "Connected to Drive" : "Local mode (no backend configured)");
+  });
+</script>
+<script src="bg.js"></script>
+</body>
+</html>

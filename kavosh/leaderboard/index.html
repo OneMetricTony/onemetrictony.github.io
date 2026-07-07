@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="lb.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="../index.html"><img src="kavosh-logo.png" alt="KAVOSH AI & Robotics Academy"></a>
+  <header class="top">
+    <div class="title-block">
+      <h1 id="title">Leaderboard</h1>
+      <div class="sub"><span id="subtitle">KAVOSH Challenge</span> <span class="accent-dot">&#9670;</span> Live</div>
+    </div>
+    <div class="head-tools">
+      <button class="chip-btn" id="topToggle" title="Show top 3 or 4">Top 3</button>
+    </div>
+  </header>
+
+  <section class="podium" id="podium" aria-label="Top performers"></section>
+  <div class="empty" id="empty" hidden>No entries yet.</div>
+
+  <footer class="foot">
+    <span id="status" class="status"></span> &nbsp;&middot;&nbsp;
+    <a href="admin.html">Data entry &#8594;</a>
+  </footer>
+</div>
+
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script>
+  var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
+  var podium = document.getElementById("podium");
+  var topN = parseInt(localStorage.getItem("lb.topN"), 10) || 3;
+  if (topN !== 4) topN = 3;
+
+  function colorFor(name){ var h=0; for (var i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return PALETTE[h % PALETTE.length]; }
+  var initials = LBStore.initials;
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+
+  function render(state){
+    document.getElementById("title").textContent = state.title;
+    document.getElementById("subtitle").textContent = state.subtitle;
+    document.title = state.title;
+
+    var ranked = LBStore.rankSort(state.players, state.metric);
+    document.getElementById("empty").hidden = ranked.length > 0;
+
+    var top = ranked.slice(0, topN);
+    var order, medals;
+    if (topN === 3) { order = [top[1], top[0], top[2]]; medals = ["s","g","b"]; }
+    else { order = [top[1], top[0], top[2], top[3]]; medals = ["s","g","b","n"]; }
+    var rankOf = new Map(); top.forEach(function(p,i){ if(p) rankOf.set(p.id, i+1); });
+
+    podium.className = "podium" + (topN === 4 ? " four" : "");
+    podium.innerHTML = order.map(function(p, i){
+      if (!p) return "<div></div>";
+      var r = rankOf.get(p.id);
+      var first = (r === 1);
+      var ch = p.change || 0;
+      var tcls = ch>0?"up":ch<0?"down":"flat";
+      var arrow = ch>0?"&#9650;":ch<0?"&#9660;":"&#8211;";
+      var chTxt = ch===0 ? "&mdash;" : arrow + " " + Math.abs(ch).toLocaleString();
+      return '<div class="p-card '+(first?"first":"")+'">'
+        + '<div class="p-medal '+medals[i]+'">'+r+'</div>'
+        + '<div class="p-avatar" style="background:'+colorFor(p.name)+'">'+initials(p.name)+'</div>'
+        + '<div class="p-name">'+esc(p.name)+'</div>'
+        + '<div class="p-score">'+esc(LBStore.fmt(p.value, state.metric))+'</div>'
+        + '<div class="p-trend '+tcls+'">'+chTxt+'</div>'
+        + '</div>';
+    }).join("");
+  }
+
+  var last = null;
+  function refresh(){
+    LBStore.load().then(function(state){
+      last = state; render(state);
+      var s = document.getElementById("status");
+      s.className = "status ok";
+      s.textContent = LBStore.hasBackend() ? "Synced " + new Date().toLocaleTimeString() : "Local preview (no backend)";
+    }).catch(function(){
+      var s = document.getElementById("status"); s.className = "status err"; s.textContent = "Offline";
+    });
+  }
+
+  var toggle = document.getElementById("topToggle");
+  function updateToggle(){ toggle.textContent = "Top " + topN; }
+  updateToggle();
+  toggle.onclick = function(){
+    topN = topN === 3 ? 4 : 3;
+    localStorage.setItem("lb.topN", topN);
+    updateToggle();
+    if (last) render(last);
+  };
+
+  refresh();
+  if (LBStore.hasBackend()) setInterval(refresh, 15000);
+</script>
+<script src="bg.js"></script>
+</body>
+</html>
