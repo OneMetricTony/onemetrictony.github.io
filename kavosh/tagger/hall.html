@@ -541,23 +541,34 @@
       }
     }
 
-    // Disable a section's input+button once that attribute is locked.
+    // Disable a section's input+button once that attribute is locked — but offer a
+    // "✏️ change" button so a lock is never a dead end (human corrections).
     function applyAttrLockState(i, attr) {
       const card = cardEl(i);
       if (!card) return;
       const p = people[i];
       const v = p.votes && p.votes[attr];
       if (!(v && v.locked)) return;
-      if (attr === 'name') {
-        const inp = card.querySelector('.inp-name');
-        const btn = card.querySelector('.btn-name');
-        if (inp) { inp.disabled = true; inp.placeholder = '✅ locked'; }
-        if (btn) { btn.disabled = true; btn.textContent = '✅ Name locked'; }
-      } else {
-        const sel = card.querySelector('.sel-team');
-        const btn = card.querySelector('.btn-team');
-        if (sel) sel.disabled = true;
-        if (btn) { btn.disabled = true; btn.textContent = '✅ Team locked'; }
+      const isName = attr === 'name';
+      const field = card.querySelector(isName ? '.inp-name' : '.sel-team');
+      const btn = card.querySelector(isName ? '.btn-name' : '.btn-team');
+      const actions = btn ? btn.parentElement : null;
+      if (field) { field.disabled = true; if (field.dataset) delete field.dataset.override; if (isName) field.placeholder = '✅ locked'; }
+      if (btn) { btn.disabled = true; btn.textContent = isName ? '✅ Name locked' : '✅ Team locked'; }
+      if (actions && !actions.querySelector('.btn-change-' + attr)) {
+        const chg = document.createElement('button');
+        chg.type = 'button';
+        chg.className = 'vbtn btn-change-' + attr;
+        chg.textContent = '✏️ change';
+        chg.addEventListener('click', () => {
+          // Prefill the current locked value so the user can see + edit it.
+          const cur = (p.votes && p.votes[attr] && p.votes[attr].leading)
+            || (p.label && (isName ? p.label.name : p.label.team)) || '';
+          if (field) { field.disabled = false; if (field.dataset) field.dataset.override = '1'; if (cur) field.value = cur; try { field.focus(); } catch (_) {} }
+          if (btn) { btn.disabled = false; btn.textContent = isName ? 'Save new name' : 'Save new team'; }
+          chg.remove();
+        });
+        actions.appendChild(chg);
       }
     }
 
@@ -607,6 +618,11 @@
       const attrs = [];
       if (nameVal) { body.name = nameVal; attrs.push('name'); }
       if (teamVal) { body.team = teamVal; attrs.push('team'); }
+      // Correction: a field re-opened via "✏️ change" sends override so the server
+      // clears the old lock and re-locks at the corrected value.
+      const nameOv = inp && inp.dataset && inp.dataset.override === '1';
+      const teamOv = sel && sel.dataset && sel.dataset.override === '1';
+      if ((nameVal && nameOv) || (teamVal && teamOv)) body.override = true;
 
       const btns = attrs.map((a) => card.querySelector(a === 'name' ? '.btn-name' : '.btn-team')).filter(Boolean);
       btns.forEach((b) => { b.disabled = true; });
