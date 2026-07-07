@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>🏛️ Hall of Faces — tap a face and tell us who it is</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #1a1e27;
+      --panel2: #232838;
+      --text: #eef1f7;
+      --muted: #97a0b5;
+      --accent: #4c8dff;
+      --accent2: #2fbf71;
+      --warn: #ffb020;
+      --err: #ff6b6b;
+      --border: #2c3346;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+    }
+    header {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      padding: 14px 22px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    header nav { display: flex; gap: 14px; font-size: 14px; }
+    header nav a { color: var(--muted); text-decoration: none; }
+    header nav a:hover { color: var(--accent); }
+    header .stats { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+    header .stats b { color: var(--text); }
+    #btn-refresh {
+      padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text); cursor: pointer;
+      font-weight: 600; font-family: inherit; font-size: 14px; min-height: 40px;
+    }
+    #btn-refresh:hover { border-color: var(--accent); }
+    #btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+    #intro {
+      font-size: 13px; color: var(--text); background: rgba(76,141,255,.10);
+      border-bottom: 1px solid var(--border); padding: 8px 22px; line-height: 1.5;
+    }
+    #legend {
+      display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+      font-size: 12px; color: var(--muted);
+      padding: 8px 22px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    #legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+    #legend .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .dot.red { background: var(--err); }
+    .dot.amber { background: var(--warn); }
+    .dot.green { background: var(--accent2); }
+    #status {
+      font-size: 13px; color: var(--muted);
+      padding: 6px 22px; min-height: 20px;
+    }
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 8px 20px 60px; }
+    @media (max-width: 520px) { .wrap { padding: 8px 12px 60px; } }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    /* ~2 across on phones, ~3 on larger phones/tablets, more on desktop */
+    @media (max-width: 520px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; text-align: center;
+      display: flex; flex-direction: column;
+    }
+    .card.open { border-color: var(--accent); }
+    .card.locked { border-color: var(--accent2); }
+    .face {
+      width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px;
+      background: #10131b; border: 1px solid var(--border); display: block;
+      cursor: pointer;
+    }
+    .face-ph {
+      width: 100%; aspect-ratio: 1/1; border-radius: 10px; background: #10131b;
+      border: 1px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 48px; color: var(--muted); cursor: pointer;
+    }
+    .card .status { margin: 10px 0 2px; font-size: 13px; line-height: 1.4; min-height: 18px; }
+    .card .status .lead { color: var(--text); font-weight: 700; }
+    .card .status .team { color: var(--muted); }
+    .card .status .votes { color: var(--muted); font-size: 12px; }
+    .card .status.unknown { color: var(--muted); }
+    .lockbadge {
+      display: inline-flex; align-items: center; gap: 4px;
+      color: var(--accent2); font-weight: 700;
+    }
+    .confbar {
+      height: 8px; border-radius: 5px; background: #10131b;
+      border: 1px solid var(--border); overflow: hidden; margin: 8px 0 2px;
+    }
+    .confbar > span { display: block; height: 100%; border-radius: 5px; transition: width .3s ease; }
+    .confbar > span.red { background: var(--err); }
+    .confbar > span.amber { background: var(--warn); }
+    .confbar > span.green { background: var(--accent2); }
+
+    .tap-hint { font-size: 12px; color: var(--accent); margin-top: 6px; }
+
+    /* inline vote control */
+    .vote {
+      margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px;
+      text-align: left; display: none;
+    }
+    .card.open .vote { display: block; }
+    label.small { display: block; font-size: 12px; color: var(--muted); margin: 6px 0 3px; }
+    select {
+      width: 100%; padding: 11px 10px; border-radius: 8px; font-size: 16px; font-family: inherit;
+      background: #10131b; color: var(--text); border: 1px solid var(--border);
+    }
+    .vote .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    button.vbtn {
+      padding: 11px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text); cursor: pointer;
+      font-weight: 600; font-family: inherit; font-size: 15px; min-height: 44px;
+    }
+    button.vbtn:hover { border-color: var(--accent); }
+    button.vbtn.ok { background: var(--accent2); border-color: var(--accent2); color: #04240f; }
+    button.vbtn.ok:hover { filter: brightness(1.08); }
+    button.vbtn:disabled { opacity: .5; cursor: not-allowed; }
+    .flash {
+      font-size: 12px; font-weight: 700; color: var(--accent2);
+      margin-top: 8px; opacity: 0; transition: opacity .2s ease;
+    }
+    .flash.show { opacity: 1; }
+
+    .spinner {
+      display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted);
+      border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { color: var(--warn); font-size: 14px; margin: 20px 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏛️ Hall of Faces</h1>
+    <nav>
+      <a href="index.html">Tagger</a>
+      <a href="candidates.html">Candidates</a>
+      <a href="scan.html">Scan</a>
+    </nav>
+    <div class="stats">
+      <div id="stat-counts">—</div>
+      <button id="btn-refresh" title="Re-check for new votes">↻ Refresh</button>
+    </div>
+  </header>
+  <div id="intro">Tap a face and tell us who you think it is. The more people vote, the more confident the leading guess — a face locks in once the crowd agrees.</div>
+  <div id="legend">
+    <span class="lg"><span class="dot red"></span> low confidence (&lt;50%)</span>
+    <span class="lg"><span class="dot amber"></span> building (50–66%)</span>
+    <span class="lg"><span class="dot green"></span> strong (≥67%)</span>
+    <span class="lg">✅ locked = crowd agreed</span>
+  </div>
+  <div id="status" role="status" aria-live="polite">Loading…</div>
+
+  <div class="wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // Cross-origin API on the Railway relay (github.io -> railway).
+    const API = 'https://kavosh-relay-production.up.railway.app/tag';
+    const REFRESH_MS = 30000; // auto-refresh cadence
+
+    const els = {
+      status: document.getElementById('status'),
+      grid: document.getElementById('grid'),
+      counts: document.getElementById('stat-counts'),
+      refresh: document.getElementById('btn-refresh'),
+    };
+
+    let roster = [];        // [{team, league, individuals:[]}]
+    let people = [];        // [{personKey, size, rep, exampleThumbs, votes}]
+    let openKey = null;     // personKey whose vote control is expanded
+    let refreshTimer = null;
+    let loading = false;
+
+    function setStatus(msg, spin) {
+      els.status.innerHTML = (spin ? '<span class="spinner"></span>' : '') + msg;
+    }
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    // ---- init ----
+    async function init() {
+      setStatus('Loading roster and faces…', true);
+      try {
+        roster = await fetch(API + '/roster').then((x) => x.json());
+        roster = Array.isArray(roster) ? roster : [];
+      } catch (e) {
+        setStatus('⚠️ Could not load roster: ' + escapeHtml(e.message), false);
+        return;
+      }
+      await loadHall(true);
+      // auto-refresh to pick up other people's votes
+      refreshTimer = setInterval(() => { loadHall(false); }, REFRESH_MS);
+    }
+
+    // ---- load / reload the hall ----
+    async function loadHall(showSpinner) {
+      if (loading) return;
+      loading = true;
+      els.refresh.disabled = true;
+      if (showSpinner) setStatus('Loading faces…', true);
+      let data;
+      try {
+        data = await fetch(API + '/hall').then((x) => x.json());
+      } catch (e) {
+        setStatus('⚠️ Could not load faces: ' + escapeHtml(e.message), false);
+        loading = false; els.refresh.disabled = false;
+        return;
+      }
+      people = (data && Array.isArray(data.people)) ? data.people : [];
+      const count = (data && typeof data.count === 'number') ? data.count : people.length;
+      const rosterMax = (data && typeof data.rosterMax === 'number') ? data.rosterMax : 0;
+      els.counts.innerHTML = '<b>' + count + '</b> faces found' +
+        (rosterMax ? ' · roster has ~<b>' + rosterMax + '</b>' : '');
+      // Keep backend order (unidentified first). Render.
+      renderGrid();
+      setStatus(count ? 'Tap any face to cast a vote.' : '', false);
+      loading = false; els.refresh.disabled = false;
+    }
+
+    // ---- confidence styling ----
+    // red <50% / amber 50-66% / green >=~67%
+    function confClass(conf) {
+      const c = Number(conf) || 0;
+      if (c >= 0.67) return 'green';
+      if (c >= 0.50) return 'amber';
+      return 'red';
+    }
+    function pct(conf) { return Math.round((Number(conf) || 0) * 100); }
+
+    // ---- status line for a card (from a person's votes tally) ----
+    function statusHtml(v) {
+      v = v || {};
+      const total = Number(v.total) || 0;
+      if (v.locked && v.leadingName) {
+        return '<div class="status locked"><span class="lockbadge">✅ ' +
+          escapeHtml(v.leadingName) + '</span> <span class="team">(locked)</span></div>';
+      }
+      if (total > 0 && v.leadingName) {
+        // leading count: from top[0] if present, else total
+        let leadCount = total;
+        if (Array.isArray(v.top) && v.top.length && typeof v.top[0].count === 'number') {
+          leadCount = v.top[0].count;
+        }
+        const cls = confClass(v.confidence);
+        const w = Math.max(4, pct(v.confidence));
+        return '<div class="confbar"><span class="' + cls + '" style="width:' + w + '%"></span></div>' +
+          '<div class="status"><span class="lead">' + escapeHtml(v.leadingName) + '</span>' +
+          (v.leadingTeam ? ' <span class="team">· ' + escapeHtml(v.leadingTeam) + '</span>' : '') +
+          '<br><span class="votes">' + leadCount + '/' + total + ' votes (' + pct(v.confidence) + '%)</span></div>';
+      }
+      return '<div class="status unknown">❓ Not identified yet — tap to vote</div>';
+    }
+
+    // ---- dropdown helpers ----
+    function teamOptionsHtml() {
+      let html = '<option value="">— select team —</option>';
+      roster.forEach((t, i) => {
+        html += '<option value="' + i + '">' + escapeHtml(t.team) +
+          (t.league ? ' (' + escapeHtml(t.league) + ')' : '') + '</option>';
+      });
+      return html;
+    }
+    function individualOptionsHtml(teamIdx) {
+      let html = '<option value="">— select individual —</option>';
+      if (teamIdx !== '' && teamIdx != null) {
+        const t = roster[+teamIdx];
+        if (t) (t.individuals || []).forEach((s) => {
+          html += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>';
+        });
+      }
+      html += '<option value="__other__">✎ Other (type a name)…</option>';
+      return html;
+    }
+    function handleOther(selectEl) {
+      if (selectEl.value !== '__other__') return;
+      const n = (window.prompt("Type this person's name") || '').trim();
+      if (n) {
+        const opt = document.createElement('option');
+        opt.value = n; opt.textContent = n;
+        selectEl.insertBefore(opt, selectEl.querySelector('option[value="__other__"]'));
+        selectEl.value = n;
+      } else {
+        selectEl.value = '';
+      }
+    }
+
+    // ---- render the whole grid ----
+    function renderGrid() {
+      if (!people.length) {
+        els.grid.innerHTML = '<div class="empty">No faces found yet.</div>';
+        return;
+      }
+      let html = '';
+      people.forEach((p, i) => { html += cardHtml(p, i); });
+      els.grid.innerHTML = html;
+      people.forEach((p, i) => wireCard(i));
+    }
+
+    function cardHtml(p, i) {
+      const key = p.personKey;
+      const rep = p.rep || {};
+      const isOpen = key === openKey;
+      const locked = !!(p.votes && p.votes.locked);
+      const img = rep.thumb
+        ? '<img class="face" src="' + rep.thumb + '" alt="face" loading="lazy" />'
+        : '<div class="face-ph">🙂</div>';
+      const cls = 'card' + (isOpen ? ' open' : '') + (locked ? ' locked' : '');
+      return '<div class="' + cls + '" data-i="' + i + '" data-key="' + escapeHtml(key) + '">' +
+        img +
+        '<div class="statuswrap">' + statusHtml(p.votes) + '</div>' +
+        (locked ? '' : '<div class="tap-hint">' + (isOpen ? 'Pick below ↓' : 'tap to vote') + '</div>') +
+        '<div class="vote">' +
+          '<label class="small">Team</label>' +
+          '<select class="sel-team">' + teamOptionsHtml() + '</select>' +
+          '<label class="small">Individual</label>' +
+          '<select class="sel-kid"><option value="">— pick team first —</option>' +
+          '<option value="__other__">✎ Other (type a name)…</option></select>' +
+          '<div class="actions">' +
+            '<button class="vbtn ok btn-vote">Submit vote</button>' +
+            '<button class="vbtn btn-cancel">Cancel</button>' +
+          '</div>' +
+          '<div class="flash"></div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    function cardEl(i) { return els.grid.querySelector('.card[data-i="' + i + '"]'); }
+
+    function wireCard(i) {
+      const card = cardEl(i);
+      if (!card) return;
+      const p = people[i];
+      const locked = !!(p.votes && p.votes.locked);
+      const face = card.querySelector('.face, .face-ph');
+      // Tapping the image toggles the vote control (unless locked).
+      if (face && !locked) face.addEventListener('click', () => toggleOpen(i));
+      const selTeam = card.querySelector('.sel-team');
+      const selKid = card.querySelector('.sel-kid');
+      if (selTeam) selTeam.addEventListener('change', () => {
+        selKid.innerHTML = individualOptionsHtml(selTeam.value);
+      });
+      if (selKid) selKid.addEventListener('change', () => handleOther(selKid));
+      const btnVote = card.querySelector('.btn-vote');
+      const btnCancel = card.querySelector('.btn-cancel');
+      if (btnVote) btnVote.addEventListener('click', () => submitVote(i));
+      if (btnCancel) btnCancel.addEventListener('click', () => { openKey = null; setOpenState(i, false); });
+    }
+
+    // Expand one card's vote control at a time.
+    function toggleOpen(i) {
+      const p = people[i];
+      const wasOpen = openKey === p.personKey;
+      // collapse previously open card
+      if (openKey && openKey !== p.personKey) {
+        const prev = people.findIndex((x) => x.personKey === openKey);
+        if (prev >= 0) setOpenState(prev, false);
+      }
+      openKey = wasOpen ? null : p.personKey;
+      setOpenState(i, !wasOpen);
+    }
+    function setOpenState(i, open) {
+      const card = cardEl(i);
+      if (!card) return;
+      card.classList.toggle('open', open);
+      const hint = card.querySelector('.tap-hint');
+      if (hint) hint.textContent = open ? 'Pick below ↓' : 'tap to vote';
+    }
+
+    // ---- submit a vote for card i ----
+    async function submitVote(i) {
+      const card = cardEl(i);
+      if (!card) return;
+      const p = people[i];
+      const selTeam = card.querySelector('.sel-team');
+      const selKid = card.querySelector('.sel-kid');
+      const flash = card.querySelector('.flash');
+      const btn = card.querySelector('.btn-vote');
+      const name = selKid ? selKid.value : '';
+      if (!selTeam || selTeam.value === '' || !name || name === '__other__') {
+        if (flash) { flash.textContent = 'Pick a team and individual first.'; flash.style.color = 'var(--warn)'; flash.classList.add('show'); }
+        return;
+      }
+      const team = roster[+selTeam.value] ? roster[+selTeam.value].team : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Voting…'; }
+      let res;
+      try {
+        res = await fetch(API + '/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personKey: p.personKey, team: team, name: name }),
+        }).then((x) => x.json());
+      } catch (e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit vote'; }
+        if (flash) { flash.textContent = '⚠️ Vote failed: ' + e.message; flash.style.color = 'var(--err)'; flash.classList.add('show'); }
+        return;
+      }
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit vote'; }
+
+      // Merge the returned tally into this person's votes and re-render just this card.
+      const tally = (res && res.tally) ? res.tally : {};
+      p.votes = p.votes || {};
+      if (tally.leadingName !== undefined) p.votes.leadingName = tally.leadingName;
+      if (tally.leadingTeam !== undefined) p.votes.leadingTeam = tally.leadingTeam;
+      if (typeof tally.total === 'number') p.votes.total = tally.total;
+      if (typeof tally.confidence === 'number') p.votes.confidence = tally.confidence;
+      if (tally.locked !== undefined) p.votes.locked = tally.locked;
+      // tally.votes is the leading name's count → surface it via top[0]
+      if (typeof tally.votes === 'number') {
+        p.votes.top = [{ name: tally.leadingName, team: tally.leadingTeam, count: tally.votes }];
+      }
+      updateCard(i);
+    }
+
+    // Update ONE card in place (status line + lock state) without reloading the grid.
+    function updateCard(i) {
+      const card = cardEl(i);
+      if (!card) return;
+      const p = people[i];
+      const sw = card.querySelector('.statuswrap');
+      if (sw) sw.innerHTML = statusHtml(p.votes);
+      const locked = !!(p.votes && p.votes.locked);
+      card.classList.toggle('locked', locked);
+      const flash = card.querySelector('.flash');
+      if (flash) { flash.textContent = '✓ vote counted'; flash.style.color = 'var(--accent2)'; flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1600); }
+      if (locked) {
+        // collapse & disable further voting on a locked face
+        openKey = (openKey === p.personKey) ? null : openKey;
+        setOpenState(i, false);
+        const hint = card.querySelector('.tap-hint');
+        if (hint) hint.remove();
+        const face = card.querySelector('.face, .face-ph');
+        if (face) face.style.cursor = 'default';
+      }
+    }
+
+    // ---- events ----
+    els.refresh.addEventListener('click', () => loadHall(true));
+
+    init();
+  })();
+  </script>
+</body>
+</html>
