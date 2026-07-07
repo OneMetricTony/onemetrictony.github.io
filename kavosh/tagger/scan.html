@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>FIRA Face Scan — build the face pool</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #1a1e27;
+      --panel2: #232838;
+      --text: #eef1f7;
+      --muted: #97a0b5;
+      --accent: #4c8dff;
+      --accent2: #2fbf71;
+      --warn: #ffb020;
+      --err: #ff6b6b;
+      --border: #2c3346;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+    }
+    header {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      padding: 14px 22px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    header nav { margin-left: auto; display: flex; gap: 14px; font-size: 14px; }
+    header nav a { color: var(--muted); text-decoration: none; }
+    header nav a:hover { color: var(--accent); }
+    #intro {
+      font-size: 13px; color: var(--text); background: rgba(76,141,255,.10);
+      border-bottom: 1px solid var(--border); padding: 8px 22px; line-height: 1.4;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px 22px 60px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px; margin-bottom: 20px;
+    }
+    .card h2 { margin: 0 0 12px; font-size: 16px; }
+    #status { font-size: 14px; color: var(--muted); margin: 4px 0 0; min-height: 20px; }
+    .big-num { font-size: 34px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-row { display: flex; gap: 34px; flex-wrap: wrap; margin: 6px 0 2px; }
+    .stat-row .lbl { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    button {
+      padding: 12px 18px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text); cursor: pointer;
+      font-weight: 600; font-family: inherit; font-size: 16px;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { filter: brightness(1.08); }
+    button.big { font-size: 19px; padding: 16px 28px; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .progress-outer {
+      width: 100%; height: 16px; background: #10131b;
+      border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 14px 0 8px;
+    }
+    .progress-inner {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .2s ease;
+    }
+    .thumbstrip {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; max-height: 210px; overflow-y: auto;
+    }
+    .thumbstrip img {
+      width: 54px; height: 54px; object-fit: cover; border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .warn { color: var(--warn); }
+    .done-banner {
+      background: rgba(47,191,113,.12); border: 1px solid rgba(47,191,113,.4);
+      color: var(--text); border-radius: 10px; padding: 16px; margin-top: 16px;
+      font-size: 15px; display: none;
+    }
+    .done-banner.show { display: block; }
+    .done-banner a {
+      display: inline-block; margin-top: 10px; color: #fff; background: var(--accent2);
+      border-color: var(--accent2); padding: 10px 16px; border-radius: 8px;
+      text-decoration: none; font-weight: 700;
+    }
+    .errlog { font-size: 12px; color: var(--err); margin-top: 10px; max-height: 120px; overflow-y: auto; }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted);
+      border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    canvas.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔎 FIRA Face Scan</h1>
+    <nav>
+      <a href="index.html">Tagger</a>
+      <a href="candidates.html">Candidates →</a>
+    </nav>
+  </header>
+  <div id="intro">Step 1 of 2 — find every face across all camp photos and build the shared "face pool". Then go to <b>Candidates</b> to name whole groups of faces at once.</div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Face pool</h2>
+      <div class="stat-row">
+        <div><div class="big-num" id="n-photos">–</div><div class="lbl">photos to scan</div></div>
+        <div><div class="big-num" id="n-pooled">–</div><div class="lbl">faces already in pool</div></div>
+        <div><div class="big-num" id="n-pooledphotos">–</div><div class="lbl">photos already scanned</div></div>
+      </div>
+      <div id="status" role="status" aria-live="polite">Loading models…</div>
+      <div style="margin-top:16px">
+        <button class="primary big" id="btn-scan" disabled>▶ Scan all photos</button>
+      </div>
+      <div class="progress-outer" id="prog-wrap" style="display:none">
+        <div class="progress-inner" id="prog-bar"></div>
+      </div>
+      <div class="note warn">Leave this tab open until it finishes. Scanning runs in your browser and can take a while for many photos.</div>
+      <div class="thumbstrip" id="thumbs" aria-hidden="true"></div>
+      <div class="errlog" id="errlog"></div>
+      <div class="done-banner" id="done">
+        <span id="done-msg"></span><br>
+        <a href="candidates.html">Who is this? → Review candidates</a>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="crop" class="hidden"></canvas>
+
+  <script src="vendor/face-api.min.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // Cross-origin API on the Railway relay (github.io -> railway).
+    const API = 'https://kavosh-relay-production.up.railway.app/tag';
+
+    const els = {
+      status: document.getElementById('status'),
+      nPhotos: document.getElementById('n-photos'),
+      nPooled: document.getElementById('n-pooled'),
+      nPooledPhotos: document.getElementById('n-pooledphotos'),
+      btnScan: document.getElementById('btn-scan'),
+      progWrap: document.getElementById('prog-wrap'),
+      progBar: document.getElementById('prog-bar'),
+      thumbs: document.getElementById('thumbs'),
+      errlog: document.getElementById('errlog'),
+      done: document.getElementById('done'),
+      doneMsg: document.getElementById('done-msg'),
+      crop: document.getElementById('crop'),
+    };
+
+    let photos = [];
+    let modelsReady = false;
+    let scanning = false;
+
+    function setStatus(msg, spin) {
+      els.status.innerHTML = (spin ? '<span class="spinner"></span>' : '') + msg;
+    }
+    function logErr(msg) {
+      const d = document.createElement('div');
+      d.textContent = msg;
+      els.errlog.appendChild(d);
+    }
+
+    // ---- init ----
+    async function init() {
+      try {
+        setStatus('Loading face-recognition models…', true);
+        await faceapi.nets.tinyFaceDetector.loadFromUri('models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('models');
+        modelsReady = true;
+      } catch (e) {
+        setStatus('⚠️ Could not load face models: ' + e.message, false);
+        console.error(e);
+        return;
+      }
+
+      // Photos to scan (images only). /photos may return an array or {items,counts}.
+      try {
+        const p = await fetch(API + '/photos').then((x) => x.json());
+        const list = (p && Array.isArray(p.items)) ? p.items : (Array.isArray(p) ? p : []);
+        photos = list.filter((x) => x && (x.type === 'image' || x.type === undefined) && x.type !== 'video');
+      } catch (e) {
+        setStatus('⚠️ Failed to load photo list: ' + e.message, false);
+        return;
+      }
+      els.nPhotos.textContent = photos.length;
+
+      // Existing pool status (optional).
+      try {
+        const s = await fetch(API + '/facepool/status').then((x) => x.json());
+        els.nPooled.textContent = (s && typeof s.total === 'number') ? s.total : 0;
+        els.nPooledPhotos.textContent = (s && typeof s.photos === 'number') ? s.photos : 0;
+      } catch (_) {
+        els.nPooled.textContent = 0;
+        els.nPooledPhotos.textContent = 0;
+      }
+
+      if (!photos.length) {
+        setStatus('No images found in the Drive folder yet.', false);
+        return;
+      }
+      setStatus('Ready. ' + photos.length + ' image(s) to scan.', false);
+      els.btnScan.disabled = false;
+    }
+
+    // Load one cross-origin image so face-api can read its pixels.
+    function loadImage(id) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // MUST be set before src for canvas/pixel read
+        const to = setTimeout(() => { cleanup(); reject(new Error('image load timeout')); }, 20000);
+        function cleanup() { clearTimeout(to); img.onload = null; img.onerror = null; }
+        img.onload = () => { cleanup(); resolve(img); };
+        img.onerror = () => { cleanup(); reject(new Error('image failed to load')); };
+        img.src = API + '/photo/' + encodeURIComponent(id);
+      });
+    }
+
+    // Crop a face box (natural px) to a ~120px JPEG data-URL, ~25% padding, clamped.
+    function makeThumb(img, box) {
+      const nw = img.naturalWidth || img.width;
+      const nh = img.naturalHeight || img.height;
+      const pad = Math.max(box.width, box.height) * 0.25;
+      const sx = Math.max(0, box.x - pad);
+      const sy = Math.max(0, box.y - pad);
+      const sw = Math.min(nw - sx, box.width + pad * 2);
+      const sh = Math.min(nh - sy, box.height + pad * 2);
+      if (sw <= 1 || sh <= 1) return null;
+      const maxSide = 120;
+      const scale = Math.min(1, maxSide / Math.max(sw, sh));
+      const cw = Math.max(1, Math.round(sw * scale));
+      const ch = Math.max(1, Math.round(sh * scale));
+      els.crop.width = cw; els.crop.height = ch;
+      els.crop.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+      return els.crop.toDataURL('image/jpeg', 0.7);
+    }
+
+    async function postFaces(faces) {
+      if (!faces.length) return;
+      await fetch(API + '/facepool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ faces: faces }),
+      });
+    }
+
+    async function scanAll() {
+      if (scanning || !modelsReady) return;
+      scanning = true;
+      els.btnScan.disabled = true;
+      els.done.classList.remove('show');
+      els.errlog.innerHTML = '';
+      els.thumbs.innerHTML = '';
+      els.progWrap.style.display = '';
+      const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
+
+      let totalFaces = 0;
+      let okPhotos = 0;
+      let pending = []; // batch buffer
+
+      for (let n = 0; n < photos.length; n++) {
+        const ph = photos[n];
+        const pct = Math.round((n / photos.length) * 100);
+        els.progBar.style.width = pct + '%';
+        setStatus('Scanning photo ' + (n + 1) + ' / ' + photos.length +
+          ' — ' + totalFaces + ' faces found', true);
+
+        let img;
+        try {
+          img = await loadImage(ph.id);
+        } catch (e) {
+          logErr('Skipped "' + (ph.name || ph.id) + '": ' + e.message);
+          continue;
+        }
+
+        let dets;
+        try {
+          dets = await faceapi.detectAllFaces(img, opts).withFaceLandmarks().withFaceDescriptors();
+        } catch (e) {
+          logErr('Detect failed on "' + (ph.name || ph.id) + '": ' + e.message);
+          continue;
+        }
+
+        okPhotos++;
+        for (let i = 0; i < dets.length; i++) {
+          const d = dets[i];
+          const b = d.detection.box;
+          const box = {
+            x: Math.round(b.x), y: Math.round(b.y),
+            w: Math.round(b.width), h: Math.round(b.height),
+          };
+          let thumb = null;
+          try { thumb = makeThumb(img, b); } catch (_) { thumb = null; }
+          pending.push({
+            faceId: ph.id + '_' + i,
+            photoId: ph.id,
+            photoName: ph.name || '',
+            box: box,
+            descriptor: Array.from(d.descriptor),
+            thumb: thumb || '',
+          });
+          totalFaces++;
+          if (thumb) addThumbPreview(thumb);
+        }
+
+        // Flush per photo (and guard against very large single-photo batches).
+        if (pending.length) {
+          try {
+            await postFaces(pending);
+          } catch (e) {
+            logErr('Upload failed after "' + (ph.name || ph.id) + '": ' + e.message + ' — will retry next batch.');
+            // keep pending so faces are retried with the next flush
+            continue;
+          }
+          pending = [];
+        }
+      }
+
+      // Final flush of any leftover (e.g. last upload failed above).
+      if (pending.length) {
+        try { await postFaces(pending); } catch (e) { logErr('Final upload failed: ' + e.message); }
+      }
+
+      els.progBar.style.width = '100%';
+      scanning = false;
+      els.btnScan.disabled = false;
+      setStatus('✅ Scanned ' + okPhotos + ' photo(s), found ' + totalFaces + ' face(s).', false);
+      els.doneMsg.textContent = '✅ Scanned ' + okPhotos + ' of ' + photos.length +
+        ' photos, found ' + totalFaces + ' faces.';
+      els.done.classList.add('show');
+
+      // Refresh pool status.
+      try {
+        const s = await fetch(API + '/facepool/status').then((x) => x.json());
+        if (s && typeof s.total === 'number') els.nPooled.textContent = s.total;
+        if (s && typeof s.photos === 'number') els.nPooledPhotos.textContent = s.photos;
+      } catch (_) {}
+    }
+
+    let thumbCount = 0;
+    function addThumbPreview(dataUrl) {
+      thumbCount++;
+      if (thumbCount > 120) return; // cap the live preview strip
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.alt = 'face';
+      els.thumbs.appendChild(img);
+    }
+
+    els.btnScan.addEventListener('click', scanAll);
+    window.addEventListener('beforeunload', (e) => {
+      if (scanning) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    init();
+  })();
+  </script>
+</body>
+</html>
