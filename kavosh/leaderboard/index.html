@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="lb.css?v=4">
+  <link rel="stylesheet" href="lb.css?v=5">
 </head>
 <body>
 <div class="wrap">
@@ -37,8 +37,24 @@
   <span class="count" id="coneCount">0</span>
 </div>
 
-<script src="config.js?v=4"></script>
-<script src="store.js?v=4"></script>
+<!-- Quicktime event overlay (driven live from the data board via /lb/event) -->
+<div class="qt-overlay" id="qtOverlay" aria-live="assertive">
+  <div class="qt-card" id="qtCard">
+    <div class="qt-kicker" id="qtKicker">Quicktime Challenge</div>
+    <div class="qt-title" id="qtTitle"></div>
+    <div class="qt-task" id="qtTask"></div>
+    <div class="qt-timer" id="qtTimer">0</div>
+    <div class="qt-timesup qt-hide" id="qtTimesup">&#9201; Time&rsquo;s up!</div>
+    <div class="qt-hide" id="qtResult">
+      <div class="qt-trophy">&#127942;</div>
+      <div class="qt-winner" id="qtWinner"></div>
+      <div class="qt-award" id="qtAward"></div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js?v=5"></script>
+<script src="store.js?v=5"></script>
 <script>
   var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
   var podium = document.getElementById("podium");
@@ -168,6 +184,89 @@
     cone.addEventListener("touchstart", down, {passive:true});
   })();
 </script>
-<script src="bg.js?v=4"></script>
+<script>
+  /* ---- Quicktime event overlay ----------------------------------------
+     Fast-polls /lb/event (memory-served, ~1.5s) for the shared event object,
+     but runs the countdown LOCALLY off event.startedAt so the timer is smooth
+     regardless of network. status: live -> counting, over -> "time's up",
+     result -> winner flash (auto-hides after 6s as a fallback). */
+  (function () {
+    var backend = window.LB_BACKEND || "";
+    if (!backend) return;
+    var EVENT_URL = backend.replace(/\/lb\/?$/, "/lb/event");
+    var overlay = document.getElementById("qtOverlay");
+    var elKicker = document.getElementById("qtKicker");
+    var elTitle  = document.getElementById("qtTitle");
+    var elTask   = document.getElementById("qtTask");
+    var elTimer  = document.getElementById("qtTimer");
+    var elUp     = document.getElementById("qtTimesup");
+    var elResult = document.getElementById("qtResult");
+    var elWinner = document.getElementById("qtWinner");
+    var elAward  = document.getElementById("qtAward");
+    var card     = document.getElementById("qtCard");
+
+    var cur = null;          // current event object (or null)
+    var resultHideAt = 0;    // local fallback auto-hide for the winner flash
+
+    function show(v) { overlay.classList.toggle("show", !!v); }
+    function fmtClock(sec) {
+      sec = Math.max(0, Math.ceil(sec));
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return m > 0 ? (m + ":" + String(s).padStart(2, "0")) : String(s);
+    }
+    function setMode(mode) { // "count" | "up" | "result"
+      elTask.classList.toggle("qt-hide", mode === "result");
+      elTimer.classList.toggle("qt-hide", mode !== "count");
+      elUp.classList.toggle("qt-hide", mode !== "up");
+      elResult.classList.toggle("qt-hide", mode !== "result");
+      card.classList.toggle("result", mode === "result");
+      elKicker.textContent = mode === "result" ? "Challenge Winner" : "Quicktime Challenge";
+    }
+
+    function tick() {
+      if (!cur) { show(false); return; }
+      elTitle.textContent = cur.title || "Challenge";
+      if (cur.status === "result") {
+        show(true); setMode("result");
+        elWinner.textContent = cur.winnerName || "";
+        var pts = Number(cur.points) || 0;
+        elAward.textContent = (pts >= 0 ? "+" : "") + pts.toLocaleString() + " pts";
+        if (resultHideAt && Date.now() > resultHideAt) show(false);
+        return;
+      }
+      show(true);
+      elTask.textContent = cur.task || "";
+      var remain = ((cur.startedAt || 0) + (cur.seconds || 0) * 1000 - Date.now()) / 1000;
+      if (cur.status === "over" || remain <= 0) {
+        setMode("up");
+      } else {
+        setMode("count");
+        elTimer.textContent = fmtClock(remain);
+        elTimer.classList.toggle("warn", remain <= 5);
+      }
+    }
+    setInterval(tick, 200);
+
+    function apply(ev) {
+      var prevId = cur && cur.id;
+      cur = ev;
+      if (ev && ev.status === "result") {
+        if (!resultHideAt || ev.id !== prevId) resultHideAt = Date.now() + 6000;
+      } else {
+        resultHideAt = 0;
+      }
+      tick();
+    }
+    function poll() {
+      fetch(EVENT_URL, { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { apply(d && d.event ? d.event : null); })
+        .catch(function () {});
+    }
+    poll();
+    setInterval(poll, 1500);
+  })();
+</script>
+<script src="bg.js?v=5"></script>
 </body>
 </html>
