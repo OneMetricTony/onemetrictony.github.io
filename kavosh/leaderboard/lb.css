@@ -213,6 +213,10 @@ footer.foot a:hover { text-decoration: underline; }
   background: var(--c-bg-2); border: 1px solid var(--c-line);
   box-shadow: var(--glow), var(--glow-accent); width: 100%; max-width: 400px; padding: 26px;
   clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+  /* When there are many entries/notes, keep the dialog on-screen and scroll it. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
 }
 .modal h2 { margin: 0 0 20px; font-family: var(--font-head); font-size: 20px; text-transform: uppercase; letter-spacing: .06em; }
 .field { margin-bottom: 16px; }
@@ -245,7 +249,11 @@ footer.foot a:hover { text-decoration: underline; }
   font-size: 15px; padding: 10px 12px; font-family: var(--font-body);
 }
 .field input:focus, .field select:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.modal-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  position: sticky; bottom: 0; margin: 12px -26px -26px; padding: 14px 26px;
+  background: var(--c-bg-2); border-top: 1px solid var(--c-line);
+}
 
 /* Ice-cream / prize nag tally panel */
 .tally-panel {
