@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="lb.css?v=5">
+  <link rel="stylesheet" href="lb.css?v=6">
 </head>
 <body>
 <div class="wrap">
@@ -201,8 +201,8 @@
   </div>
 </div>
 
-<script src="config.js?v=5"></script>
-<script src="store.js?v=5"></script>
+<script src="config.js?v=6"></script>
+<script src="store.js?v=6"></script>
 <script>
   var PALETTE = ["#c8901d","#3f8fb2","#7a5cc4","#2f9e6f","#d9534f","#b9793f","#c44c8a","#4a6fd4"];
   var state = { title:"Leaderboard", subtitle:"KAVOSH Challenge", metric:{label:"Score",unit:"",lowerIsBetter:false}, players: [] };
@@ -217,10 +217,11 @@
 
   function persist(){
     setStatus("", "Saving…");
-    LBStore.save(state).then(function(res){
-      if (res && res.ok === false) setStatus("err","Save failed: "+(res.error||"unknown"));
-      else if (res && res.local) setStatus("ok","Saved locally (no backend configured)");
-      else setStatus("ok","Saved to Drive · "+new Date().toLocaleTimeString());
+    // commit() merges our change into the live copy on the server and hands back
+    // the merged result, so a second editor's changes are folded in, not lost.
+    LBStore.commit(state).then(function(merged){
+      if (merged){ state = merged; render(); renderTally(); }
+      setStatus("ok", LBStore.hasBackend() ? "Saved · "+new Date().toLocaleTimeString() : "Saved locally");
     }).catch(function(e){ setStatus("err","Save failed: "+e); });
   }
 
@@ -511,23 +512,24 @@
     cone.addEventListener("touchstart", down, {passive:true});
   })();
 
-  // Live tally sync: instant across same-browser tabs, and a light poll for
-  // other devices — only the count updates, never the table you're editing.
+  // Live sync from other points (another tab / device editing the same board).
+  // Skip while this user is mid-action so we never yank the table out from under
+  // them; adopt the shared copy the moment they're idle.
+  function isBusy(){
+    return $("modalBg").classList.contains("open")
+      || $("setBg").classList.contains("open")
+      || dragId != null
+      || !!document.querySelector(".qt-cpanel.live");
+  }
+  function syncNow(){
+    if (isBusy()) return;
+    LBStore.pull().then(function(remote){ if (isBusy()) return; state = remote; render(); renderTally(); });
+  }
+  if (LBStore.hasBackend()) setInterval(syncNow, 4000);
   window.addEventListener("storage", function(e){
-    if (e.key && e.key.indexOf("kavosh.leaderboard") === 0 && e.newValue){
-      try { var s = JSON.parse(e.newValue); state.annoyCount = s.annoyCount || 0; renderTally(); } catch(_){}
-    }
+    if (e.key && e.key.indexOf("kavosh.leaderboard") === 0) syncNow();
   });
-  if (LBStore.hasBackend()) setInterval(function(){
-    fetch(window.LB_BACKEND, { cache: "no-store" })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d && d.annoyCount != null){
-          state.annoyCount = Math.max(0, Math.round(Number(d.annoyCount) || 0));
-          renderTally();
-        }
-      }).catch(function(){});
-  }, 5000);
+  window.addEventListener("focus", syncNow);
 
   LBStore.load().then(function(s){
     state = s; render(); renderTally();
@@ -642,6 +644,6 @@
     }, 1200);
   })();
 </script>
-<script src="bg.js?v=5"></script>
+<script src="bg.js?v=6"></script>
 </body>
 </html>

@@ -172,9 +172,18 @@
 
   function writeLocal(state) { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  // _baseline = the last server state this client is known to agree with. Every
+  // commit sends {base, state}; the server 3-way-merges against the live copy so
+  // two editors don't clobber each other. _queue serializes this client's writes
+  // (the buffer) so rapid saves can't race one another.
+  var _baseline = null;
+  var _queue = Promise.resolve();
+
   function load() {
     var backend = global.LB_BACKEND;
-    if (!backend) return Promise.resolve(readLocal());
+    if (!backend) { var l0 = readLocal(); _baseline = clone(l0); return Promise.resolve(l0); }
     return fetch(backend, { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -184,20 +193,54 @@
         // local copy up instead of letting the empty backend wipe it.
         if (remote.players.length === 0) {
           var local = readLocal();
-          if (local.players.length > 0) { save(local); return local; }
+          if (local.players.length > 0) { _baseline = clone(remote); commit(local); return local; }
         }
-        writeLocal(remote);
+        writeLocal(remote); _baseline = clone(remote);
         return remote;
       })
+      .catch(function () { var l = readLocal(); _baseline = clone(l); return l; });
+  }
+
+  // Re-read the shared state (for polling). Refreshes the merge baseline.
+  function pull() {
+    var backend = global.LB_BACKEND;
+    if (!backend) { var l = readLocal(); _baseline = clone(l); return Promise.resolve(l); }
+    return fetch(backend, { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { var remote = normalize(d); writeLocal(remote); _baseline = clone(remote); return remote; })
       .catch(function () { return readLocal(); });
   }
 
+  // Commit local changes. Serialized through _queue; the server merges {base,state}
+  // into the live copy and returns the merged result, which becomes the new baseline.
+  function commit(state) {
+    state = normalize(state);
+    writeLocal(state);
+    var backend = global.LB_BACKEND;
+    if (!backend) { _baseline = clone(state); return Promise.resolve(state); }
+    var base = _baseline ? clone(_baseline)
+      : { title: "", subtitle: "", metric: {}, event: null, annoyCount: 0, players: [] };
+    var payload = JSON.stringify({ _merge: true, base: base, state: state });
+    var run = _queue.then(function () {
+      return fetch(backend, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: payload
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.state) { var m = normalize(res.state); writeLocal(m); _baseline = clone(m); return m; }
+        return state;
+      });
+    });
+    _queue = run.catch(function () {});
+    return run;
+  }
+
+  // Legacy whole-state overwrite (kept for the first-run seed only).
   function save(state) {
     state = normalize(state);
     writeLocal(state);
     var backend = global.LB_BACKEND;
-    if (!backend) return Promise.resolve({ ok: true, local: true });
-    // text/plain avoids a CORS preflight that Apps Script cannot answer
+    if (!backend) { _baseline = clone(state); return Promise.resolve({ ok: true, local: true }); }
     return fetch(backend, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -206,7 +249,7 @@
   }
 
   global.LBStore = {
-    load: load, save: save, uid: uid,
+    load: load, pull: pull, commit: commit, save: save, uid: uid,
     rankSort: rankSort, ranks: ranks, fmt: fmt, num: num, initials: initials, evalExpr: evalExpr, latestNote: latestNote,
     hasBackend: function () { return !!global.LB_BACKEND; }
   };
