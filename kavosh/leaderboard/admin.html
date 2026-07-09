@@ -515,11 +515,13 @@
   // Live sync from other points (another tab / device editing the same board).
   // Skip while this user is mid-action so we never yank the table out from under
   // them; adopt the shared copy the moment they're idle.
+  // Only block a live-pull while the user has genuinely-unsaved local state open
+  // (a dialog or an in-progress drag). Events are already backend-synced, so a
+  // pull can't lose them — and a stale event must never freeze syncing.
   function isBusy(){
     return $("modalBg").classList.contains("open")
       || $("setBg").classList.contains("open")
-      || dragId != null
-      || !!document.querySelector(".qt-cpanel.live");
+      || dragId != null;
   }
   function syncNow(){
     if (isBusy()) return;
@@ -634,14 +636,22 @@
     $("qtNoWinBtn").onclick = clearEvent;
     $("qtfTitle").addEventListener("keydown", function (e) { if (e.key === "Enter") sendLive(); });
 
-    // Resume the panel if an event is already live when this page loads.
-    setTimeout(function () {
+    // Keep the panel reconciled with the SHARED event state — so it resumes a
+    // live event on load, follows changes made from another point, and returns
+    // to compose the moment the event is cleared (never gets stuck).
+    var shownKey = null;
+    function reconcile() {
       var ev = state && state.event;
-      if (ev && (ev.status === "live" || ev.status === "over")) {
-        mode("live"); runCountdown();
-        if (ev.status === "over") goPickWinner();
-      }
-    }, 1200);
+      var key = ev ? (ev.id + ":" + ev.status) : "none";
+      if (key === shownKey) return;
+      shownKey = key;
+      stopLocal();
+      if (!ev || ev.status === "" || ev.status === "result") { mode("compose"); return; }
+      if (ev.status === "live") { mode("live"); runCountdown(); }
+      else if (ev.status === "over") { goPickWinner(); }
+    }
+    setInterval(reconcile, 1000);
+    reconcile();
   })();
 </script>
 <script src="bg.js?v=6"></script>
