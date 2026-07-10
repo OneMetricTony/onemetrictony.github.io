@@ -843,8 +843,28 @@
   applyState(null);
 
   setInterval(poll, 400);
-  addEventListener("focus", function () { poll(); lbRefresh(); });
+  addEventListener("focus", function () { poll(); lbRefresh(); sbPoll(); });
   addEventListener("storage", function (e) { if (!e.key || e.key === KEY) poll(); });
+
+  /* -------- cross-device sync: poll the relay copy written by admin2.
+     GET only — the display never POSTs. A newer remote state (by updatedAt)
+     is written into localStorage, where the existing poll() applies it, so
+     same-browser stays instant and offline keeps working unchanged. -------- */
+  var SB_URL = (window.LB_BACKEND || "").replace(/\/lb\/?$/, "/sb");
+  function sbPoll() {
+    if (!SB_URL) return;
+    fetch(SB_URL, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      var rs = d && d.state;
+      if (!rs || rs.v !== 1) return;
+      var cur = null;
+      try { cur = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+      if ((rs.updatedAt || 0) <= (cur && cur.updatedAt || 0)) return;
+      try { localStorage.setItem(KEY, JSON.stringify(rs)); } catch (e) {}
+      poll();
+    }).catch(function () {});
+  }
+  sbPoll();
+  setInterval(sbPoll, 1600);
 
   /* ---------------- main loop ---------------- */
   function frame() {
