@@ -92,7 +92,7 @@
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
     /* 3-way screen switch */
-    .mode-switch { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .mode-switch { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
     .mode-btn {
       border: 1px solid var(--c-line); background: var(--c-bg-3); color: var(--c-text-dim);
       padding: 14px 8px; font-family: var(--font-head); font-size: 13px; font-weight: 700;
@@ -189,6 +189,7 @@
       <button class="mode-btn" id="modeLB">&#128202; Leaderboard</button>
       <button class="mode-btn" id="modeAwards">&#127942; Spirit Awards</button>
       <button class="mode-btn" id="modeWheel">&#127920; Prize Wheel</button>
+      <button class="mode-btn" id="modeFilm">&#127916; Send-Off Film</button>
     </div>
     <div class="field" style="margin-top:14px;margin-bottom:0">
       <label for="titleInput">Show title (awards screen)</label>
@@ -336,7 +337,7 @@
       if (!s.spins) s.spins = [];
       if (!s.title) s.title = d.title;
       if (!s.thirdTarget) s.thirdTarget = d.thirdTarget;
-      if (s.mode !== "awards" && s.mode !== "wheel") s.mode = "leaderboard";
+      if (s.mode !== "awards" && s.mode !== "wheel" && s.mode !== "film") s.mode = "leaderboard";
       s.entries = normEntries(s.entries);
       if (!s.quest || typeof s.quest !== "object") s.quest = null;
       return s;
@@ -364,14 +365,17 @@
   var modeLB = document.getElementById("modeLB");
   var modeAwards = document.getElementById("modeAwards");
   var modeWheel = document.getElementById("modeWheel");
+  var modeFilm = document.getElementById("modeFilm");
   function renderMode() {
     modeLB.classList.toggle("on", state.mode === "leaderboard");
     modeAwards.classList.toggle("on", state.mode === "awards");
     modeWheel.classList.toggle("on", state.mode === "wheel");
+    modeFilm.classList.toggle("on", state.mode === "film");
   }
   modeLB.onclick = function () { state.mode = "leaderboard"; save(); renderMode(); };
   modeAwards.onclick = function () { state.mode = "awards"; save(); renderMode(); };
   modeWheel.onclick = function () { state.mode = "wheel"; save(); renderMode(); };
+  modeFilm.onclick = function () { state.mode = "film"; save(); renderMode(); };
 
   var titleInput = document.getElementById("titleInput");
   var titleTimer = null;

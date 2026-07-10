@@ -256,6 +256,22 @@
 
     #confetti { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
 
+    /* ---------------- Send-off film ---------------- */
+    .film-stage { max-width: 1240px; margin: 0 auto; }
+    .film-frame {
+      position: relative; background: #000; border: 1px solid var(--c-line); box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+    }
+    .film-frame video { width: 100%; max-height: 74vh; display: block; background: #000; }
+    .film-play {
+      position: absolute; inset: 0; z-index: 2; display: none;
+      align-items: center; justify-content: center; cursor: pointer;
+      background: rgba(8,4,5,.55); border: 0; width: 100%; color: var(--c-text);
+      font-family: var(--font-head); font-weight: 700; font-size: clamp(22px, 4vw, 40px);
+      letter-spacing: .12em; text-transform: uppercase; text-shadow: 0 0 30px rgba(240,57,78,.6);
+    }
+    .film-play.show { display: flex; }
+
     @media (max-width: 900px) {
       .agrid { grid-template-columns: repeat(2, 1fr); }
       .wheel-box { width: min(80vw, 480px); }
@@ -323,6 +339,20 @@
             <div id="entriesList"></div>
             <div class="entries-note">More entries &rarr; better odds on the wheel</div>
           </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- View C: send-off film -->
+    <div class="view" id="viewFilm">
+      <header class="top">
+        <h1>Team Canada Preparation Camp</h1>
+        <div class="sub">The Send-Off Film <span class="accent-dot">&#9670;</span> KAVOSH</div>
+      </header>
+      <div class="film-stage">
+        <div class="film-frame">
+          <video id="filmVideo" src="sendoff.mp4" preload="metadata" playsinline controls></video>
+          <button class="film-play" id="filmPlay">&#9654; Play Film</button>
         </div>
       </div>
     </div>
@@ -416,7 +446,7 @@
       if (!s.revealed) s.revealed = [];
       if (!s.spins) s.spins = [];
       if (!s.title) s.title = d.title;
-      if (s.mode !== "awards" && s.mode !== "wheel") s.mode = "leaderboard";
+      if (s.mode !== "awards" && s.mode !== "wheel" && s.mode !== "film") s.mode = "leaderboard";
       s.entries = normEntries(s.entries);
       if (!s.quest || typeof s.quest !== "object") s.quest = null;
       return s;
@@ -764,6 +794,18 @@
   var viewLB = document.getElementById("viewLB");
   var viewAwards = document.getElementById("viewAwards");
   var viewWheel = document.getElementById("viewWheel");
+  var viewFilm = document.getElementById("viewFilm");
+  var filmVideo = document.getElementById("filmVideo");
+  var filmPlay = document.getElementById("filmPlay");
+
+  // Autoplay with sound may be blocked without a gesture in THIS tab —
+  // fall back to a one-click play overlay on the showboard machine.
+  function filmEnter() {
+    filmPlay.classList.remove("show");
+    var p = filmVideo.play();
+    if (p && p.catch) p.catch(function () { filmPlay.classList.add("show"); });
+  }
+  filmPlay.onclick = function () { filmPlay.classList.remove("show"); filmVideo.play(); };
 
   function applyState(prev) {
     document.getElementById("awTitle").textContent = state.title;
@@ -771,6 +813,10 @@
     viewLB.classList.toggle("on", state.mode === "leaderboard");
     viewAwards.classList.toggle("on", state.mode === "awards");
     viewWheel.classList.toggle("on", state.mode === "wheel");
+    viewFilm.classList.toggle("on", state.mode === "film");
+    var wasFilm = prev ? prev.mode === "film" : false;
+    if (state.mode === "film" && !wasFilm) filmEnter();
+    else if (state.mode !== "film" && wasFilm) { filmVideo.pause(); filmPlay.classList.remove("show"); }
 
     var aj = JSON.stringify(state.awards);
     if (aj !== lastAwardsJson) { buildGrid(); lastAwardsJson = aj; lastRevealJson = null; }
