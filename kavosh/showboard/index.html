@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Showboard</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <style>
+    /* SHOWBOARD — FIRA RoboWorld HUD theme (matches ../leaderboard/lb.css). */
+    :root {
+      --c-bg:        #141011;
+      --c-bg-2:      #1e1718;
+      --c-bg-3:      #2a2122;
+      --c-line:      #3a2c2e;
+      --c-accent:    #f0394e;
+      --c-accent-dk: #c8102e;
+      --c-gold:      #f2a73e;
+      --c-gold-dk:   #c9821f;
+      --c-silver:    #cdd3dc;
+      --c-bronze:    #cd7f45;
+      --c-text:      #fdf3f3;
+      --c-text-dim:  #e6bcbc;
+      --c-text-mute: #c79a9a;
+      --up:   #45d18a;
+      --down: #ff5d6c;
+      --glow: 0 0 0 1px var(--c-line), 0 12px 34px rgba(0,0,0,.55);
+      --glow-accent: 0 0 22px rgba(240,57,78,.35);
+      --chamfer: 14px;
+      --font-head: 'Chakra Petch', 'Segoe UI', sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--c-bg); }
+    body {
+      margin: 0; background: transparent; color: var(--c-text);
+      font-family: var(--font-body); line-height: 1.5;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+      background-image:
+        radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.03), transparent 60%),
+        radial-gradient(120% 90% at 0% 100%, rgba(200,16,46,.10), transparent 55%);
+      background-attachment: fixed;
+    }
+    #bgcanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+    .wrap { max-width: 1480px; margin: 0 auto; padding: 26px 30px 40px; position: relative; z-index: 1; }
+    .brand { display: inline-flex; margin-bottom: 8px; }
+    .brand img { height: 44px; display: block; filter: drop-shadow(0 0 20px rgba(240,57,78,.55)); }
+
+    header.top { text-align: center; margin-bottom: 26px; }
+    header.top h1 {
+      margin: 0; font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(34px, 4.6vw, 62px); letter-spacing: .03em;
+      text-transform: uppercase; text-wrap: balance;
+      text-shadow: 0 0 30px rgba(240,57,78,.3);
+    }
+    header.top .sub {
+      margin-top: 6px; color: var(--c-text-mute); font-family: var(--font-head);
+      font-size: 13px; text-transform: uppercase; letter-spacing: .3em; font-weight: 600;
+    }
+    header.top .accent-dot { color: var(--c-accent); }
+
+    /* Crossfading views stacked on one grid cell */
+    .stage { display: grid; }
+    .view { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .55s var(--ease), visibility .55s; }
+    .view.on { opacity: 1; visibility: visible; }
+
+    /* ---------------- Live leaderboard podium (mirrors ../leaderboard) ---------------- */
+    .podium {
+      display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 20px;
+      align-items: end; max-width: 1020px; margin: 0 auto;
+    }
+    .p-cell { position: relative; }
+    .p-card {
+      background: var(--c-bg-2); border: 1px solid var(--c-line); box-shadow: var(--glow);
+      padding: 30px 16px 26px; text-align: center;
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+    }
+    .p-card.first {
+      padding-top: 40px; padding-bottom: 36px;
+      border-color: var(--c-gold); box-shadow: var(--glow), 0 0 30px rgba(242,167,62,.25);
+    }
+    .p-medal {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      min-width: 32px; height: 32px; padding: 0 9px; border-radius: 999px; display: grid; place-items: center;
+      font-family: var(--font-head); font-size: 15px; font-weight: 700; color: #1a1010; border: 2px solid var(--c-bg); z-index: 2;
+    }
+    .p-medal.g { background: var(--c-gold); box-shadow: 0 0 16px rgba(242,167,62,.6); }
+    .p-medal.s { background: var(--c-silver); }
+    .p-medal.b { background: var(--c-bronze); }
+    .p-medal.n { background: var(--c-text-mute); }
+    .p-avatar {
+      width: 72px; height: 72px; border-radius: 50%; margin: 6px auto 14px;
+      display: grid; place-items: center; font-family: var(--font-head); font-weight: 700;
+      font-size: 26px; color: #fff; box-shadow: 0 0 0 3px var(--c-bg-2), 0 0 18px rgba(0,0,0,.5);
+    }
+    .first .p-avatar { width: 88px; height: 88px; font-size: 32px; }
+    .p-name { font-weight: 600; font-size: 18px; overflow-wrap: anywhere; }
+    .p-score {
+      margin-top: 8px; font-family: var(--font-head); font-weight: 700; font-size: 30px;
+      color: var(--c-gold); font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(242,167,62,.35);
+    }
+    .first .p-score { font-size: 40px; }
+    .p-trend { margin-top: 6px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .p-trend.up { color: var(--up); } .p-trend.down { color: var(--down); } .p-trend.flat { color: var(--c-text-mute); }
+    .p-note {
+      margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--c-line);
+      font-size: 13.5px; font-style: italic; line-height: 1.4; color: var(--c-text-dim);
+      overflow-wrap: anywhere;
+    }
+    .lb-empty { padding: 44px; text-align: center; color: var(--c-text-mute); }
+
+    /* ---------------- Spirit awards grid ---------------- */
+    .agrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card {
+      position: relative; min-height: clamp(200px, 26vh, 280px);
+      background: var(--c-bg-2); border: 1px solid var(--c-line); box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+    }
+    .face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; }
+    .face.front .q {
+      font-family: var(--font-head); font-weight: 700; font-size: clamp(64px, 9vh, 100px);
+      color: var(--c-text-mute); opacity: .5; animation: qPulse 2.2s infinite var(--ease);
+      text-shadow: 0 0 26px rgba(240,57,78,.25);
+    }
+    .face.front .hint {
+      margin-top: 4px; font-family: var(--font-head); font-size: 11px; font-weight: 600;
+      letter-spacing: .28em; text-transform: uppercase; color: var(--c-text-mute); opacity: .55;
+    }
+    @keyframes qPulse { 0%,100% { opacity: .3; transform: scale(1); } 50% { opacity: .75; transform: scale(1.08); } }
+    .card .face.back { display: none; }
+    .card.revealed .face.front { display: none; }
+    .card.revealed { border-color: var(--c-gold-dk); box-shadow: var(--glow), 0 0 26px rgba(242,167,62,.18); }
+    .card.revealed .face.back { display: flex; animation: sbFlip .65s var(--ease); }
+    @keyframes sbFlip {
+      0%   { transform: perspective(900px) rotateY(88deg) scale(.86); opacity: 0; }
+      60%  { transform: perspective(900px) rotateY(-8deg) scale(1.03); opacity: 1; }
+      100% { transform: perspective(900px) rotateY(0) scale(1); }
+    }
+    .card.just { animation: cardFlash 1.6s var(--ease); }
+    @keyframes cardFlash {
+      0% { box-shadow: var(--glow), 0 0 0 rgba(242,167,62,0); }
+      30% { box-shadow: var(--glow), 0 0 60px rgba(242,167,62,.65); }
+      100% { box-shadow: var(--glow), 0 0 26px rgba(242,167,62,.18); }
+    }
+    .back .emoji { font-size: clamp(46px, 7.5vh, 76px); line-height: 1.1; filter: drop-shadow(0 0 18px rgba(242,167,62,.4)); }
+    .back .award {
+      margin-top: 10px; font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(19px, 2.5vh, 27px); text-transform: uppercase; letter-spacing: .05em;
+      color: var(--c-gold); text-shadow: 0 0 22px rgba(242,167,62,.4);
+    }
+    .back .team {
+      margin-top: 8px; font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(15px, 2vh, 20px); text-transform: uppercase; letter-spacing: .12em;
+      color: var(--c-accent); text-shadow: 0 0 18px rgba(240,57,78,.45);
+    }
+
+    /* ---------------- Prize wheel ---------------- */
+    .wheel-row { display: flex; gap: 34px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .wheel-box { position: relative; width: min(66vh, 46vw, 620px); aspect-ratio: 1; flex: none; }
+    .wheel-box canvas#wheel { width: 100%; height: 100%; display: block; }
+    .pointer {
+      position: absolute; top: -6px; left: 50%; transform: translateX(-50%); z-index: 3;
+      width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent;
+      border-top: 34px solid var(--c-gold);
+      filter: drop-shadow(0 0 12px rgba(242,167,62,.85)) drop-shadow(0 3px 6px rgba(0,0,0,.6));
+    }
+    .wheel-side { display: flex; flex-direction: column; gap: 18px; flex: 1 1 330px; max-width: 430px; }
+    .side-panel {
+      background: var(--c-bg-2); border: 1px solid var(--c-line); box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+      padding: 22px 26px;
+    }
+    .side-panel h2 {
+      margin: 0 0 14px; font-family: var(--font-head); font-weight: 700; font-size: 16px;
+      letter-spacing: .24em; text-transform: uppercase; color: var(--c-text-dim);
+    }
+    .prow {
+      display: flex; align-items: center; gap: 14px; padding: 13px 12px; margin-bottom: 11px;
+      background: var(--c-bg-3); border: 1px solid var(--c-line);
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+      transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
+    }
+    .prow:last-child { margin-bottom: 0; }
+    .prow .pemoji { font-size: 32px; line-height: 1; flex: none; filter: drop-shadow(0 0 10px rgba(0,0,0,.5)); }
+    .prow .ptier { font-family: var(--font-head); font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--c-text-mute); }
+    .prow .pwin { font-family: var(--font-head); font-size: 19px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--c-text-mute); }
+    .prow.spinning .pwin { color: var(--c-accent); animation: qPulse 1s infinite; }
+    .prow.done { border-color: var(--c-gold-dk); box-shadow: 0 0 18px rgba(242,167,62,.2); }
+    .prow.done .pwin { color: var(--c-gold); text-shadow: 0 0 16px rgba(242,167,62,.4); }
+    .prow.grand .ptier { color: var(--c-gold); }
+
+    /* Draw-entries tally (sells the "weighted draw" story) */
+    .erow {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 7px 4px; border-bottom: 1px solid var(--c-line);
+    }
+    .erow:last-child { border-bottom: none; }
+    .erow .ename { font-family: var(--font-head); font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    .erow .ename small { color: var(--c-text-mute); font-size: 10px; letter-spacing: .16em; margin-right: 7px; }
+    .erow .ecount { font-family: var(--font-head); font-weight: 700; font-size: 17px; color: var(--c-gold); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px rgba(242,167,62,.3); }
+    .entries-note { margin-top: 10px; font-size: 11px; color: var(--c-text-mute); font-family: var(--font-head); letter-spacing: .08em; text-transform: uppercase; }
+
+    /* ---------------- Full-screen overlays (qt-card style) ---------------- */
+    .qt-overlay {
+      position: fixed; inset: 0; z-index: 80; display: none;
+      align-items: center; justify-content: center; padding: 24px;
+      background: rgba(8,4,5,.82); backdrop-filter: blur(6px);
+      animation: qtFade .28s var(--ease);
+    }
+    .qt-overlay.show { display: flex; }
+    @keyframes qtFade { from { opacity: 0; } to { opacity: 1; } }
+    .qt-card {
+      width: 100%; max-width: 720px; text-align: center;
+      background: var(--c-bg-2); border: 1px solid var(--c-gold);
+      box-shadow: var(--glow), 0 0 70px rgba(242,167,62,.5);
+      padding: clamp(26px, 5vw, 52px) clamp(20px, 5vw, 48px);
+      clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px);
+    }
+    .qt-card.live { border-color: var(--c-accent); box-shadow: var(--glow), 0 0 60px rgba(240,57,78,.35); }
+    .qt-kicker {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      letter-spacing: .32em; text-transform: uppercase; color: var(--c-accent);
+      text-shadow: 0 0 18px rgba(240,57,78,.5);
+    }
+    .qt-title {
+      margin: 12px 0 4px; font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(30px, 6.5vw, 62px); line-height: 1.04; letter-spacing: .01em;
+      text-transform: uppercase; text-wrap: balance;
+      text-shadow: 0 0 34px rgba(242,167,62,.3);
+    }
+    .qt-task {
+      margin: 14px auto 0; max-width: 34em;
+      font-size: clamp(16px, 2.6vw, 24px); line-height: 1.45; color: var(--c-text-dim);
+      overflow-wrap: anywhere; white-space: pre-wrap;
+    }
+    .qt-timer {
+      margin-top: clamp(20px, 4vw, 34px); font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(70px, 20vw, 200px); line-height: 1; color: var(--c-gold);
+      font-variant-numeric: tabular-nums; letter-spacing: .02em;
+      text-shadow: 0 0 40px rgba(242,167,62,.45);
+    }
+    .qt-timer.warn { color: var(--c-accent); text-shadow: 0 0 44px rgba(240,57,78,.6); animation: qtPulse .9s infinite; }
+    @keyframes qtPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    .qt-timesup {
+      margin-top: clamp(20px, 4vw, 34px); font-family: var(--font-head); font-weight: 700;
+      font-size: clamp(40px, 9vw, 92px); line-height: 1; color: var(--c-accent);
+      text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 40px rgba(240,57,78,.6);
+    }
+    .qt-emoji { margin-top: 10px; font-size: clamp(56px, 12vw, 120px); line-height: 1; filter: drop-shadow(0 0 24px rgba(242,167,62,.55)); }
+    .qt-team { margin-top: 10px; font-family: var(--font-head); font-weight: 700; font-size: clamp(30px, 6.5vw, 62px); text-transform: uppercase; color: var(--c-gold); text-shadow: 0 0 34px rgba(242,167,62,.4); overflow-wrap: anywhere; }
+    .qt-prize { margin-top: 8px; font-family: var(--font-head); font-weight: 700; font-size: clamp(22px, 4.5vw, 40px); color: var(--up); text-transform: uppercase; letter-spacing: .04em; }
+    .qt-hide { display: none !important; }
+
+    #confetti { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
+
+    @media (max-width: 900px) {
+      .agrid { grid-template-columns: repeat(2, 1fr); }
+      .wheel-box { width: min(80vw, 480px); }
+      .podium { grid-template-columns: 1fr 1fr; }
+      .p-cell.first { grid-column: span 2; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="../index.html"><img src="../leaderboard/kavosh-logo.png" alt="KAVOSH AI &amp; Robotics Academy"></a>
+
+  <div class="stage">
+    <!-- View 0: live leaderboard (default) -->
+    <div class="view" id="viewLB">
+      <header class="top">
+        <h1 id="lbTitle">Leaderboard</h1>
+        <div class="sub"><span id="lbSubtitle">KAVOSH Challenge</span> <span class="accent-dot">&#9670;</span> Live</div>
+      </header>
+      <section class="podium" id="podium" aria-label="Top performers"></section>
+      <div class="lb-empty" id="lbEmpty" hidden>No entries yet.</div>
+    </div>
+
+    <!-- View A: spirit awards -->
+    <div class="view" id="viewAwards">
+      <header class="top">
+        <h1 id="awTitle">Spirit Awards</h1>
+        <div class="sub">Mission Impossible <span class="accent-dot">&#9670;</span> KAVOSH</div>
+      </header>
+      <section class="agrid" id="agrid" aria-label="Spirit awards"></section>
+    </div>
+
+    <!-- View B: prize wheel -->
+    <div class="view" id="viewWheel">
+      <header class="top">
+        <h1>Prize Wheel</h1>
+        <div class="sub">Mission Impossible <span class="accent-dot">&#9670;</span> Prize Draw</div>
+      </header>
+      <div class="wheel-row">
+        <div class="wheel-box">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="1000" height="1000"></canvas>
+        </div>
+        <div class="wheel-side">
+          <aside class="side-panel">
+            <h2>Prize Board</h2>
+            <div class="prow" id="prow0">
+              <span class="pemoji">&#127846;</span>
+              <div><div class="ptier">3rd Prize &mdash; Ice Cream</div><div class="pwin" id="pwin0">???</div></div>
+            </div>
+            <div class="prow" id="prow1">
+              <span class="pemoji">&#9749;</span>
+              <div><div class="ptier">2nd Prize &mdash; Tim Hortons</div><div class="pwin" id="pwin1">???</div></div>
+            </div>
+            <div class="prow grand" id="prow2">
+              <span class="pemoji">&#127873;</span>
+              <div><div class="ptier">Grand Prize &mdash; Gift Cards</div><div class="pwin" id="pwin2">???</div></div>
+            </div>
+          </aside>
+          <aside class="side-panel">
+            <h2>Draw Entries</h2>
+            <div id="entriesList"></div>
+            <div class="entries-note">More entries &rarr; better odds on the wheel</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Wheel winner flash -->
+<div class="qt-overlay" id="flash" aria-live="assertive">
+  <div class="qt-card">
+    <div class="qt-kicker" id="fKicker">Prize Draw</div>
+    <div class="qt-emoji" id="fEmoji">&#127942;</div>
+    <div class="qt-team" id="fTeam"></div>
+    <div class="qt-prize" id="fPrize"></div>
+  </div>
+</div>
+
+<!-- Quest overlay (works on top of any mode) -->
+<div class="qt-overlay" id="quest" aria-live="assertive">
+  <div class="qt-card live" id="qCard">
+    <div class="qt-kicker" id="qKicker">Quest</div>
+    <div class="qt-title" id="qTitle"></div>
+    <div class="qt-task" id="qTask"></div>
+    <div class="qt-timer" id="qTimer">0</div>
+    <div class="qt-timesup qt-hide" id="qUp">&#9201; Time&rsquo;s up!</div>
+    <div class="qt-hide" id="qRes">
+      <div class="qt-emoji">&#127942;</div>
+      <div class="qt-team" id="qWinner"></div>
+      <div class="qt-prize" id="qEntries"></div>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script src="../leaderboard/config.js"></script>
+<script src="../leaderboard/store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var KEY = "kavosh.showboard.v1";
+  var TAU = Math.PI * 2;
+  var DUR = 6500;                      // spin animation length (ms)
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var TEAMS = [
+    { n: 1, name: "Nova" }, { n: 2, name: "Titan" }, { n: 3, name: "Challenge" },
+    { n: 4, name: "Bright" }, { n: 5, name: "Global Mission" }, { n: 6, name: "Smart" }
+  ];
+  var AWARDS = [
+    { a: "Best Teamwork", e: "🤝" },
+    { a: "Top Synergy", e: "⚡" },
+    { a: "Unbreakable Spirit", e: "🔥" },
+    { a: "Big Brain Energy", e: "🧠" },
+    { a: "Positive Vibes", e: "🌟" },
+    { a: "Never Give Up", e: "🛡️" }
+  ];
+  var TIERS = [
+    { label: "3rd Prize", prize: "Ice Cream", emoji: "🍦" },
+    { label: "2nd Prize", prize: "Tim Hortons", emoji: "☕" },
+    { label: "Grand Prize", prize: "Gift Cards", emoji: "🎁" }
+  ];
+  var WEDGE = TAU / TEAMS.length;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]; }); }
+  function teamIndex(name) { for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return i; return -1; }
+  function teamLabel(name) { var i = teamIndex(name); return i < 0 ? name : "Team " + TEAMS[i].n + " · " + name; }
+
+  function normEntries(e) {
+    var out = {};
+    for (var i = 0; i < TEAMS.length; i++) {
+      var nm = TEAMS[i].name;
+      var v = e && e[nm];
+      out[nm] = (typeof v === "number" && isFinite(v)) ? Math.max(0, Math.round(v)) : 3;
+    }
+    return out;
+  }
+  function defState() {
+    return {
+      v: 1, mode: "leaderboard", title: "Spirit Awards",
+      awards: TEAMS.map(function (t, i) { return { team: t.name, award: AWARDS[i].a, emoji: AWARDS[i].e }; }),
+      revealed: [], thirdTarget: "Global Mission", spins: [],
+      entries: normEntries(null), quest: null
+    };
+  }
+  function loadState() {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (!s || s.v !== 1) return defState();
+      var d = defState();
+      if (!s.awards || s.awards.length !== 6) s.awards = d.awards;
+      if (!s.revealed) s.revealed = [];
+      if (!s.spins) s.spins = [];
+      if (!s.title) s.title = d.title;
+      if (s.mode !== "awards" && s.mode !== "wheel") s.mode = "leaderboard";
+      s.entries = normEntries(s.entries);
+      if (!s.quest || typeof s.quest !== "object") s.quest = null;
+      return s;
+    } catch (e) { return defState(); }
+  }
+
+  var state = loadState();
+  var lastRaw = null;
+
+  /* -------- spin geometry: deterministic chain of final rotations -------- */
+  function spinFinals(spins) {
+    var rot = 0, finals = [];
+    for (var i = 0; i < spins.length; i++) {
+      var sp = spins[i];
+      var idx = teamIndex(sp.team); if (idx < 0) idx = 0;
+      var targetCenter = -TAU / 4 - (idx * WEDGE + WEDGE / 2) + (sp.jitter || 0);
+      var base = rot + (sp.turns || 6) * TAU;
+      var k = Math.ceil((base - targetCenter) / TAU);
+      var fin = targetCenter + k * TAU;
+      finals.push(fin);
+      rot = fin;
+    }
+    return finals;
+  }
+  function easeOutCubic(p) { return 1 - Math.pow(1 - p, 3); }
+  function currentRotation(now) {
+    var spins = state.spins;
+    if (!spins.length) return 0;
+    var finals = spinFinals(spins);
+    var last = spins[spins.length - 1];
+    var start = spins.length > 1 ? finals[spins.length - 2] : 0;
+    var end = finals[spins.length - 1];
+    var p = (now - last.startedAt) / DUR;
+    if (p >= 1) return end;
+    if (p < 0) return start;
+    return start + (end - start) * easeOutCubic(p);
+  }
+  function resolved(sp, now) { return now >= sp.startedAt + DUR; }
+
+  /* ---------------- live leaderboard podium (READ-ONLY: pull() only, never commit/save) ---------------- */
+  var PALETTE = ["#c8901d", "#3f8fb2", "#7a5cc4", "#2f9e6f", "#d9534f", "#b9793f", "#c44c8a", "#4a6fd4"];
+  function colorFor(name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return PALETTE[h % PALETTE.length]; }
+  var podium = document.getElementById("podium");
+
+  function renderPodium(lb) {
+    document.getElementById("lbTitle").textContent = lb.title;
+    document.getElementById("lbSubtitle").textContent = lb.subtitle;
+    var ranked = LBStore.rankSort(lb.players, lb.metric);
+    document.getElementById("lbEmpty").hidden = ranked.length > 0;
+    var rankOf = LBStore.ranks(ranked);
+    var top = ranked.slice(0, 3);
+    var order = [top[1], top[0], top[2]];
+    var medalCls = function (r) { return r === 1 ? "g" : r === 2 ? "s" : r === 3 ? "b" : "n"; };
+    podium.innerHTML = order.map(function (p, i) {
+      if (!p) return "<div></div>";
+      var r = rankOf.get(p.id);
+      var first = (i === 1);
+      var ch = p.change || 0;
+      var tcls = ch > 0 ? "up" : ch < 0 ? "down" : "flat";
+      var arrow = ch > 0 ? "&#9650;" : ch < 0 ? "&#9660;" : "&#8211;";
+      var chTxt = ch === 0 ? "&mdash;" : arrow + " " + Math.abs(ch).toLocaleString();
+      var note = LBStore.latestNote(p);
+      return '<div class="p-cell ' + (first ? "first" : "") + '">'
+        + '<div class="p-medal ' + medalCls(r) + '">' + r + '</div>'
+        + '<div class="p-card ' + (first ? "first" : "") + '">'
+        + '<div class="p-avatar" style="background:' + colorFor(p.name) + '">' + LBStore.initials(p.name) + '</div>'
+        + '<div class="p-name">' + esc(p.name) + '</div>'
+        + '<div class="p-score">' + esc(LBStore.fmt(p.value, lb.metric)) + '</div>'
+        + '<div class="p-trend ' + tcls + '">' + chTxt + '</div>'
+        + (note ? '<div class="p-note">&ldquo;' + esc(note) + '&rdquo;</div>' : '')
+        + '</div></div>';
+    }).join("");
+  }
+  // pull() is a pure GET (+ local cache); unlike load() it can never POST.
+  function lbRefresh() { LBStore.pull().then(renderPodium).catch(function () {}); }
+  lbRefresh();
+  setInterval(lbRefresh, 15000);
+  addEventListener("storage", function (e) {
+    if (e.key && e.key.indexOf("kavosh.leaderboard") === 0 && e.newValue) {
+      try { renderPodium(JSON.parse(e.newValue)); } catch (_) {}
+    }
+  });
+
+  /* ---------------- awards view ---------------- */
+  var agrid = document.getElementById("agrid");
+  var lastAwardsJson = null, lastRevealJson = null;
+
+  function buildGrid() {
+    agrid.innerHTML = state.awards.map(function (a) {
+      return '<div class="card" data-team="' + esc(a.team) + '">'
+        + '<div class="face front"><div><div class="q">?</div><div class="hint">Mystery Award</div></div></div>'
+        + '<div class="face back">'
+        + '<div class="emoji">' + esc(a.emoji) + '</div>'
+        + '<div class="award">' + esc(a.award) + '</div>'
+        + '<div class="team">' + esc(teamLabel(a.team)) + '</div>'
+        + '</div></div>';
+    }).join("");
+  }
+  function updateReveals(prevRevealed) {
+    var newest = null;
+    if (prevRevealed && state.revealed.length > prevRevealed.length) newest = state.revealed[state.revealed.length - 1];
+    var cards = agrid.children;
+    for (var i = 0; i < cards.length; i++) {
+      var t = cards[i].getAttribute("data-team");
+      var on = state.revealed.indexOf(t) !== -1;
+      cards[i].classList.toggle("revealed", on);
+      cards[i].classList.toggle("just", on && t === newest);
+    }
+  }
+
+  /* ---------------- wheel drawing ---------------- */
+  var canvas = document.getElementById("wheel");
+  var ctx = canvas.getContext("2d");
+  var S = canvas.width, C = S / 2, R = C - 34;
+
+  function winnersMap(now) {
+    var m = {};
+    for (var i = 0; i < state.spins.length; i++) {
+      var sp = state.spins[i];
+      if (resolved(sp, now)) m[sp.team] = TIERS[sp.tier] || TIERS[0];
+    }
+    return m;
+  }
+
+  function drawWheel(rot, now) {
+    ctx.clearRect(0, 0, S, S);
+    var winners = winnersMap(now);
+
+    ctx.save();
+    ctx.translate(C, C);
+    ctx.rotate(rot);
+
+    for (var i = 0; i < TEAMS.length; i++) {
+      var a0 = i * WEDGE, a1 = a0 + WEDGE;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, R, a0, a1); ctx.closePath();
+      ctx.fillStyle = i % 2 === 0 ? "#8a1425" : "#241a1b";
+      ctx.fill();
+      if (winners[TEAMS[i].name]) { ctx.fillStyle = "rgba(8,5,6,.6)"; ctx.fill(); }
+    }
+    // separators
+    ctx.strokeStyle = "rgba(242,167,62,.8)";
+    ctx.lineWidth = 3;
+    for (var j = 0; j < TEAMS.length; j++) {
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(j * WEDGE) * R, Math.sin(j * WEDGE) * R);
+      ctx.stroke();
+    }
+    // labels along the radius
+    for (var k = 0; k < TEAMS.length; k++) {
+      var name = TEAMS[k].name.toUpperCase();
+      ctx.save();
+      ctx.rotate(k * WEDGE + WEDGE / 2);
+      var won = !!winners[TEAMS[k].name];
+      ctx.fillStyle = won ? "rgba(253,243,243,.4)" : "#fdf3f3";
+      var fs = 40;
+      ctx.font = "700 " + fs + "px 'Chakra Petch','Segoe UI',sans-serif";
+      var maxW = R - 200;
+      while (fs > 18 && ctx.measureText(name).width > maxW) { fs -= 2; ctx.font = "700 " + fs + "px 'Chakra Petch','Segoe UI',sans-serif"; }
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 8;
+      ctx.fillText(name, R - 58, 0);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // outer ring
+    ctx.beginPath(); ctx.arc(C, C, R + 8, 0, TAU);
+    ctx.strokeStyle = "#f2a73e"; ctx.lineWidth = 8;
+    ctx.shadowColor = "rgba(240,57,78,.55)"; ctx.shadowBlur = 26;
+    ctx.stroke(); ctx.shadowBlur = 0;
+    // rim dots
+    ctx.fillStyle = "#1e1718";
+    for (var d = 0; d < 12; d++) {
+      var da = d * TAU / 12;
+      ctx.beginPath(); ctx.arc(C + Math.cos(da) * (R + 8), C + Math.sin(da) * (R + 8), 5, 0, TAU); ctx.fill();
+    }
+    // hub
+    ctx.beginPath(); ctx.arc(C, C, 84, 0, TAU); ctx.fillStyle = "#1e1718"; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = "#f0394e";
+    ctx.shadowColor = "rgba(240,57,78,.6)"; ctx.shadowBlur = 18; ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.fillStyle = "#f2a73e"; ctx.font = "700 26px 'Chakra Petch','Segoe UI',sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("SPIN", C, C);
+
+    // prize badges on won wedges (screen space, upright)
+    for (var w = 0; w < TEAMS.length; w++) {
+      var tw = winners[TEAMS[w].name];
+      if (!tw) continue;
+      var ang = rot + w * WEDGE + WEDGE / 2;
+      var bx = C + Math.cos(ang) * R * 0.8, by = C + Math.sin(ang) * R * 0.8;
+      ctx.font = "52px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(tw.emoji, bx, by);
+    }
+  }
+
+  /* ---------------- prize board + entries tally ---------------- */
+  function updatePrizeBoard(now) {
+    for (var t = 0; t < 3; t++) {
+      var row = document.getElementById("prow" + t);
+      var win = document.getElementById("pwin" + t);
+      var sp = null;
+      for (var i = 0; i < state.spins.length; i++) if (state.spins[i].tier === t) { sp = state.spins[i]; break; }
+      var txt, cls = "";
+      if (!sp) { txt = "???"; }
+      else if (!resolved(sp, now)) { txt = "SPINNING…"; cls = "spinning"; }
+      else { txt = teamLabel(sp.team); cls = "done"; }
+      if (win.textContent !== txt) win.textContent = txt;
+      row.className = "prow" + (t === 2 ? " grand" : "") + (cls ? " " + cls : "");
+    }
+  }
+
+  var entriesList = document.getElementById("entriesList");
+  var lastEntriesJson = null;
+  function renderEntries() {
+    var ej = JSON.stringify(state.entries);
+    if (ej === lastEntriesJson) return;
+    lastEntriesJson = ej;
+    entriesList.innerHTML = TEAMS.map(function (t) {
+      return '<div class="erow">'
+        + '<span class="ename"><small>TEAM ' + t.n + '</small>' + esc(t.name) + '</span>'
+        + '<span class="ecount">&#127903;&#65039; ' + (state.entries[t.name] || 0) + '</span>'
+        + '</div>';
+    }).join("");
+  }
+
+  /* ---------------- wheel winner flash + confetti ---------------- */
+  var flash = document.getElementById("flash");
+  var flashTimer = null;
+  var flashed = {};   // spin id -> true (never re-flash)
+
+  function doFlash(sp) {
+    var tier = TIERS[sp.tier] || TIERS[0];
+    document.getElementById("fKicker").textContent = tier.label;
+    document.getElementById("fEmoji").textContent = tier.emoji;
+    document.getElementById("fTeam").textContent = teamLabel(sp.team).toUpperCase();
+    document.getElementById("fPrize").textContent = "WINS " + tier.prize.toUpperCase() + " " + tier.emoji;
+    flash.classList.add("show");
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flash.classList.remove("show"); }, 5000);
+    if (sp.tier === 2) confettiBurst();
+  }
+  // Anything already resolved when the page loads was seen before — no re-flash.
+  (function () {
+    var now = Date.now();
+    for (var i = 0; i < state.spins.length; i++) if (now >= state.spins[i].startedAt + DUR + 500) flashed[state.spins[i].id] = true;
+  })();
+
+  var cCanvas = document.getElementById("confetti");
+  var cCtx = cCanvas.getContext("2d");
+  var parts = [];
+  function sizeConfetti() { cCanvas.width = innerWidth; cCanvas.height = innerHeight; }
+  sizeConfetti(); addEventListener("resize", sizeConfetti);
+  function confettiBurst() {
+    if (reduced) return;
+    var colors = ["#f2a73e", "#f0394e", "#ffffff", "#cdd3dc"];
+    for (var i = 0; i < 220; i++) {
+      parts.push({
+        x: cCanvas.width * (0.3 + Math.random() * 0.4),
+        y: cCanvas.height * 0.28,
+        vx: (Math.random() * 2 - 1) * 9,
+        vy: -Math.random() * 13 - 2,
+        w: 6 + Math.random() * 7, h: 4 + Math.random() * 5,
+        c: colors[i % colors.length],
+        r: Math.random() * TAU, vr: (Math.random() * 2 - 1) * 0.25,
+        life: 110 + Math.random() * 70
+      });
+    }
+  }
+  function stepConfetti() {
+    if (!parts.length) { cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); return; }
+    cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+    var alive = [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      p.vy += 0.32; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+      if (p.life > 0 && p.y < cCanvas.height + 30) {
+        alive.push(p);
+        cCtx.save(); cCtx.translate(p.x, p.y); cCtx.rotate(p.r);
+        cCtx.globalAlpha = Math.min(1, p.life / 40);
+        cCtx.fillStyle = p.c; cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        cCtx.restore();
+      }
+    }
+    parts = alive;
+  }
+
+  /* ---------------- quest overlay (local-only; awards raffle ENTRIES, never points) ---------------- */
+  var qOverlay = document.getElementById("quest");
+  var qCard = document.getElementById("qCard");
+  var qEls = {
+    kicker: document.getElementById("qKicker"),
+    title: document.getElementById("qTitle"),
+    task: document.getElementById("qTask"),
+    timer: document.getElementById("qTimer"),
+    up: document.getElementById("qUp"),
+    res: document.getElementById("qRes"),
+    winner: document.getElementById("qWinner"),
+    entries: document.getElementById("qEntries")
+  };
+  var qSeenKey = "", qHideAt = 0;
+
+  function fmtClock(sec) {
+    sec = Math.max(0, Math.ceil(sec));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m > 0 ? (m + ":" + String(s).padStart(2, "0")) : String(s);
+  }
+  function qMode(mode) { // "count" | "up" | "result"
+    qEls.task.classList.toggle("qt-hide", mode === "result");
+    qEls.timer.classList.toggle("qt-hide", mode !== "count");
+    qEls.up.classList.toggle("qt-hide", mode !== "up");
+    qEls.res.classList.toggle("qt-hide", mode !== "result");
+    qCard.classList.toggle("live", mode !== "result");
+    qEls.kicker.textContent = mode === "result" ? "Quest Winner" : "Quest";
+  }
+  function questTick(now) {
+    var q = state.quest;
+    if (!q) { qOverlay.classList.remove("show"); qSeenKey = ""; return; }
+    var key = q.id + ":" + q.status;
+    if (q.status === "result") {
+      if (key !== qSeenKey) { qSeenKey = key; qHideAt = now + 6000; }
+      if (now > qHideAt) { qOverlay.classList.remove("show"); return; }
+      qOverlay.classList.add("show");
+      qMode("result");
+      qEls.title.textContent = q.title || "Quest";
+      qEls.winner.textContent = teamLabel(q.winner || "").toUpperCase();
+      var n = Math.max(1, Math.round(Number(q.entries) || 2));
+      qEls.entries.textContent = "+" + n + " EXTRA " + (n === 1 ? "ENTRY" : "ENTRIES") + " ADDED TO THE PRIZE DRAW";
+      return;
+    }
+    qSeenKey = key;
+    qOverlay.classList.add("show");
+    qEls.title.textContent = q.title || "Quest";
+    qEls.task.textContent = q.task || "";
+    var remain = ((q.startedAt || 0) + (q.seconds || 0) * 1000 - now) / 1000;
+    if (q.status === "over" || remain <= 0) {
+      qMode("up");
+    } else {
+      qMode("count");
+      qEls.timer.textContent = fmtClock(remain);
+      qEls.timer.classList.toggle("warn", remain <= 5);
+    }
+  }
+
+  /* ---------------- state application ---------------- */
+  var viewLB = document.getElementById("viewLB");
+  var viewAwards = document.getElementById("viewAwards");
+  var viewWheel = document.getElementById("viewWheel");
+
+  function applyState(prev) {
+    document.getElementById("awTitle").textContent = state.title;
+    document.title = state.title + " · Showboard";
+    viewLB.classList.toggle("on", state.mode === "leaderboard");
+    viewAwards.classList.toggle("on", state.mode === "awards");
+    viewWheel.classList.toggle("on", state.mode === "wheel");
+
+    var aj = JSON.stringify(state.awards);
+    if (aj !== lastAwardsJson) { buildGrid(); lastAwardsJson = aj; lastRevealJson = null; }
+    var rj = JSON.stringify(state.revealed);
+    if (rj !== lastRevealJson) {
+      updateReveals(prev ? prev.revealed : null);
+      lastRevealJson = rj;
+    }
+    renderEntries();
+    updatePrizeBoard(Date.now());
+  }
+
+  function poll() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) {}
+    if (raw === lastRaw) return;
+    lastRaw = raw;
+    var prev = state;
+    state = loadState();
+    applyState(prev);
+  }
+
+  lastRaw = localStorage.getItem(KEY);
+  applyState(null);
+
+  setInterval(poll, 400);
+  addEventListener("focus", function () { poll(); lbRefresh(); });
+  addEventListener("storage", function (e) { if (!e.key || e.key === KEY) poll(); });
+
+  /* ---------------- main loop ---------------- */
+  function frame() {
+    var now = Date.now();
+    if (state.mode === "wheel") {
+      drawWheel(currentRotation(now), now);
+      updatePrizeBoard(now);
+    }
+    // fire wheel winner flashes the moment a spin resolves while we're watching
+    for (var i = 0; i < state.spins.length; i++) {
+      var sp = state.spins[i];
+      if (resolved(sp, now) && !flashed[sp.id]) { flashed[sp.id] = true; doFlash(sp); }
+    }
+    questTick(now);
+    stepConfetti();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+<script src="../leaderboard/bg.js"></script>
+</body>
+</html>

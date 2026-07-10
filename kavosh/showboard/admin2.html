@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Showboard Control</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <style>
+    /* SHOWBOARD CONTROL — FIRA RoboWorld HUD theme (matches ../leaderboard/lb.css). */
+    :root {
+      --c-bg:        #141011;
+      --c-bg-2:      #1e1718;
+      --c-bg-3:      #2a2122;
+      --c-line:      #3a2c2e;
+      --c-accent:    #f0394e;
+      --c-accent-dk: #c8102e;
+      --c-gold:      #f2a73e;
+      --c-gold-dk:   #c9821f;
+      --c-text:      #fdf3f3;
+      --c-text-dim:  #e6bcbc;
+      --c-text-mute: #c79a9a;
+      --up:   #45d18a;
+      --glow: 0 0 0 1px var(--c-line), 0 12px 34px rgba(0,0,0,.55);
+      --glow-accent: 0 0 22px rgba(240,57,78,.35);
+      --chamfer: 14px;
+      --font-head: 'Chakra Petch', 'Segoe UI', sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--c-bg); }
+    body {
+      margin: 0; background: transparent; color: var(--c-text);
+      font-family: var(--font-body); line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.03), transparent 60%),
+        radial-gradient(120% 90% at 0% 100%, rgba(200,16,46,.10), transparent 55%);
+      background-attachment: fixed;
+    }
+    #bgcanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 26px 18px 80px; position: relative; z-index: 1; }
+    .brand { display: inline-flex; margin-bottom: 14px; }
+    .brand img { height: 40px; display: block; filter: drop-shadow(0 0 20px rgba(240,57,78,.55)); }
+
+    header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    header.top h1 {
+      margin: 0; font-family: var(--font-head); font-weight: 700; font-size: clamp(24px, 5vw, 34px);
+      letter-spacing: .02em; text-transform: uppercase; text-shadow: 0 0 30px rgba(240,57,78,.25);
+    }
+    header.top .sub { margin-top: 4px; color: var(--c-text-mute); font-family: var(--font-head); font-size: 11px; text-transform: uppercase; letter-spacing: .22em; font-weight: 600; }
+    .accent-dot { color: var(--c-accent); }
+
+    .chip-btn {
+      background: var(--c-bg-2); border: 1px solid var(--c-line); color: var(--c-text-dim);
+      height: 40px; padding: 0 16px; cursor: pointer; font-family: var(--font-head);
+      font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+    .chip-btn:hover { color: var(--c-text); background: var(--c-bg-3); box-shadow: var(--glow-accent); }
+
+    .panel {
+      background: var(--c-bg-2); border: 1px solid var(--c-line); box-shadow: var(--glow);
+      clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+      padding: 18px 20px; margin-bottom: 18px;
+    }
+    .panel.live { border-color: var(--c-accent); box-shadow: var(--glow), var(--glow-accent); }
+    .panel h2 { margin: 0 0 12px; font-family: var(--font-head); font-size: 15px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-text-dim); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .panel h2 .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c-accent); box-shadow: 0 0 12px var(--c-accent); animation: blink 1s infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    .hint { font-size: 12px; color: var(--c-text-mute); margin-top: 8px; }
+    .tag { color: var(--c-text-mute); font-size: 11px; letter-spacing: .14em; }
+
+    .btn {
+      border: 1px solid var(--c-line); background: var(--c-bg-2); color: var(--c-text);
+      padding: 11px 18px; font-family: var(--font-head); font-size: 13px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+      transition: background .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+    }
+    .btn:hover { border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+    .btn.primary { background: var(--c-accent-dk); border-color: var(--c-accent); color: #fff; }
+    .btn.primary:hover { background: var(--c-accent); }
+    .btn.gold { background: var(--c-gold-dk); border-color: var(--c-gold); color: #1a1010; }
+    .btn.gold:hover { background: var(--c-gold); }
+    .btn:disabled { opacity: .45; cursor: default; box-shadow: none !important; }
+    .btn.big { width: 100%; padding: 16px 18px; font-size: 16px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* 3-way screen switch */
+    .mode-switch { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .mode-btn {
+      border: 1px solid var(--c-line); background: var(--c-bg-3); color: var(--c-text-dim);
+      padding: 14px 8px; font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase; cursor: pointer; text-align: center;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+    .mode-btn.on { background: var(--c-accent-dk); border-color: var(--c-accent); color: #fff; box-shadow: var(--glow-accent); }
+
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-family: var(--font-head); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--c-text-mute); font-weight: 600; margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text);
+      font-size: 15px; padding: 10px 12px; font-family: var(--font-body);
+    }
+    .field textarea { resize: vertical; line-height: 1.4; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+
+    /* awards table */
+    .arow { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--c-line); flex-wrap: wrap; }
+    .arow:last-child { border-bottom: none; }
+    .arow .tname { flex: 0 0 132px; font-family: var(--font-head); font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+    .arow .tname small { display: block; color: var(--c-text-mute); font-size: 10px; letter-spacing: .18em; }
+    .arow select { flex: 1 1 170px; min-width: 150px; background: var(--c-bg-3); border: 1px solid var(--c-line); color: var(--c-text); font-size: 14px; padding: 8px 10px; font-family: var(--font-body); }
+    .arow select:focus { outline: none; border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+    .arow .rbtn { flex: 0 0 auto; min-width: 96px; padding: 8px 10px; font-size: 12px; }
+    .arow .rbtn.on { background: var(--c-gold-dk); border-color: var(--c-gold); color: #1a1010; }
+    .arow .ordn { flex: 0 0 26px; text-align: center; font-family: var(--font-head); font-weight: 700; color: var(--c-gold); font-variant-numeric: tabular-nums; }
+
+    /* quest */
+    .q-secrow { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .q-secrow .field { margin-bottom: 0; flex: 0 0 110px; }
+    .q-secrow input { text-align: center; font-variant-numeric: tabular-nums; }
+    .q-preset { display: flex; gap: 6px; flex-wrap: wrap; }
+    .q-preset button {
+      border: 1px solid var(--c-line); background: var(--c-bg-3); color: var(--c-text-dim);
+      font-family: var(--font-head); font-size: 12px; font-weight: 600; padding: 8px 12px; cursor: pointer;
+      border-radius: 4px; letter-spacing: .04em;
+    }
+    .q-preset button:hover { border-color: var(--c-accent); color: var(--c-text); }
+    .q-status { margin: 10px 0 2px; font-family: var(--font-head); font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--c-text-mute); }
+    .q-status.live { color: var(--c-accent); }
+    .q-winrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--c-line); }
+    .q-winrow .field { margin-bottom: 0; flex: 1 1 180px; }
+    .q-winrow .q-n { flex: 0 0 110px; }
+
+    /* rig plan */
+    .rig-row {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 8px;
+      background: var(--c-bg-3); border: 1px solid var(--c-line);
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    }
+    .rig-row .remoji { font-size: 24px; flex: none; }
+    .rig-row .rmeta { flex: 1; }
+    .rig-row .rtier { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-text-mute); }
+    .rig-row .rteam { font-family: var(--font-head); font-size: 15px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .rig-row .rstat { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-text-mute); }
+    .rig-row.done { border-color: var(--c-gold-dk); } .rig-row.done .rstat { color: var(--up); }
+    .rig-row.next { border-color: var(--c-accent); box-shadow: var(--glow-accent); } .rig-row.next .rstat { color: var(--c-accent); }
+
+    /* entries tally */
+    .trow { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--c-line); }
+    .trow:last-child { border-bottom: none; }
+    .trow .tname2 { flex: 1; font-family: var(--font-head); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+    .trow .tname2 small { color: var(--c-text-mute); font-size: 10px; letter-spacing: .16em; margin-right: 7px; }
+    .tally-btn {
+      width: 34px; height: 34px; border: 1px solid var(--c-line); background: var(--c-bg-3);
+      color: var(--c-text); font-size: 18px; line-height: 1; cursor: pointer; border-radius: 6px;
+      font-family: var(--font-head);
+    }
+    .tally-btn:hover { border-color: var(--c-accent); box-shadow: var(--glow-accent); }
+    .tcount { min-width: 52px; text-align: center; font-family: var(--font-head); font-weight: 700; font-size: 18px; color: var(--c-gold); font-variant-numeric: tabular-nums; }
+
+    .status { margin-top: 4px; font-size: 12px; color: var(--c-text-mute); font-weight: 600; font-family: var(--font-head); letter-spacing: .06em; }
+    .status.ok { color: var(--up); }
+    footer.foot { text-align: center; color: var(--c-text-mute); font-size: 12px; font-family: var(--font-head); letter-spacing: .06em; }
+    footer.foot a { color: var(--c-accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="../index.html"><img src="../leaderboard/kavosh-logo.png" alt="KAVOSH AI &amp; Robotics Academy"></a>
+  <header class="top">
+    <div>
+      <h1>Showboard Control</h1>
+      <div class="sub">Mission Impossible <span class="accent-dot">&#9670;</span> Backstage</div>
+    </div>
+    <a class="chip-btn" href="index.html" target="_blank">Open Showboard &#8599;</a>
+  </header>
+
+  <!-- Screen mode -->
+  <section class="panel">
+    <h2><span class="live-dot"></span> Screen Mode</h2>
+    <div class="mode-switch">
+      <button class="mode-btn" id="modeLB">&#128202; Leaderboard</button>
+      <button class="mode-btn" id="modeAwards">&#127942; Spirit Awards</button>
+      <button class="mode-btn" id="modeWheel">&#127920; Prize Wheel</button>
+    </div>
+    <div class="field" style="margin-top:14px;margin-bottom:0">
+      <label for="titleInput">Show title (awards screen)</label>
+      <input id="titleInput" type="text" maxlength="60" autocomplete="off">
+    </div>
+    <div class="status ok" id="saveStatus">Ready</div>
+  </section>
+
+  <!-- Quest -->
+  <section class="panel" id="questPanel">
+    <h2>&#9889; Quest <span class="tag">LOCAL &mdash; awards draw entries, never touches the leaderboard</span></h2>
+    <div class="field">
+      <label for="qTitleIn">Title</label>
+      <input id="qTitleIn" type="text" maxlength="60" placeholder="Speed Build Challenge" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="qTaskIn">Task</label>
+      <textarea id="qTaskIn" rows="2" maxlength="300" placeholder="First team to line up at the door wins!"></textarea>
+    </div>
+    <div class="q-secrow">
+      <div class="field">
+        <label for="qSecsIn">Seconds</label>
+        <input id="qSecsIn" type="number" min="5" max="900" value="60">
+      </div>
+      <div class="q-preset">
+        <button data-s="30">30s</button><button data-s="60">60s</button><button data-s="90">90s</button><button data-s="120">120s</button>
+      </div>
+    </div>
+    <div class="q-status" id="qStatus">No quest running</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="qSendBtn">&#9889; Send Live</button>
+      <button class="btn" id="qEndBtn">End Now</button>
+      <button class="btn" id="qClearBtn">Clear</button>
+    </div>
+    <div class="q-winrow">
+      <div class="field">
+        <label for="qWinSel">Winning team</label>
+        <select id="qWinSel"></select>
+      </div>
+      <div class="field q-n">
+        <label for="qEntriesIn">Extra entries</label>
+        <input id="qEntriesIn" type="number" min="1" max="20" value="2">
+      </div>
+      <button class="btn gold" id="qAwardBtn">&#127903;&#65039; Flash Winner</button>
+    </div>
+    <div class="hint">Winner flash says &ldquo;+N extra entries added to the prize draw&rdquo; and bumps the tally below.</div>
+  </section>
+
+  <!-- Spirit awards -->
+  <section class="panel">
+    <h2>&#127881; Spirit Awards</h2>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn" id="shuffleBtn">&#127922; Shuffle Awards</button>
+      <button class="btn" id="resetRevealsBtn">Reset Reveals</button>
+    </div>
+    <div id="awardRows"></div>
+    <button class="btn primary big" id="revealNextBtn" style="margin-top:14px">Reveal Next</button>
+    <div class="hint">Shuffling re-deals all six awards and hides every card. Changing a dropdown swaps awards between the two teams so each award stays unique.</div>
+  </section>
+
+  <!-- Prize wheel -->
+  <section class="panel">
+    <h2>&#127920; Prize Wheel <span class="tag">RIGGED &mdash; backstage only</span></h2>
+    <div id="rigRows"></div>
+    <div class="field" style="margin:12px 0">
+      <label for="thirdSel">Grand prize lands on (spin 3)</label>
+      <select id="thirdSel"></select>
+    </div>
+    <button class="btn gold big" id="spinBtn">Spin</button>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="resetWheelBtn">Reset Wheel</button>
+    </div>
+    <div class="hint">The showboard never shows the plan &mdash; the wheel just happens to land where you decided. Spin 1 &rarr; Titan &#127846;, spin 2 &rarr; Nova &#9749;, spin 3 &rarr; your pick &#127873;. The entries tally below is pure theatre: the wheel ignores it.</div>
+  </section>
+
+  <!-- Draw entries tally -->
+  <section class="panel">
+    <h2>&#127903;&#65039; Draw Entries <span class="tag">shown beside the wheel &mdash; sells the &ldquo;weighted draw&rdquo;</span></h2>
+    <div id="tallyRows"></div>
+    <div class="row" style="margin-top:12px">
+      <div class="field" style="margin:0;flex:0 0 110px">
+        <label for="baseEntriesIn">Base entries</label>
+        <input id="baseEntriesIn" type="number" min="0" max="20" value="3">
+      </div>
+      <button class="btn" id="resetEntriesBtn">Reset All to Base</button>
+    </div>
+  </section>
+
+  <footer class="foot">Showboard follows this panel automatically &middot; <a href="index.html" target="_blank">index.html</a></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "kavosh.showboard.v1";
+  var DUR = 6500;
+
+  var TEAMS = [
+    { n: 1, name: "Nova" }, { n: 2, name: "Titan" }, { n: 3, name: "Challenge" },
+    { n: 4, name: "Bright" }, { n: 5, name: "Global Mission" }, { n: 6, name: "Smart" }
+  ];
+  var AWARDS = [
+    { a: "Best Teamwork", e: "🤝" },
+    { a: "Top Synergy", e: "⚡" },
+    { a: "Unbreakable Spirit", e: "🔥" },
+    { a: "Big Brain Energy", e: "🧠" },
+    { a: "Positive Vibes", e: "🌟" },
+    { a: "Never Give Up", e: "🛡️" }
+  ];
+  var TIERS = [
+    { label: "Spin 1 · 3rd Prize", prize: "Ice Cream", emoji: "🍦" },
+    { label: "Spin 2 · 2nd Prize", prize: "Tim Hortons", emoji: "☕" },
+    { label: "Spin 3 · Grand Prize", prize: "Gift Cards", emoji: "🎁" }
+  ];
+  var RIG_TEAMS = ["Titan", "Nova", null];   // null = thirdTarget
+  var WEDGE = Math.PI * 2 / TEAMS.length;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]; }); }
+  function teamNum(name) { for (var i = 0; i < TEAMS.length; i++) if (TEAMS[i].name === name) return TEAMS[i].n; return 0; }
+
+  function normEntries(e) {
+    var out = {};
+    for (var i = 0; i < TEAMS.length; i++) {
+      var nm = TEAMS[i].name;
+      var v = e && e[nm];
+      out[nm] = (typeof v === "number" && isFinite(v)) ? Math.max(0, Math.round(v)) : 3;
+    }
+    return out;
+  }
+  function defState() {
+    return {
+      v: 1, mode: "leaderboard", title: "Spirit Awards",
+      awards: TEAMS.map(function (t, i) { return { team: t.name, award: AWARDS[i].a, emoji: AWARDS[i].e }; }),
+      revealed: [], thirdTarget: "Global Mission", spins: [],
+      entries: normEntries(null), quest: null
+    };
+  }
+  function loadState() {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (!s || s.v !== 1) return defState();
+      var d = defState();
+      if (!s.awards || s.awards.length !== 6) s.awards = d.awards;
+      if (!s.revealed) s.revealed = [];
+      if (!s.spins) s.spins = [];
+      if (!s.title) s.title = d.title;
+      if (!s.thirdTarget) s.thirdTarget = d.thirdTarget;
+      if (s.mode !== "awards" && s.mode !== "wheel") s.mode = "leaderboard";
+      s.entries = normEntries(s.entries);
+      if (!s.quest || typeof s.quest !== "object") s.quest = null;
+      return s;
+    } catch (e) { return defState(); }
+  }
+
+  var state = loadState();
+
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(state));
+    var st = document.getElementById("saveStatus");
+    st.textContent = "Saved " + new Date().toLocaleTimeString() + " — showboard updated";
+    st.className = "status ok";
+  }
+
+  function awardDef(name) { for (var i = 0; i < AWARDS.length; i++) if (AWARDS[i].a === name) return AWARDS[i]; return AWARDS[0]; }
+  function entryFor(team) { for (var i = 0; i < state.awards.length; i++) if (state.awards[i].team === team) return state.awards[i]; return null; }
+  function spinInFlight() {
+    if (!state.spins.length) return false;
+    var last = state.spins[state.spins.length - 1];
+    return Date.now() < last.startedAt + DUR + 500;
+  }
+
+  /* ---------------- mode + title ---------------- */
+  var modeLB = document.getElementById("modeLB");
+  var modeAwards = document.getElementById("modeAwards");
+  var modeWheel = document.getElementById("modeWheel");
+  function renderMode() {
+    modeLB.classList.toggle("on", state.mode === "leaderboard");
+    modeAwards.classList.toggle("on", state.mode === "awards");
+    modeWheel.classList.toggle("on", state.mode === "wheel");
+  }
+  modeLB.onclick = function () { state.mode = "leaderboard"; save(); renderMode(); };
+  modeAwards.onclick = function () { state.mode = "awards"; save(); renderMode(); };
+  modeWheel.onclick = function () { state.mode = "wheel"; save(); renderMode(); };
+
+  var titleInput = document.getElementById("titleInput");
+  var titleTimer = null;
+  titleInput.oninput = function () {
+    if (titleTimer) clearTimeout(titleTimer);
+    titleTimer = setTimeout(function () {
+      state.title = titleInput.value.trim() || "Spirit Awards";
+      save();
+    }, 300);
+  };
+
+  /* ---------------- quest (local-only; NEVER touches kavosh.leaderboard.* or any backend) ---------------- */
+  var qTitleIn = document.getElementById("qTitleIn");
+  var qTaskIn = document.getElementById("qTaskIn");
+  var qSecsIn = document.getElementById("qSecsIn");
+  var qStatus = document.getElementById("qStatus");
+  var qWinSel = document.getElementById("qWinSel");
+  var qEntriesIn = document.getElementById("qEntriesIn");
+  var questPanel = document.getElementById("questPanel");
+
+  qWinSel.innerHTML = TEAMS.map(function (t) {
+    return '<option value="' + esc(t.name) + '">Team ' + t.n + " · " + esc(t.name) + "</option>";
+  }).join("");
+
+  var presets = document.querySelectorAll(".q-preset button");
+  for (var pi = 0; pi < presets.length; pi++) {
+    presets[pi].onclick = function () { qSecsIn.value = this.getAttribute("data-s"); };
+  }
+
+  document.getElementById("qSendBtn").onclick = function () {
+    var secs = Math.max(5, Math.min(900, parseInt(qSecsIn.value, 10) || 60));
+    state.quest = {
+      id: "q" + Date.now(),
+      title: qTitleIn.value.trim() || "Quest",
+      task: qTaskIn.value.trim(),
+      seconds: secs,
+      startedAt: Date.now(),
+      status: "live"
+    };
+    save(); renderQuest();
+  };
+  document.getElementById("qEndBtn").onclick = function () {
+    if (state.quest && state.quest.status === "live") { state.quest.status = "over"; save(); renderQuest(); }
+  };
+  document.getElementById("qClearBtn").onclick = function () { state.quest = null; save(); renderQuest(); };
+  document.getElementById("qAwardBtn").onclick = function () {
+    var winner = qWinSel.value;
+    var n = Math.max(1, Math.min(20, parseInt(qEntriesIn.value, 10) || 2));
+    if (!state.quest) {
+      state.quest = { id: "q" + Date.now(), title: qTitleIn.value.trim() || "Quest", task: "", seconds: 0, startedAt: Date.now(), status: "result" };
+    }
+    state.quest.status = "result";
+    state.quest.winner = winner;
+    state.quest.entries = n;
+    state.entries[winner] = (state.entries[winner] || 0) + n;
+    save(); renderQuest(); renderTally();
+  };
+
+  function renderQuest() {
+    var q = state.quest;
+    var live = !!(q && q.status === "live" && Date.now() < q.startedAt + q.seconds * 1000);
+    questPanel.classList.toggle("live", live);
+    if (!q) { qStatus.textContent = "No quest running"; qStatus.className = "q-status"; return; }
+    if (q.status === "result") {
+      qStatus.textContent = "Result showing: " + q.winner + " +" + q.entries + " entries";
+      qStatus.className = "q-status";
+    } else if (q.status === "over" || Date.now() >= q.startedAt + q.seconds * 1000) {
+      qStatus.textContent = "Time's up — pick the winner below";
+      qStatus.className = "q-status live";
+    } else {
+      var remain = Math.ceil((q.startedAt + q.seconds * 1000 - Date.now()) / 1000);
+      qStatus.textContent = "LIVE — " + remain + "s left";
+      qStatus.className = "q-status live";
+    }
+  }
+
+  /* ---------------- awards section ---------------- */
+  var awardRows = document.getElementById("awardRows");
+
+  function renderAwards() {
+    awardRows.innerHTML = state.awards.map(function (a) {
+      var revIdx = state.revealed.indexOf(a.team);
+      var opts = AWARDS.map(function (d) {
+        return '<option value="' + esc(d.a) + '"' + (d.a === a.award ? " selected" : "") + '>' + esc(d.e + " " + d.a) + "</option>";
+      }).join("");
+      return '<div class="arow" data-team="' + esc(a.team) + '">'
+        + '<div class="tname"><small>TEAM ' + teamNum(a.team) + '</small>' + esc(a.team) + '</div>'
+        + '<select class="awSel">' + opts + '</select>'
+        + '<button class="btn rbtn' + (revIdx !== -1 ? " on" : "") + '">' + (revIdx !== -1 ? "Hide" : "Reveal") + '</button>'
+        + '<div class="ordn">' + (revIdx !== -1 ? (revIdx + 1) : "") + '</div>'
+        + '</div>';
+    }).join("");
+
+    var rows = awardRows.children;
+    for (var i = 0; i < rows.length; i++) {
+      (function (row) {
+        var team = row.getAttribute("data-team");
+        row.querySelector(".awSel").onchange = function () { setAward(team, this.value); };
+        row.querySelector(".rbtn").onclick = function () { toggleReveal(team); };
+      })(rows[i]);
+    }
+
+    var next = null;
+    for (var j = 0; j < state.awards.length; j++) {
+      if (state.revealed.indexOf(state.awards[j].team) === -1) { next = state.awards[j]; break; }
+    }
+    var rb = document.getElementById("revealNextBtn");
+    if (next) { rb.disabled = false; rb.textContent = "Reveal Next — " + next.emoji + " " + next.award + " → " + next.team; }
+    else { rb.disabled = true; rb.textContent = "All Awards Revealed"; }
+  }
+
+  function setAward(team, awardName) {
+    var mine = entryFor(team);
+    if (!mine || mine.award === awardName) return;
+    for (var i = 0; i < state.awards.length; i++) {
+      var o = state.awards[i];
+      if (o.team !== team && o.award === awardName) { o.award = mine.award; o.emoji = mine.emoji; break; }
+    }
+    var d = awardDef(awardName);
+    mine.award = d.a; mine.emoji = d.e;
+    save(); renderAwards();
+  }
+  function toggleReveal(team) {
+    var i = state.revealed.indexOf(team);
+    if (i === -1) state.revealed.push(team);
+    else state.revealed.splice(i, 1);
+    save(); renderAwards();
+  }
+
+  document.getElementById("shuffleBtn").onclick = function () {
+    var deck = AWARDS.slice();
+    for (var i = deck.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+    for (var k = 0; k < state.awards.length; k++) { state.awards[k].award = deck[k].a; state.awards[k].emoji = deck[k].e; }
+    state.revealed = [];
+    save(); renderAwards();
+  };
+  document.getElementById("resetRevealsBtn").onclick = function () { state.revealed = []; save(); renderAwards(); };
+  document.getElementById("revealNextBtn").onclick = function () {
+    for (var i = 0; i < state.awards.length; i++) {
+      var t = state.awards[i].team;
+      if (state.revealed.indexOf(t) === -1) { state.revealed.push(t); break; }
+    }
+    save(); renderAwards();
+  };
+
+  /* ---------------- wheel section ---------------- */
+  var rigRows = document.getElementById("rigRows");
+  var thirdSel = document.getElementById("thirdSel");
+  var spinBtn = document.getElementById("spinBtn");
+
+  function rigTeam(tier) { return RIG_TEAMS[tier] || state.thirdTarget; }
+
+  function renderWheel() {
+    var now = Date.now();
+    var nextTier = state.spins.length;
+    var flying = spinInFlight();
+
+    rigRows.innerHTML = TIERS.map(function (t, i) {
+      var sp = state.spins[i];
+      var cls = "", stat = "Waiting";
+      if (sp) {
+        if (now < sp.startedAt + DUR) { cls = "next"; stat = "Spinning…"; }
+        else { cls = "done"; stat = "&#10003; Won"; }
+      } else if (i === nextTier) { cls = "next"; stat = "&#9654; Next"; }
+      var team = sp ? sp.team : rigTeam(i);
+      return '<div class="rig-row ' + cls + '">'
+        + '<span class="remoji">' + t.emoji + '</span>'
+        + '<div class="rmeta"><div class="rtier">' + esc(t.label) + " — " + esc(t.prize) + '</div>'
+        + '<div class="rteam">' + esc(team) + '</div></div>'
+        + '<div class="rstat">' + stat + '</div></div>';
+    }).join("");
+
+    // third-target dropdown: teams not already used by spins 1 & 2
+    var opts = "";
+    for (var i = 0; i < TEAMS.length; i++) {
+      var nm = TEAMS[i].name;
+      if (nm === "Titan" || nm === "Nova") continue;
+      opts += '<option value="' + esc(nm) + '"' + (nm === state.thirdTarget ? " selected" : "") + '>Team ' + TEAMS[i].n + " · " + esc(nm) + "</option>";
+    }
+    thirdSel.innerHTML = opts;
+    thirdSel.disabled = state.spins.length >= 3;
+
+    if (flying) { spinBtn.disabled = true; spinBtn.textContent = "Spinning — " + rigTeam(nextTier - 1) + "…"; }
+    else if (nextTier >= 3) { spinBtn.disabled = true; spinBtn.textContent = "All Prizes Drawn"; }
+    else {
+      spinBtn.disabled = false;
+      var t = TIERS[nextTier];
+      spinBtn.textContent = "Spin " + (nextTier + 1) + " of 3 — will land: " + rigTeam(nextTier) + " " + t.emoji;
+    }
+  }
+
+  thirdSel.onchange = function () { state.thirdTarget = thirdSel.value; save(); renderWheel(); };
+
+  spinBtn.onclick = function () {
+    if (spinBtn.disabled || state.spins.length >= 3 || spinInFlight()) return;
+    var tier = state.spins.length;
+    state.spins.push({
+      id: "s" + Date.now(),
+      team: rigTeam(tier),
+      tier: tier,
+      startedAt: Date.now(),
+      jitter: (Math.random() * 2 - 1) * 0.35 * (WEDGE / 2),
+      turns: 5 + Math.floor(Math.random() * 3)
+    });
+    if (state.mode !== "wheel") { state.mode = "wheel"; renderMode(); }
+    save(); renderWheel();
+  };
+
+  document.getElementById("resetWheelBtn").onclick = function () { state.spins = []; save(); renderWheel(); };
+
+  /* ---------------- draw entries tally ---------------- */
+  var tallyRows = document.getElementById("tallyRows");
+  var baseEntriesIn = document.getElementById("baseEntriesIn");
+
+  function renderTally() {
+    tallyRows.innerHTML = TEAMS.map(function (t) {
+      return '<div class="trow" data-team="' + esc(t.name) + '">'
+        + '<span class="tname2"><small>TEAM ' + t.n + '</small>' + esc(t.name) + '</span>'
+        + '<button class="tally-btn minus">&#8722;</button>'
+        + '<span class="tcount">&#127903;&#65039; ' + (state.entries[t.name] || 0) + '</span>'
+        + '<button class="tally-btn plus">+</button>'
+        + '</div>';
+    }).join("");
+    var rows = tallyRows.children;
+    for (var i = 0; i < rows.length; i++) {
+      (function (row) {
+        var team = row.getAttribute("data-team");
+        row.querySelector(".minus").onclick = function () {
+          state.entries[team] = Math.max(0, (state.entries[team] || 0) - 1);
+          save(); renderTally();
+        };
+        row.querySelector(".plus").onclick = function () {
+          state.entries[team] = (state.entries[team] || 0) + 1;
+          save(); renderTally();
+        };
+      })(rows[i]);
+    }
+  }
+  document.getElementById("resetEntriesBtn").onclick = function () {
+    var base = Math.max(0, Math.min(20, parseInt(baseEntriesIn.value, 10) || 3));
+    for (var i = 0; i < TEAMS.length; i++) state.entries[TEAMS[i].name] = base;
+    save(); renderTally();
+  };
+
+  /* ---------------- boot + liveness ---------------- */
+  function renderAll() {
+    renderMode(); renderAwards(); renderWheel(); renderTally(); renderQuest();
+    if (document.activeElement !== titleInput) titleInput.value = state.title;
+  }
+  renderAll();
+
+  // keep spin button, rig statuses and the quest countdown honest
+  setInterval(function () { renderWheel(); renderQuest(); }, 600);
+
+  // if another control tab writes, follow along
+  addEventListener("storage", function (e) {
+    if (e.key && e.key !== KEY) return;
+    state = loadState();
+    renderAll();
+  });
+})();
+</script>
+<script src="../leaderboard/bg.js"></script>
+</body>
+</html>
