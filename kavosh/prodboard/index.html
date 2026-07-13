@@ -77,15 +77,22 @@
   .sechead .meter{flex:0 0 140px;margin:0}
   .sechead .btn{margin-left:auto}
 
-  .thead{display:grid;grid-template-columns:1.1fr 250px 1.3fr 120px 1fr 1.3fr 28px;gap:12px;
+  .thead{display:grid;grid-template-columns:1.4fr 1.3fr 110px 1fr 1.3fr 28px;gap:12px;
     padding:6px 14px;font-size:11px;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
   .row{
-    display:grid;grid-template-columns:1.1fr 250px 1.3fr 120px 1fr 1.3fr 28px;gap:12px;
+    display:grid;grid-template-columns:1.4fr 1.3fr 110px 1fr 1.3fr 28px;gap:12px;
     background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     padding:12px 14px;margin-bottom:8px;align-items:start;
   }
   .row.dropover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(42,120,214,.18)}
+  .row.ins-top{box-shadow:0 -3px 0 0 var(--accent)}
+  .row.ins-bottom{box-shadow:0 3px 0 0 var(--accent)}
+  .row.dragged{opacity:.45}
   .cell-label{display:none}
+  .namewrap{display:flex;align-items:center;gap:2px}
+  .handle{cursor:grab;color:#c8c7c1;font-size:14px;padding:4px 3px;user-select:none;touch-action:none;line-height:1}
+  .handle:hover{color:var(--ink-2)}
+  .handle:active{cursor:grabbing}
 
   .name-in{width:100%;border:1px solid transparent;border-radius:6px;background:transparent;
     font:inherit;font-weight:600;color:var(--ink);padding:4px 6px}
@@ -107,17 +114,17 @@
   .stage.blocked{background:#fbe4e4;color:#8f2222}.stage.blocked i{background:var(--crit)}
   .stage.done{background:#e2f4e2;color:#0a6b0a}.stage.done i{background:var(--good)}
 
-  /* photos */
-  .pics{display:flex;flex-wrap:wrap;gap:6px}
-  .thumb{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--line-soft)}
+  /* photos — small strip under the item name */
+  .pics{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0 22px}
+  .thumb{position:relative;width:44px;height:44px;border-radius:7px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--line-soft)}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .thumb .del{position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;
-    background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:17px;text-align:center;cursor:pointer}
+  .thumb .del{position:absolute;top:1px;right:1px;width:15px;height:15px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;font-size:10px;line-height:15px;text-align:center;cursor:pointer}
   .thumb .del:hover{background:var(--crit)}
-  .addpic{width:56px;height:56px;border-radius:8px;border:1px dashed var(--line);color:var(--ink-3);
-    display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;background:transparent}
+  .addpic{width:44px;height:44px;border-radius:7px;border:1px dashed var(--line);color:var(--ink-3);
+    display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;background:transparent}
   .addpic:hover{border-color:var(--accent);color:var(--accent)}
-  .thumb.up{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:10px}
+  .thumb.up{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:9px}
 
   .volcell{min-height:34px;border:1px dashed transparent;border-radius:8px;padding:3px;
     display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
@@ -249,7 +256,7 @@ async function flush(){
 
 function editingNow(){
   const a = document.activeElement;
-  return dragging || (a && (a.tagName==='TEXTAREA' || (a.tagName==='INPUT' && a.type==='text')));
+  return dragging || rowDrag || (a && (a.tagName==='TEXTAREA' || (a.tagName==='INPUT' && a.type==='text')));
 }
 async function poll(){
   try{
@@ -334,7 +341,8 @@ function render(){
   // sections
   const board = document.getElementById('board'); board.innerHTML='';
   for (const sec of ['AIR','HURO']){
-    const list = items.filter(i=>i.section===sec);
+    const list = items.filter(i=>i.section===sec)
+      .slice().sort((a,b)=>(a.order||0)-(b.order||0)); // stable: ties keep array order
     const sd = list.filter(i=>i.stage==='done').length;
     const secEl = document.createElement('section');
     const head = document.createElement('div'); head.className='sechead';
@@ -350,7 +358,7 @@ function render(){
     head.appendChild(addBtn);
     secEl.appendChild(head);
     const th = document.createElement('div'); th.className='thead';
-    th.innerHTML='<span>Name</span><span>Current pic</span><span>Status</span><span>ETA</span><span>Volunteers on it</span><span>Comments</span><span></span>';
+    th.innerHTML='<span>Item &amp; current pics</span><span>Status</span><span>ETA</span><span>Volunteers on it</span><span>Comments</span><span></span>';
     secEl.appendChild(th);
     list.forEach(item=>secEl.appendChild(rowEl(item)));
     board.appendChild(secEl);
@@ -364,17 +372,17 @@ function tile(v,l,color){
 function rowEl(item){
   const row = document.createElement('div'); row.className='row'; row.dataset.item=item.id;
 
-  // NAME
+  // NAME (drag handle + name, small photo strip underneath)
   const cName = document.createElement('div');
-  cName.innerHTML='<div class="cell-label">Name</div>';
+  cName.innerHTML='<div class="cell-label">Item &amp; current pics</div>';
+  const nw = document.createElement('div'); nw.className='namewrap';
+  const handle = document.createElement('span'); handle.className='handle'; handle.textContent='⠿'; handle.title='Drag to reorder';
+  handle.addEventListener('pointerdown', (e)=>rowDragStart(e,item));
   const nameIn = document.createElement('input');
   nameIn.className='name-in'; nameIn.type='text'; nameIn.placeholder='Item name'; nameIn.value=item.name||'';
   nameIn.addEventListener('input', ()=>{ item.name=nameIn.value; queue({op:'set', id:item.id, field:'name', value:nameIn.value}); });
-  cName.appendChild(nameIn);
-
-  // PHOTOS
-  const cPics = document.createElement('div');
-  cPics.innerHTML='<div class="cell-label">Current pic</div>';
+  nw.append(handle, nameIn);
+  cName.appendChild(nw);
   const pics = document.createElement('div'); pics.className='pics';
   (item.photos||[]).forEach(p=>{
     const t = document.createElement('div'); t.className='thumb';
@@ -387,7 +395,7 @@ function rowEl(item){
   const add = document.createElement('button'); add.className='addpic'; add.title='Add photo (camera or gallery)'; add.textContent='+';
   add.onclick = ()=>pickPhotos(item);
   pics.appendChild(add);
-  cPics.appendChild(pics);
+  cName.appendChild(pics);
 
   // STATUS (stage chip + free text)
   const cSt = document.createElement('div');
@@ -434,7 +442,7 @@ function rowEl(item){
     queue({op:'delItem', id:item.id}); render();
   };
 
-  row.append(cName,cPics,cSt,cEta,cVol,cCom,del);
+  row.append(cName,cSt,cEta,cVol,cCom,del);
   return row;
 }
 
@@ -486,6 +494,57 @@ function dragEnd(e){
     }
   }
   dragging = null; lastDrop = null; render();
+}
+
+// ------------------------- row reorder (drag the ⠿ handle) -------------------------
+let rowDrag = null;   // item being reordered
+let rowInsRow = null, rowInsAfter = false;
+function rowDragStart(e, item){
+  e.preventDefault();
+  rowDrag = item;
+  const v = {name: item.name || '(unnamed)', color: '#52514e', id: 'x'};
+  ghost.innerHTML=''; ghost.appendChild(chipEl(v,true,()=>{})); ghost.style.display='block';
+  const src = document.querySelector(`[data-item="${item.id}"]`);
+  if (src) src.classList.add('dragged');
+  rowDragMove(e);
+  document.addEventListener('pointermove', rowDragMove);
+  document.addEventListener('pointerup', rowDragEnd, {once:true});
+}
+function rowDragMove(e){
+  ghost.style.left = e.clientX+'px'; ghost.style.top = e.clientY+'px';
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const row = el && el.closest ? el.closest('.row') : null;
+  if (rowInsRow) rowInsRow.classList.remove('ins-top','ins-bottom');
+  rowInsRow = (row && rowDrag && row.dataset.item !== rowDrag.id) ? row : null;
+  if (rowInsRow){
+    const r = rowInsRow.getBoundingClientRect();
+    rowInsAfter = e.clientY > r.top + r.height/2;
+    rowInsRow.classList.add(rowInsAfter ? 'ins-bottom' : 'ins-top');
+  }
+}
+function rowDragEnd(){
+  document.removeEventListener('pointermove', rowDragMove);
+  ghost.style.display='none';
+  const target = rowInsRow, after = rowInsAfter, item = rowDrag;
+  if (rowInsRow) rowInsRow.classList.remove('ins-top','ins-bottom');
+  rowDrag = null; rowInsRow = null;
+  if (!target || !item){ render(); return; }
+  const tgt = S.items.find(i=>i.id===target.dataset.item);
+  if (!tgt || tgt.id===item.id){ render(); return; }
+  if (item.section !== tgt.section){
+    item.section = tgt.section;
+    queue({op:'set', id:item.id, field:'section', value:item.section});
+  }
+  // rebuild the target section's visual order with the item before/after tgt
+  const list = S.items.filter(i=>i.section===tgt.section && i.id!==item.id)
+    .slice().sort((a,b)=>(a.order||0)-(b.order||0));
+  const at = list.findIndex(i=>i.id===tgt.id) + (after?1:0);
+  list.splice(at, 0, item);
+  list.forEach((i,idx)=>{
+    const o = (idx+1)*10;
+    if (i.order !== o){ i.order = o; queue({op:'set', id:i.id, field:'order', value:o}); }
+  });
+  render();
 }
 
 // ------------------------- photos -------------------------
