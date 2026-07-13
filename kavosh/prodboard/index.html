@@ -196,7 +196,7 @@
 'use strict';
 const API = 'https://kavosh-relay-production.up.railway.app/pb';
 const STAGES = ['todo','doing','blocked','done'];
-const STAGE_LABEL = {todo:'Not started', doing:'In progress', blocked:'Blocked', done:'Done'};
+const STAGE_LABEL = {todo:'Not started', doing:'In progress', blocked:'NEED ASSISTANCE', done:'Done'};
 const VOL_COLORS = ['#2a78d6','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834'];
 
 const uid = (p)=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -339,7 +339,7 @@ function render(){
         blocked = items.filter(i=>i.stage==='blocked').length;
   document.getElementById('tiles').innerHTML =
     tile(n,'Items','') + tile(done,'Done','var(--good)') +
-    tile(doing,'In progress','var(--warn)') + tile(blocked,'Blocked','var(--crit)');
+    tile(doing,'In progress','var(--warn)') + tile(blocked,'Need assistance','var(--crit)');
   $('#allmeter>i').style.width = n? (100*done/n).toFixed(1)+'%' : '0%';
 
   // volunteer pool
