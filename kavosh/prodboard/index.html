@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIRA Production Board</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --surface:#fcfcfb; --card:#ffffff; --line:#e7e6e2; --line-soft:#f0efec;
+    --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#8b8a85;
+    --accent:#2a78d6;
+    --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--surface); color:var(--ink);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 20px 80px}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  h1{font-size:20px;font-weight:650;margin:0;letter-spacing:-.01em}
+  .sub{color:var(--ink-3);font-size:13px}
+  #syncdot{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);margin-left:auto}
+  #syncdot i{width:8px;height:8px;border-radius:50%;background:#bbb;display:inline-block}
+  #syncdot.ok i{background:var(--good)} #syncdot.saving i{background:var(--warn)} #syncdot.err i{background:var(--crit)}
+
+  .tiles{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0 4px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 16px;min-width:110px}
+  .tile b{display:block;font-size:22px;font-weight:650;letter-spacing:-.02em}
+  .tile span{font-size:12px;color:var(--ink-2)}
+  .tile .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:1px}
+
+  .meter{height:6px;background:var(--line-soft);border-radius:3px;overflow:hidden;margin-top:10px}
+  .meter>i{display:block;height:100%;background:var(--good);border-radius:3px;transition:width .3s}
+
+  /* ---------- volunteer palette ---------- */
+  .volbar{
+    position:sticky;top:0;z-index:40;background:var(--surface);
+    padding:10px 0;border-bottom:1px solid var(--line);margin:10px 0 18px;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .volbar .lbl{font-size:12px;color:var(--ink-2);margin-right:2px}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;background:var(--card);
+    border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 5px;
+    font-size:13px;font-weight:500;user-select:none;position:relative;
+  }
+  .chip .av{width:22px;height:22px;border-radius:50%;color:#fff;display:inline-flex;
+    align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .chip.pool{cursor:grab;touch-action:none}
+  .chip.pool:active{cursor:grabbing}
+  .chip .x{display:none;position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;
+    background:var(--ink-2);color:#fff;font-size:10px;line-height:16px;text-align:center;cursor:pointer}
+  .chip:hover .x{display:block}
+  .chip.mini{padding:2px 8px 2px 3px;font-size:12px}
+  .chip.mini .av{width:18px;height:18px;font-size:9px}
+  .chip.mini .rm{margin-left:2px;color:var(--ink-3);cursor:pointer;font-size:12px;padding:0 2px}
+  .chip.mini .rm:hover{color:var(--crit)}
+  .btn{
+    border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 12px;
+    font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  #ghost{position:fixed;z-index:100;pointer-events:none;opacity:.9;transform:translate(-50%,-50%);display:none}
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:34px}
+  .sechead{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .sechead h2{font-size:15px;font-weight:650;margin:0;letter-spacing:.04em}
+  .sechead .count{font-size:12px;color:var(--ink-2)}
+  .sechead .meter{flex:0 0 140px;margin:0}
+  .sechead .btn{margin-left:auto}
+
+  .thead{display:grid;grid-template-columns:1.1fr 250px 1.3fr 120px 1fr 1.3fr 28px;gap:12px;
+    padding:6px 14px;font-size:11px;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
+  .row{
+    display:grid;grid-template-columns:1.1fr 250px 1.3fr 120px 1fr 1.3fr 28px;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 14px;margin-bottom:8px;align-items:start;
+  }
+  .row.dropover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(42,120,214,.18)}
+  .cell-label{display:none}
+
+  .name-in{width:100%;border:1px solid transparent;border-radius:6px;background:transparent;
+    font:inherit;font-weight:600;color:var(--ink);padding:4px 6px}
+  .name-in:hover{border-color:var(--line)}
+  .name-in:focus{border-color:var(--accent);outline:none;background:#fff}
+  textarea.f, input.f{
+    width:100%;border:1px solid transparent;border-radius:6px;background:transparent;
+    font:inherit;color:var(--ink);padding:4px 6px;resize:none;overflow:hidden;
+  }
+  textarea.f:hover,input.f:hover{border-color:var(--line)}
+  textarea.f:focus,input.f:focus{border-color:var(--accent);outline:none;background:#fff}
+  textarea.f::placeholder,input.f::placeholder,.name-in::placeholder{color:var(--ink-3)}
+
+  .stage{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;
+    font-size:12px;font-weight:600;cursor:pointer;user-select:none;margin-bottom:6px;border:1px solid transparent}
+  .stage i{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .stage.todo{background:#f1f0ec;color:#52514e}.stage.todo i{background:#9a9891}
+  .stage.doing{background:#fdf3dc;color:#7a5600}.stage.doing i{background:var(--warn)}
+  .stage.blocked{background:#fbe4e4;color:#8f2222}.stage.blocked i{background:var(--crit)}
+  .stage.done{background:#e2f4e2;color:#0a6b0a}.stage.done i{background:var(--good)}
+
+  /* photos */
+  .pics{display:flex;flex-wrap:wrap;gap:6px}
+  .thumb{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--line-soft)}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb .del{position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:17px;text-align:center;cursor:pointer}
+  .thumb .del:hover{background:var(--crit)}
+  .addpic{width:56px;height:56px;border-radius:8px;border:1px dashed var(--line);color:var(--ink-3);
+    display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;background:transparent}
+  .addpic:hover{border-color:var(--accent);color:var(--accent)}
+  .thumb.up{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:10px}
+
+  .volcell{min-height:34px;border:1px dashed transparent;border-radius:8px;padding:3px;
+    display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
+  .volcell.empty{border-color:var(--line-soft)}
+  .volcell .hint{font-size:12px;color:#c2c1bb;padding:4px 4px}
+
+  .rowdel{border:none;background:none;color:#c8c7c1;cursor:pointer;font-size:15px;padding:2px;justify-self:end}
+  .rowdel:hover{color:var(--crit)}
+  .addrow{margin-top:2px}
+
+  footer{margin-top:30px;font-size:12px;color:var(--ink-3)}
+  footer a{color:var(--ink-3)}
+
+  /* lightbox */
+  #lb{position:fixed;inset:0;background:rgba(10,10,10,.82);z-index:200;display:none;
+    align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px}
+  #lb img{max-width:94vw;max-height:82vh;border-radius:8px;background:#222}
+  #lb .bar{display:flex;gap:10px;align-items:center;color:#ddd;font-size:13px}
+  #lb button{border:1px solid #666;background:transparent;color:#eee;border-radius:8px;padding:6px 14px;cursor:pointer;font:inherit}
+  #lb button.danger:hover{border-color:var(--crit);color:#ff9c9c}
+
+  @media (max-width: 940px){
+    .thead{display:none}
+    .row{grid-template-columns:1fr;gap:10px;padding:14px}
+    .cell-label{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+    .rowdel{justify-self:start}
+    .sechead .meter{flex:1 1 80px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>FIRA Production Board</h1>
+    <span class="sub">AIR &amp; HUROCUP field builds — edit anything directly; it syncs live.</span>
+    <span id="syncdot"><i></i><em id="synctext" style="font-style:normal">connecting…</em></span>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+  <div class="meter" id="allmeter" title="Overall completion"><i style="width:0%"></i></div>
+
+  <div class="volbar" id="volbar">
+    <span class="lbl">Volunteers — drag onto an item:</span>
+    <span id="pool"></span>
+    <button class="btn" id="addvol">+ Add volunteer</button>
+  </div>
+
+  <div id="board"></div>
+
+  <footer>
+    Photos are stored in Google Drive under <b>FIRA PRODUCTION BOARD</b>, one folder per item.
+    Seeded from <a href="https://docs.google.com/spreadsheets/d/1UWRUnUQQd39OFl8T8dYo1yZ09yPxCGhj12QGM2TKP6Y/edit" target="_blank" rel="noopener">FIRA: WHATS DONE</a>.
+  </footer>
+</div>
+
+<div id="ghost"></div>
+<div id="lb"><img alt=""><div class="bar"><span id="lbname"></span><button id="lbdel" class="danger">Delete photo</button><button id="lbclose">Close</button></div></div>
+<input type="file" id="fpick" accept="image/*" multiple style="display:none">
+
+<script>
+'use strict';
+const API = 'https://kavosh-relay-production.up.railway.app/pb';
+const STAGES = ['todo','doing','blocked','done'];
+const STAGE_LABEL = {todo:'Not started', doing:'In progress', blocked:'Blocked', done:'Done'};
+const VOL_COLORS = ['#2a78d6','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834'];
+
+const uid = (p)=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+// ------- starter content (used only when the cloud board is empty) -------
+const SEED = { volunteers: [], items: [
+  // HUROCUP tab of the sheet
+  it('HURO','Archery — target boards ×3','Stands + printed target on styrofoam. Tony prepares 3 servos to mount the targets. Ref: https://docs.google.com/document/d/1Vw3d7PTQD5_KZzCgdRNJrrkNQ9bXQGFf2iCc136tKdo'),
+  it('HURO','Basketball — kid-size baskets ×2','Stand and red bucket. Ref: https://docs.google.com/document/d/14nGPXJio0P49PecHr4EyEZewPgMYz9ZPp0Qbfq3g5HE'),
+  it('HURO','Basketball — adult-size basket ×1','Stand and red bucket.'),
+  it('HURO','Table tennis balls ×4 (orange)','Procurement.'),
+  it('HURO','Tennis balls ×2 (orange)','If possible orange; will share with united soccer.'),
+  it('HURO','Obstacle Run — blue obstacles ×20','30cm (H) × 40cm (W). Ref: https://docs.google.com/document/d/1JF4hpEZ4fg_3BNnBojY3ZAYBdgUDpfGaB_MJusSJ5-8'),
+  it('HURO','Obstacle Run — red gate ×1','30cm (H) × 50cm (W).'),
+  it('HURO','Obstacle Run — yellow holes ×2','Irregular shape boards, ~30–40cm.'),
+  it('HURO','Spartan Race — uneven terrain set','Blue 2m×2m×1.5cm; green ~1.5m; red ~0.8m; yellow ~0.5m. Ref: https://docs.google.com/document/d/1mh1xXGr970a3S0qakOopx7g8n-JDd2HS7DaYFoopPfo'),
+  it('HURO','Spartan Race — balance beam (adult)','2-in × 6-in × 12-ft lumber. https://www.homedepot.ca/product/1000100165'),
+  it('HURO','Spartan Race — balance beam (kid)','1-in × 3-in × 8-ft lumber. https://www.homedepot.ca/product/1000112188'),
+  it('HURO','Goal posts — 1 blue + 1 red','Build soccer goal posts. Ref: https://docs.google.com/document/d/1elCnLnx1FiY1y7RCQj_xvlb7qvBFCJsCyqTcdDTfA4Y'),
+  // AIR tab holds pictures, not names — rename these rows to match.
+  it('AIR','AIR structure 1 (rename me)','From sheet: pink lumber cut, white lumber cut, feet cut and painted.','doing','Feet cut and painted'),
+  it('AIR','AIR structure 2 (rename me)','From sheet: pink lumber cut, white lumber cut, feet cut and painted.','doing','Feet cut and painted'),
+  it('AIR','AIR structure 3 (rename me)','','blocked','Infeasible to complete'),
+  it('AIR','AIR structure 4 (rename me)','','blocked','No plans'),
+]};
+function it(section,name,comments,stage,status){
+  return { id: uid('i'), section, name, stage: stage||'todo', status: status||'',
+           eta:'', comments: comments||'', volunteers: [], photos: [], order: 0 };
+}
+
+// ------------------------- sync engine -------------------------
+let S = null, rev = 0, outbox = new Map(), flushTimer = null, inflight = false;
+
+function sync(cls, txt){
+  const el = document.getElementById('syncdot');
+  el.className = cls; document.getElementById('synctext').textContent = txt;
+}
+function queue(op){
+  const key = op.op==='set' ? `set:${op.id}:${op.field}` : uid('k');
+  outbox.set(key, op);
+  clearTimeout(flushTimer); flushTimer = setTimeout(flush, 500);
+  sync('saving','saving…');
+}
+async function flush(){
+  if (inflight || !outbox.size) return;
+  inflight = true;
+  const keys = [...outbox.keys()];
+  const ops = keys.map(k=>outbox.get(k));
+  try{
+    const r = await fetch(API+'/patch', {method:'POST', body: JSON.stringify({ops})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error||'patch failed');
+    keys.forEach(k=>outbox.delete(k));
+    rev = j.rev;
+    sync(outbox.size?'saving':'ok', outbox.size?'saving…':'saved');
+  }catch(e){
+    sync('err','offline — retrying');
+    setTimeout(flush, 3000);
+  }finally{
+    inflight = false;
+    if (outbox.size && !flushTimer) flushTimer = setTimeout(flush, 800);
+    flushTimer = null;
+  }
+}
+
+function editingNow(){
+  const a = document.activeElement;
+  return dragging || (a && (a.tagName==='TEXTAREA' || (a.tagName==='INPUT' && a.type==='text')));
+}
+async function poll(){
+  try{
+    if (outbox.size || inflight || editingNow()) return;
+    const r = await fetch(API); const j = await r.json();
+    if (j.state && j.rev !== rev){ rev = j.rev; S = j.state; render(); }
+    if (!document.getElementById('syncdot').classList.contains('saving')) sync('ok','live');
+  }catch(e){ sync('err','offline — retrying'); }
+}
+async function boot(){
+  try{
+    let r = await fetch(API); let j = await r.json();
+    if (!j.state){
+      await fetch(API+'/seed', {method:'POST', body: JSON.stringify(SEED)});
+      r = await fetch(API); j = await r.json();
+    }
+    S = j.state || SEED; rev = j.rev || 0;
+    render(); sync('ok','live');
+  }catch(e){
+    sync('err','cannot reach server');
+    setTimeout(boot, 4000); return;
+  }
+  setInterval(poll, 4000);
+}
+
+// ------------------------- rendering -------------------------
+const $=(s,el)=> (el||document).querySelector(s);
+function volById(id){ return (S.volunteers||[]).find(v=>v.id===id); }
+function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+function chipEl(v, mini, onRemove){
+  const c = document.createElement('span');
+  c.className = 'chip'+(mini?' mini':' pool');
+  const av = document.createElement('span'); av.className='av'; av.style.background=v.color; av.textContent=initials(v.name);
+  c.appendChild(av); c.appendChild(document.createTextNode(v.name));
+  if (mini){
+    const rm = document.createElement('span'); rm.className='rm'; rm.textContent='×'; rm.title='Remove from this item';
+    rm.onclick = onRemove; c.appendChild(rm);
+  } else {
+    c.dataset.vol = v.id;
+    const x = document.createElement('span'); x.className='x'; x.textContent='×'; x.title='Delete volunteer';
+    x.onpointerdown = (e)=>e.stopPropagation();
+    x.onclick = (e)=>{ e.stopPropagation();
+      if (!confirm(`Remove volunteer "${v.name}" from the board?`)) return;
+      S.volunteers = S.volunteers.filter(x=>x.id!==v.id);
+      S.items.forEach(i=>{ i.volunteers = (i.volunteers||[]).filter(id=>id!==v.id); });
+      queue({op:'pool', value:S.volunteers}); render();
+    };
+    c.appendChild(x);
+    c.addEventListener('pointerdown', dragStart);
+  }
+  return c;
+}
+
+function autoGrow(t){ t.style.height='auto'; t.style.height=(t.scrollHeight)+'px'; }
+
+function fieldEl(item, field, placeholder, textarea){
+  const el = document.createElement(textarea?'textarea':'input');
+  el.className='f'; el.placeholder=placeholder; el.value=item[field]||'';
+  if (textarea){ el.rows=1; setTimeout(()=>autoGrow(el),0); el.addEventListener('input',()=>autoGrow(el)); }
+  else el.type='text';
+  el.addEventListener('input', ()=>{ item[field]=el.value; queue({op:'set', id:item.id, field, value:el.value}); });
+  return el;
+}
+
+function render(){
+  if (!S) return;
+  // stat tiles + overall meter
+  const items = S.items||[];
+  const n = items.length, done = items.filter(i=>i.stage==='done').length,
+        doing = items.filter(i=>i.stage==='doing').length,
+        blocked = items.filter(i=>i.stage==='blocked').length;
+  document.getElementById('tiles').innerHTML =
+    tile(n,'Items','') + tile(done,'Done','var(--good)') +
+    tile(doing,'In progress','var(--warn)') + tile(blocked,'Blocked','var(--crit)');
+  $('#allmeter>i').style.width = n? (100*done/n).toFixed(1)+'%' : '0%';
+
+  // volunteer pool
+  const pool = document.getElementById('pool'); pool.innerHTML='';
+  (S.volunteers||[]).forEach(v=>pool.appendChild(chipEl(v,false)));
+
+  // sections
+  const board = document.getElementById('board'); board.innerHTML='';
+  for (const sec of ['AIR','HURO']){
+    const list = items.filter(i=>i.section===sec);
+    const sd = list.filter(i=>i.stage==='done').length;
+    const secEl = document.createElement('section');
+    const head = document.createElement('div'); head.className='sechead';
+    head.innerHTML = `<h2>${sec==='HURO'?'HUROCUP':'AIR'}</h2>
+      <span class="count">${sd}/${list.length} done</span>
+      <div class="meter"><i style="width:${list.length?100*sd/list.length:0}%"></i></div>`;
+    const addBtn = document.createElement('button'); addBtn.className='btn'; addBtn.textContent='+ Add item';
+    addBtn.onclick = ()=>{
+      const ni = it(sec,'','');
+      S.items.push(ni); queue({op:'addItem', item:ni}); render();
+      const first = document.querySelector(`[data-item="${ni.id}"] .name-in`); if (first) first.focus();
+    };
+    head.appendChild(addBtn);
+    secEl.appendChild(head);
+    const th = document.createElement('div'); th.className='thead';
+    th.innerHTML='<span>Name</span><span>Current pic</span><span>Status</span><span>ETA</span><span>Volunteers on it</span><span>Comments</span><span></span>';
+    secEl.appendChild(th);
+    list.forEach(item=>secEl.appendChild(rowEl(item)));
+    board.appendChild(secEl);
+  }
+}
+function tile(v,l,color){
+  const dot = color? `<span class="dot" style="background:${color}"></span>`:'';
+  return `<div class="tile"><b>${v}</b><span>${dot}${l}</span></div>`;
+}
+
+function rowEl(item){
+  const row = document.createElement('div'); row.className='row'; row.dataset.item=item.id;
+
+  // NAME
+  const cName = document.createElement('div');
+  cName.innerHTML='<div class="cell-label">Name</div>';
+  const nameIn = document.createElement('input');
+  nameIn.className='name-in'; nameIn.type='text'; nameIn.placeholder='Item name'; nameIn.value=item.name||'';
+  nameIn.addEventListener('input', ()=>{ item.name=nameIn.value; queue({op:'set', id:item.id, field:'name', value:nameIn.value}); });
+  cName.appendChild(nameIn);
+
+  // PHOTOS
+  const cPics = document.createElement('div');
+  cPics.innerHTML='<div class="cell-label">Current pic</div>';
+  const pics = document.createElement('div'); pics.className='pics';
+  (item.photos||[]).forEach(p=>{
+    const t = document.createElement('div'); t.className='thumb';
+    const img = document.createElement('img'); img.loading='lazy'; img.src=`${API}/photo/${p.id}`; img.alt=p.name||'';
+    img.onclick = ()=>openLb(item,p);
+    const d = document.createElement('div'); d.className='del'; d.textContent='×'; d.title='Delete photo';
+    d.onclick = (e)=>{ e.stopPropagation(); delPhoto(item,p); };
+    t.appendChild(img); t.appendChild(d); pics.appendChild(t);
+  });
+  const add = document.createElement('button'); add.className='addpic'; add.title='Add photo (camera or gallery)'; add.textContent='+';
+  add.onclick = ()=>pickPhotos(item);
+  pics.appendChild(add);
+  cPics.appendChild(pics);
+
+  // STATUS (stage chip + free text)
+  const cSt = document.createElement('div');
+  cSt.innerHTML='<div class="cell-label">Status</div>';
+  const stage = document.createElement('span'); stage.className='stage '+(item.stage||'todo');
+  stage.innerHTML = `<i></i>${STAGE_LABEL[item.stage]||STAGE_LABEL.todo}`;
+  stage.title='Click to change stage';
+  stage.onclick = ()=>{
+    item.stage = STAGES[(STAGES.indexOf(item.stage||'todo')+1)%STAGES.length];
+    queue({op:'set', id:item.id, field:'stage', value:item.stage}); render();
+  };
+  cSt.appendChild(stage);
+  cSt.appendChild(fieldEl(item,'status','Status notes…',true));
+
+  // ETA
+  const cEta = document.createElement('div');
+  cEta.innerHTML='<div class="cell-label">ETA</div>';
+  cEta.appendChild(fieldEl(item,'eta','e.g. Tue 4 PM',false));
+
+  // VOLUNTEERS
+  const cVol = document.createElement('div');
+  cVol.innerHTML='<div class="cell-label">Volunteers on it</div>';
+  const vc = document.createElement('div'); vc.className='volcell'; vc.dataset.drop=item.id;
+  const assigned = (item.volunteers||[]).map(volById).filter(Boolean);
+  if (!assigned.length){ vc.classList.add('empty'); vc.innerHTML='<span class="hint">drop here</span>'; }
+  assigned.forEach(v=>{
+    vc.appendChild(chipEl(v,true,()=> {
+      item.volunteers = item.volunteers.filter(id=>id!==v.id);
+      queue({op:'set', id:item.id, field:'volunteers', value:item.volunteers}); render();
+    }));
+  });
+  cVol.appendChild(vc);
+
+  // COMMENTS
+  const cCom = document.createElement('div');
+  cCom.innerHTML='<div class="cell-label">Comments</div>';
+  cCom.appendChild(fieldEl(item,'comments','Comments…',true));
+
+  // delete row
+  const del = document.createElement('button'); del.className='rowdel'; del.innerHTML='&#128465;'; del.title='Delete item';
+  del.onclick = ()=>{
+    if (!confirm(`Delete item "${item.name||'(unnamed)'}"?${(item.photos||[]).length?' Its photos stay in Drive.':''}`)) return;
+    S.items = S.items.filter(x=>x.id!==item.id);
+    queue({op:'delItem', id:item.id}); render();
+  };
+
+  row.append(cName,cPics,cSt,cEta,cVol,cCom,del);
+  return row;
+}
+
+// ------------------------- volunteers -------------------------
+document.getElementById('addvol').onclick = ()=>{
+  const name = (prompt('Volunteer name:')||'').trim();
+  if (!name) return;
+  S.volunteers = S.volunteers||[];
+  S.volunteers.push({id:uid('v'), name, color: VOL_COLORS[S.volunteers.length % VOL_COLORS.length]});
+  queue({op:'pool', value:S.volunteers}); render();
+};
+
+// pointer-based drag (works for touch + mouse)
+let dragging = null;
+const ghost = document.getElementById('ghost');
+function dragStart(e){
+  const volId = e.currentTarget.dataset.vol;
+  const v = volById(volId); if (!v) return;
+  e.preventDefault();
+  dragging = volId;
+  ghost.innerHTML=''; ghost.appendChild(chipEl(v,true,()=>{})); ghost.style.display='block';
+  moveGhost(e);
+  document.addEventListener('pointermove', moveGhost);
+  document.addEventListener('pointerup', dragEnd, {once:true});
+}
+let lastDrop = null;
+function moveGhost(e){
+  ghost.style.left = e.clientX+'px'; ghost.style.top = e.clientY+'px';
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const row = el && el.closest ? el.closest('.row') : null;
+  if (lastDrop && lastDrop!==row) lastDrop.classList.remove('dropover');
+  if (row) row.classList.add('dropover');
+  lastDrop = row;
+}
+function dragEnd(e){
+  document.removeEventListener('pointermove', moveGhost);
+  ghost.style.display='none';
+  if (lastDrop) lastDrop.classList.remove('dropover');
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const row = el && el.closest ? el.closest('.row') : null;
+  if (row && dragging){
+    const item = S.items.find(i=>i.id===row.dataset.item);
+    if (item){
+      item.volunteers = item.volunteers||[];
+      if (!item.volunteers.includes(dragging)){
+        item.volunteers.push(dragging);
+        queue({op:'set', id:item.id, field:'volunteers', value:item.volunteers});
+      }
+    }
+  }
+  dragging = null; lastDrop = null; render();
+}
+
+// ------------------------- photos -------------------------
+let pickItem = null;
+const fpick = document.getElementById('fpick');
+function pickPhotos(item){ pickItem = item; fpick.value=''; fpick.click(); }
+fpick.addEventListener('change', async ()=>{
+  const item = pickItem; if (!item || !fpick.files.length) return;
+  for (const f of [...fpick.files]) await uploadPhoto(item, f);
+});
+
+async function shrink(file){
+  try{
+    const bmp = await createImageBitmap(file, {imageOrientation:'from-image'});
+    const max = 1600, sc = Math.min(1, max/Math.max(bmp.width,bmp.height));
+    const w = Math.round(bmp.width*sc), h = Math.round(bmp.height*sc);
+    const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+    cv.getContext('2d').drawImage(bmp,0,0,w,h);
+    const blob = await new Promise(r=>cv.toBlob(r,'image/jpeg',0.85));
+    return blob || file;
+  }catch(_){ return file; }
+}
+async function uploadPhoto(item, file){
+  // spinner tile
+  const row = document.querySelector(`[data-item="${item.id}"] .pics`);
+  const t = document.createElement('div'); t.className='thumb up'; t.textContent='uploading…';
+  if (row) row.insertBefore(t, row.lastChild);
+  try{
+    const blob = await shrink(file);
+    const q = new URLSearchParams({item:item.id, type:'image/jpeg', name:(file.name||'').replace(/\.[^.]+$/,'')});
+    const r = await fetch(`${API}/photo?${q}`, {method:'POST', headers:{'Content-Type':'application/octet-stream'}, body: blob});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error||'upload failed');
+    item.photos = item.photos||[]; item.photos.push(j.photo); rev = j.rev;
+    sync('ok','saved');
+  }catch(e){
+    alert('Photo upload failed: '+e.message);
+  }finally{ render(); }
+}
+async function delPhoto(item, p){
+  if (!confirm('Delete this photo from Drive?')) return;
+  try{
+    const r = await fetch(`${API}/photo/${p.id}/delete?item=${encodeURIComponent(item.id)}`, {method:'POST'});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error||'delete failed');
+    item.photos = (item.photos||[]).filter(x=>x.id!==p.id); rev = j.rev;
+  }catch(e){ alert('Delete failed: '+e.message); }
+  closeLb(); render();
+}
+
+// lightbox
+const lb = document.getElementById('lb');
+let lbCtx = null;
+function openLb(item,p){
+  lbCtx = {item,p};
+  $('#lb img').src = `${API}/photo/${p.id}`;
+  document.getElementById('lbname').textContent = p.name||'';
+  lb.style.display='flex';
+}
+function closeLb(){ lb.style.display='none'; lbCtx=null; }
+document.getElementById('lbclose').onclick = closeLb;
+lb.onclick = (e)=>{ if (e.target===lb) closeLb(); };
+document.getElementById('lbdel').onclick = ()=>{ if (lbCtx) delPhoto(lbCtx.item, lbCtx.p); };
+
+boot();
+</script>
+</body>
+</html>
